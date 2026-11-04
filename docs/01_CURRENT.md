@@ -52,3 +52,11 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **README reconciliado:** já reflecte a existência da API/GUI de laboratório, ao contrário do texto anterior.
 - **Próxima execução recomendada:** JAR-ARCH-02 (política de patches/snapshot da origem) e JAR-SEC-01 (isolamento, concorrência e sessões revogáveis) com contract tests; em paralelo preparar STT PT/JAR-VOICE-01. Não disponibilizar ao Issa até testes reais de LLM, voz e ferramentas.
 - **QA desta revisão:** alterações documentais; GitHub Actions da respectiva HEAD só conta como PASS após conclusão explícita do workflow. O laboratório permanece sem modelo Ollama real e sem voz funcional.
+
+## Pesquisa visual e de voz — 2026-11-04 (JAR-UX-REF-01 / JAR-VOICE-REF-01)
+
+- **Pesquisa de interface documentada:** [12_HUD_REFERENCES_AND_UX_VISION.md](12_HUD_REFERENCES_AND_UX_VISION.md). Ideia de UI `Floating` (núcleo móvel), `Expanded HUD` (painéis contextuais) e `Intelligence Graph` (grafo apenas com dados reais autorizados). **Ainda é proposta, sem implementação nem decisão de renderização.**
+- **Fontes estudadas:** `adewaskar/jarvis` (frontend MIT, **runtime depende Claude**, não adoptar bridge), `harsh-raj00/my-jarvis` (MIT), `desertcache/samantha-ui` (MIT), `Angga-29/jarvis-ai-assistant` (MIT), `hasibjaan/jarvis` (licença não confirmada), `ScuderiaFerrariSimp/Jarvis-Desktop-Assistant` (licença não confirmada), `vasturiano/react-force-graph` (licença da versão a verificar).
+- **VoiceStudio estudado directamente:** [13_VOICESTUDIO_STATIC_ASSESSMENT.md](13_VOICESTUDIO_STATIC_ASSESSMENT.md), fonte `debpalash/VoiceStudio@fd66407f9447b2348e1dab74901328d3b8bd2e47`. API FastAPI local com TTS/STT, PT-BR/PT-PT identificados, sem Claude obrigatório; **AGPL-3.0-only para app, pesos default OmniVoice CC-BY-NC com termos adicionais**. NÃO copiar nem escolher modelo para uso comercial sem revisão jurídica.
+- **Estado sem mudanças operacionais:** nem VoiceStudio nem as UI de terceiros foram instalados ou importados; Wyzer continua motor. A `main` e o PR Draft continuam sujeitos aos gates prévios.
+- **Próxima fase recomendada:** definir decisões de renderer/UI e matriz de licenças/modelos; fazer avaliação PT e benchmarking de ASR/TTS; preservar o projecto de voz existente do Wyzer antes de adicionar serviços externos.
