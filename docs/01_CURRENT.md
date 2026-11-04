@@ -60,3 +60,16 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **VoiceStudio estudado directamente:** [13_VOICESTUDIO_STATIC_ASSESSMENT.md](13_VOICESTUDIO_STATIC_ASSESSMENT.md), fonte `debpalash/VoiceStudio@fd66407f9447b2348e1dab74901328d3b8bd2e47`. API FastAPI local com TTS/STT, PT-BR/PT-PT identificados, sem Claude obrigatório; **AGPL-3.0-only para app, pesos default OmniVoice CC-BY-NC com termos adicionais**. NÃO copiar nem escolher modelo para uso comercial sem revisão jurídica.
 - **Estado sem mudanças operacionais:** nem VoiceStudio nem as UI de terceiros foram instalados ou importados; Wyzer continua motor. A `main` e o PR Draft continuam sujeitos aos gates prévios.
 - **Próxima fase recomendada:** definir decisões de renderer/UI e matriz de licenças/modelos; fazer avaliação PT e benchmarking de ASR/TTS; preservar o projecto de voz existente do Wyzer antes de adicionar serviços externos.
+
+
+## HANDOFF INTEGRAL E SITUACÃO DE CONTINUIDADE — 04/11/2026
+
+**Documentação-mestre:** [20_RECOVERY_START_HERE_2026-11-04.md](20_RECOVERY_START_HERE_2026-11-04.md) · [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md) · [22_DECISION_REGISTER_2026-11-04.md](22_DECISION_REGISTER_2026-11-04.md) · [23_EXECUTION_PLAYBOOK_2026-11-04.md](23_EXECUTION_PLAYBOOK_2026-11-04.md).
+
+- **Baseline antes de preservação:** `develop@da3d4a61b7dd07f209826962b7f268caa5a12b4b`; CI [41827440760](https://github.com/rightware-corporations/jarvis/actions/runs/41827440760) PASS. Os commits subsequentes nesta ronda documentam o histórico e devem ter CI verificado separadamente.
+- **Referências arquivadas integralmente:** [handoff anterior à selecção Wyzer](archive/PRE_WYZER_HANDOFF_2026-11-04.md) (**obsoleto**), [JAR-DEV-SKILLS-02 Claude](reference/CLAUDE_SKILLS_AUDIT_2026-11-04.md), [validação v0.1.0](reference/CLAUDE_PLUGIN_VALIDATION_V010_2026-11-04.md), [draft CLAUDE.md original](reference/CLAUDE_ORIGINAL_DRAFT_2026-11-04.md) e [V2](reference/CLAUDE_REVIEW_V2_DRAFT_2026-11-04.md). Drafts NÃO estão em vigor.
+- **Claude:** plugin `rightware-jarvis-dev` v0.1.0 com nove skills **confirmado visualmente instalado** pelo operador; auditoria revelou `pyside6-desktop` com permissões `Read/Edit/Write/Bash/Grep/Glob`; v0.1.1 restringida e revisão do `CLAUDE.md` são tarefas pendentes. Não afirmar que foram concluídas sem novo output.
+- **Frontend:** `adewaskar/jarvis@1c4016a...` é o **candidato visual**; `bridge/server.mjs` / Anthropic devem ficar de fora. A hipótese Qt/QWebEngine/QWebChannel NÃO foi testada. O utilizador exige primeiro ver screenshots **reais** no Chromium.
+- **Manus:** recebeu/receberá o prompt de preview do frontend exclusivamente Vite, sem bridge/IA externa, para entregar PNGs, galeria e consola com mocks marcados. **Nenhuma captura real foi recebida ou validada neste handoff**.
+- **Próxima avaliação RIGHTWARE:** rever resultados Manus e Claude; aprovar a política de patches, o `CLAUDE.md` e só então autorizar POC M0. **Sem instalação/deploy/mudança de código nesta preservação.**
+
