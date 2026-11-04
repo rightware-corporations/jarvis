@@ -6,7 +6,7 @@
 - **BASE ESCOLHIDA:** Wyzer `v0.3.1` / upstream commit `db83c085feca32d3c091361165cb9ac7ecadafe0`.
 - **IMPORTAÇÃO:** 182/182 ficheiros textuais/ código copiados, comparados por hash SHA Git; ZERO diferença. Excluídos 42 PNG + 2 ONNX.
 - **LICENÇA DO CÓDIGO:** MIT, com NOTICE original. Licenças de assets/modelos/vozes por rever antes da distribuição.
-- **BRANCHES:** `main` e `develop` criadas; `feat/wyzer-v031-core-import` ainda existe e deve ser removida.
+- **BRANCHES:** somente `main` e `develop` verificadas via GitHub API. A antiga `feat/wyzer-v031-core-import` foi eliminada por workflow temporário PASS (run 41814286015); workflow privilegiado removido.
 - **CÓDIGO DO UPSTREAM:** `wyzer/` (89 ficheiros), `tests/` (49), configs/scripts/installer/docs em `develop`.
 - **INTEGRIDADE:** validada estaticamente por comparação Git de árvores. Workflow remoto criado.
 - **CI REMOTO:** [run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553) **PASS nos jobs `source-integrity` e `headless-contract`**. Integridade SHA 182/182 e compilação sintática PASS; 5 testes headless PASS. Foram corrigidas falhas iniciais de dependência `psutil`.

@@ -12,7 +12,7 @@ The workflow `.github/workflows/source-integrity.yml` runs on `develop` and pull
 ## Branch policy
 - `main`: stable, documented work; no directly developed experimental features.
 - `develop`: integration and engineering.
-- The pre-existing temporary `feat/wyzer-v031-core-import` must be **deleted** from GitHub to satisfy the request of exactly two branch refs. No changes should be made on that branch. GitHub integration does not currently expose deletion of branch refs; user/admin can remove it via GitHub UI.
+- **Verified:** the obsolete `feat/wyzer-v031-core-import` branch was deleted via guarded, one-time GitHub Actions [run 41814286015](https://github.com/rightware-corporations/jarvis/actions/runs/41814286015). Branch listing now contains only `main` and `develop`. The privileged cleanup workflow was subsequently deleted.
 
 ## Baseline policy
 The manifest protects the initial pristine import. Once an upstream file is intentionally modified, update this strategy: preserve a frozen upstream snapshot in a dedicated prefix or annotate and audit deliberately changed files. **Do not silently update the manifest SHA to conceal drift.** Until the change policy is implemented, any modified imported file will fail the integrity job.

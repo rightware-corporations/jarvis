@@ -9,7 +9,7 @@
 - **Desenvolvimento:** remoto; nenhuma operação no computador do operador; acesso ao PC do Issa só para QA de entrega autorizado.
 - **Distribuição:** local, servidor ou híbrida por decidir; browser remoto por si só não controla Windows.
 - **Repositório:** `rightware-corporations/jarvis` (PÚBLICO).
-- **Branches-alvo:** apenas `main` e `develop`. A antiga branch `feat/wyzer-v031-core-import` está inactiva e ainda precisa de remoção.
+- **Branches confirmadas:** apenas `main` e `develop`. A antiga `feat/wyzer-v031-core-import` foi eliminada com sucesso (Actions 41814286015), e o workflow de limpeza foi removido.
 
 ## Implementação actual
 - 182 fontes textuais e de código do upstream importadas, **182 hashes Git iguais aos originais**; 44 assets binários deliberadamente omitidos.

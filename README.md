@@ -7,7 +7,7 @@ Assistente de voz da RIGHTWARE, derivado de [Wyzer AI](https://github.com/XtraWy
 ## Branches
 - **`main`:** documentação e base estável; não desenvolver directamente aqui.
 - **`develop`:** única branch de engenharia activa. Contém upstream + adaptador headless.
-- **`feat/wyzer-v031-core-import`:** branch temporária antiga, sem uso, a eliminar para ficar estritamente com duas branches.
+- **Política verificada:** GitHub lista exactamente `main` e `develop`. A antiga branch `feat/wyzer-v031-core-import` foi eliminada por um workflow temporário já removido.
 
 ## Proveniência
 - Upstream: `XtraWyze/Wyzer-Ai`

@@ -15,7 +15,7 @@ Legenda: [x] documentação/implementação verificada; [ ] pendente; cada teste
 - [x] `JAR-P0-08A` Executar cinco testes de contrato headless em runner remoto — 5 PASS.
 - [ ] `JAR-P0-08B` Expandir testes de confirmação, cancelamento, concorrência e protecção multiutilizador.
 - [x] `JAR-P0-09` GitHub Actions: SHA 182/182, compilação e 5 testes headless PASS, run 41813747553.
-- [ ] `JAR-P0-10` Eliminar branch temporária `feat/wyzer-v031-core-import` (ferramenta GitHub actual não fornece delete ref).
+- [x] `JAR-P0-10` Eliminar branch temporária `feat/wyzer-v031-core-import` por GitHub Actions run 41814286015 PASS; remover workflow privilegiado depois. Verificadas apenas `main` e `develop`.
 
 ## P1 — Laboratório remoto
 - [x] `JAR-P1-00` Criar factory headless com registry vazio e memória por subject.
