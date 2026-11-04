@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#05070d">
+  <title>JARVIS — VEXEL / Remote Lab</title>
+  <meta name="description" content="VEXEL Jarvis — laboratório privado de testes da conversa e do núcleo headless">
+  <link rel="stylesheet" href="/lab.css">
+  <script src="/lab.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="Navegação do laboratório">
+      <a href="/" class="monogram" aria-label="JARVIS página inicial">J<span>.</span></a>
+      <div class="rail-spine"><span class="tiny-vertical">VEXEL SYSTEMS / LAB 01</span></div>
+      <span class="rail-foot">01—04</span>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <span class="eyebrow">VEXEL / INTELLIGENCE INTERFACE</span>
+          <span class="brand-name">JARVIS<span class="brand-version">/ ISSA EDITION</span></span>
+        </div>
+        <div class="top-right">
+          <span class="environment">REMOTE DEVELOPMENT LAB</span>
+          <span class="status"><i id="statusDot"></i><span id="statusText">A VERIFICAR</span></span>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="overview" aria-labelledby="page-title">
+          <div class="index-label"><span>01</span><span>INTERFACE / NÚCLEO CONVERSACIONAL</span></div>
+          <div class="hero-grid">
+            <div>
+              <p class="chapter">A SYSTEM IN FORMATION</p>
+              <h1 id="page-title">Não é um chatbot.<br><em>É o início de um sistema.</em></h1>
+              <p class="introduction">Um ambiente controlado para desenvolver o raciocínio, o contexto e a identidade do Jarvis. Nenhuma ferramenta deste laboratório pode operar o teu computador.</p>
+            </div>
+            <div class="signal-space" aria-hidden="true">
+              <div class="signal-track"></div>
+              <div class="signal-orbit outer"></div>
+              <div class="signal-orbit inner"></div>
+              <div class="signal-core"><span class="signal-cross"></span></div>
+              <span class="signal-text left">SYSTEM / READY</span>
+              <span class="signal-text right">VX—01</span>
+            </div>
+          </div>
+          <div class="metadata">
+            <div><span>ENGINE</span><strong>WYZER / 0.3.1</strong></div>
+            <div><span>LANGUAGE</span><strong>PT / IN PROGRESS</strong></div>
+            <div><span>CONTROL</span><strong>SIMULATION ONLY</strong></div>
+            <div><span>NETWORK</span><strong id="networkText">CHECKING</strong></div>
+          </div>
+        </section>
+
+        <section class="console" aria-labelledby="console-title">
+          <div class="console-heading"><div><span class="section-number">02 / CONVERSATION TESTBED</span><h2 id="console-title">Canal de diálogo</h2></div><span class="console-mode">TEXT MODE — VOICE COMING LATER</span></div>
+          <div class="console-grid">
+            <div class="transcript" id="transcript" role="log" aria-live="polite" aria-label="Histórico da conversa">
+              <div class="intro-message">
+                <span class="system-prefix">J / LAB ENVIRONMENT</span>
+                <p>O laboratório está preparado para testar o motor conversacional. Para conversar com um modelo real, precisamos de um serviço Ollama configurado e de acesso autorizado.</p>
+                <small id="connectionNote">A verificar ligação ao serviço...</small>
+              </div>
+            </div>
+            <aside class="inspector" aria-label="Painel de diagnóstico">
+              <div class="inspector-head"><span>DIAGNOSTICS</span><span>LIVE / LOCAL STATE</span></div>
+              <dl>
+                <div><dt>Backend</dt><dd id="backendState">—</dd></div>
+                <div><dt>AI inference</dt><dd id="inferenceState">—</dd></div>
+                <div><dt>Active session</dt><dd id="sessionState">—</dd></div>
+                <div><dt>System actions</dt><dd>BLOCKED</dd></div>
+                <div><dt>Voice service</dt><dd>PENDING</dd></div>
+              </dl>
+              <p class="inspector-note">Todos os pedidos utilizam o núcleo original do Wyzer através de um adaptador headless. Este laboratório não executa comandos Windows.</p>
+              <div class="inspector-bottom"><span>BUILD CHANNEL</span><strong>DEVELOP</strong></div>
+            </aside>
+          </div>
+          <form id="chatForm" class="composer" autocomplete="off">
+            <label class="sr-only" for="messageInput">Mensagem ao Jarvis</label>
+            <textarea id="messageInput" rows="2" maxlength="2000" placeholder="Escreve uma mensagem para o Jarvis..." disabled></textarea>
+            <div class="composer-action">
+              <span>ENTER TO SEND · SHIFT + ENTER FOR NEW LINE</span>
+              <button type="submit" id="sendBtn" disabled>ENVIAR <span aria-hidden="true">↗</span></button>
+            </div>
+          </form>
+        </section>
+
+        <footer class="footer"><span>VEXEL © 2026 / ENGINEERED BY RIGHTWARE</span><span>PRIVATE TEST ENVIRONMENT — NO LIVE DESKTOP ACCESS</span></footer>
+      </main>
+    </div>
+
+    <dialog id="connectDialog" class="connect-dialog">
+      <form method="dialog" id="connectForm">
+        <span class="eyebrow">SECURE ACCESS / 01</span>
+        <h2>Estabelecer ligação.</h2>
+        <p>Introduz a chave de acesso fornecida para este laboratório. A chave fica apenas na memória desta página e não é armazenada no navegador.</p>
+        <label for="labToken">CHAVE DE ACESSO</label>
+        <input type="password" id="labToken" required minlength="16" autocomplete="off" placeholder="••••••••••••••••">
+        <div class="dialog-actions"><button type="button" id="cancelConnect">FECHAR</button><button type="submit">LIGAR AO JARVIS</button></div>
+        <p class="connect-error" id="connectError" role="alert"></p>
+      </form>
+    </dialog>
+    <button id="connectionButton" class="connection-button">CONNECT / LAB ACCESS</button>
+  </div>
+</body>
+</html>
