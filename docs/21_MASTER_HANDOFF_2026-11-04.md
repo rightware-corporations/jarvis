@@ -291,3 +291,13 @@ Fontes: [HUD e UX](12_HUD_REFERENCES_AND_UX_VISION.md); [arquitectura proposta](
 **O que NÃO está comprovado:** Jarvis com «Hey Jarvis» a ouvir Issa, português natural de Issa, inferência Ollama real, execução segura de tarefas Windows, UX holográfica integrada, previews Chromium reais do `adewaskar`, hardware/benchmarks e entrega pronta.
 
 **A recuperação deve continuar a partir deste estado, não do handoff pré-Wyzer.**
+
+## ADENDA APÓS PUBLICAÇÃO — nova entrega Claude recebida, 04/11/2026
+
+O estado das secções originais representa o instante anterior à nova entrega. **Não reescrever o histórico; usar esta adenda como informação posterior.**
+
+- O Claude entregou `rightware-jarvis-dev-0.1.1.zip`, `rightware-jarvis-dev-0.1.1-VALIDATION.md`, `CLAUDE_V3_PROPOSTA.md` e `CLAUDE_V2_para_V3.diff`. Integridade interna do ZIP e permissão limitada do `pyside6-desktop` confirmadas por análise independente, **mas sem instalação da v0.1.1 na conta confirmada**.
+- [Revisão 24](24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md) regista SHA256 do ZIP, avisos e quatro ajustes propostos ao V3.
+- V3 e diff foram preservados em [reference/CLAUDE_V3_PROPOSTA_2026-11-04.md](reference/CLAUDE_V3_PROPOSTA_2026-11-04.md) e [reference/CLAUDE_V2_PARA_V3_2026-11-04.diff](reference/CLAUDE_V2_PARA_V3_2026-11-04.diff); **V3 continua DRAFT, sem `CLAUDE.md` oficial na raiz**.
+- Claude relatou plano M0 de 31 testes/8 áreas para comparar PySide6/Qt; **o plano e limiares completos não foram recebidos como ficheiro**. Recomendação: primeiro galeria Chromium do Manus, depois smoke Windows com baseline 6.6.1, só então matriz completa após autorização.
+- O pacote ZIP de skills não foi publicado no repo público; apenas metadados/validação e referências. Não confundir um ZIP recebido no chat com plugin já instalado.
