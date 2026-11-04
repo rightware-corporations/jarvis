@@ -86,3 +86,20 @@ Fonte de requisitos e evidência: [11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md](11_A
 - [ ] `VOICE-TTS-01` Avaliar Kokoro PT existente e **um** segundo motor local com licenças admissíveis.
 - [ ] `VOICE-API-01` Desenhar adapter opcional para endpoints VoiceStudio locais, validando segurança, erro, streaming, cancelamento, CPU/RAM e licença; sem instalar serviço agora.
 - [ ] `VOICE-ARCH-01` Escolher estratégia de voz com base em evidências e não no README ou no número publicitado de línguas.
+
+
+## JAR-HANDOFF-00 — Recuperação integral do dia 04/11/2026
+
+Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_DECISION_REGISTER_2026-11-04.md](22_DECISION_REGISTER_2026-11-04.md) e [23_EXECUTION_PLAYBOOK_2026-11-04.md](23_EXECUTION_PLAYBOOK_2026-11-04.md).
+
+- [x] Arquivar o **handoff pré-Wyzer** como histórico superado e preservar auditorias/rascunhos Claude sem os declarar vigentes.
+- [x] Registar decisões da RIGHTWARE versus recomendações/hipóteses/experiências não executadas.
+- [x] Criar prompt de recuperação e playbook M0/Claude/Manus.
+- [ ] Verificar CI da HEAD depois desta documentação e registar SHA e runs.
+- [ ] **JAR-CLAUDE-01:** receber plugin `rightware-jarvis-dev` v0.1.1 sem pré-autorização de Edit/Write/Bash na skill PySide6; validar e fazer upload na conta.
+- [ ] **JAR-ARCH-02:** receber diff `CLAUDE.md` original→V2; aprovar política de patches/segurança; depois autorizar commit no `develop`.
+- [ ] **JAR-HUD-00 (Manus):** obter screenshots Chromium reais da UI `adewaskar/jarvis` só frontend Vite, sem Claude Agent SDK, com galeria HTML e PASS/FAIL.
+- [ ] **JAR-UX-03 M0:** **após aprovação** realizar POC Windows PySide6 + QWebEngine + QWebChannel, medir transparência, performance e focus; preparar fallback Qt nativo.
+- [ ] **JAR-HUD-02:** integrar só componentes visuais licenciados após M0, sem bridge/Anthropic, e com backend Wyzer/Python.
+- [ ] Continuar JAR-SEC-01/02, JAR-MODEL-01, JAR-VOICE-01/02 e JAR-RELEASE-01 mediante tarefas aprovadas (ver [playbook](23_EXECUTION_PLAYBOOK_2026-11-04.md)).
+
