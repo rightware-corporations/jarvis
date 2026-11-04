@@ -13,7 +13,7 @@
 - **HEADLESS:** `jarvis_lab/headless.py` usa `Orchestrator` original com registry vazio, e `tests_lab/` contém testes de contrato; **5 PASS em Ubuntu/Python 3.11 remoto**.
 - **INFERÊNCIA REAL:** Ollama previsto; endpoint/hosting e modelo em produção por decidir.
 - **PORTUGUÊS:** ainda sem implementação/validação.
-- **WEB LAB:** API FastAPI e interface HTML/CSS/JS em `jarvis_lab/` publicadas na `develop`, com autenticação por token, TTL/rate limit em memória e interface com fonte Inter (configurável). Os testes API acabaram de ser adicionados e ainda requerem CI. **Não há deploy nem IA real configurada.**
+- **WEB LAB:** API FastAPI e interface HTML/CSS/JS em `jarvis_lab/` publicadas na `develop`, com autenticação por token, TTL/rate limit em memória e interface com fonte Inter (configurável). CI API validado: 16 testes headless/API PASS no run 41815677923. O adaptador sanitiza falhas do provider para não expor mensagens internas. **Não há deploy nem IA real configurada.**
 - **PC ISSA:** não utilizado; requisitos de hardware desconhecidos.
 - **ENTREGA:** não pronta.
 
@@ -30,9 +30,15 @@
 2. **Gate headless Linux (parcial PASS):** instância do `Orchestrator` com Pydantic e psutil no GitHub Ubuntu; mapear restantes dependências e plataforma.
 3. **Gate segurança:** testar negação, confirmação, cancelamento e separação por utilizador; nenhuma ferramenta real no lab.
 4. **Gate IA real:** a API já permite construir `OllamaChatProvider` com configuração em servidor, mas endpoint e modelo reais não foram fornecidos/testados; escolher hosting, validar tool calling e latência.
-5. **Gate web:** API autenticada, ambiente isolado e UI de demonstração, sem exposição pública insegura.
+5. **Gate web:** UI e API implementadas com 16 testes de contrato PASS; deploy seguro, QA visual/browser e inferência real ainda pendentes.
 6. **Gate PT:** STT, TTS, wake word, confirmações e comandos em português.
 7. **Gate entrega:** direitos de modelos/assets, instalador, hardware e QA no equipamento Issa autorizado.
 
 ## Próxima execução
 Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelamento, isolamento de serviços e iniciação de API headless autenticada / model runner. **A presença de novos testes não equivale a PASS até existir execução e logs correspondentes.**
+
+## Avanço recente — laboratório web
+- [GitHub Actions 41815677923](https://github.com/rightware-corporations/jarvis/actions/runs/41815677923) — PASS em `source-integrity` e `headless-contract` (16 testes).
+- `jarvis_lab/api.py`: API FastAPI que exige token e falha com `503` sem modelo. Modelo real ainda não testado.
+- `jarvis_lab/web/`: frontend inicial com Inter como fallback da tipografia usada no website VEXEL, CSS configurável.
+- Uma regressão detectada em CI demonstrou exposição possível de texto de erro do provider pelo Orchestrator upstream. Adicionado `SafeLabProvider` para devolver falha genérica sem dados internos; teste passou.

@@ -32,3 +32,9 @@ Sem segredo ou modelo, o chat recusa novas sessões e mostra `MODEL_UNAVAILABLE`
 2. Verificar status 401 sem autenticação, 503 sem modelo, 404 sessão desconhecida, CSP, frontend, rate limit e TTL.
 3. Executar manual QA do layout, acessibilidade e mobile numa preview segura.
 4. Só depois configurar Ollama real num host isolado e capturar os resultados de sessão.
+
+## Evidência de CI — 2026-11-04
+- [Run 41815677923](https://github.com/rightware-corporations/jarvis/actions/runs/41815677923): jobs `source-integrity` e `headless-contract` PASS.
+- **16 testes** em `tests_lab/`, incluindo autenticação, no-model, sessões independentes, rate limiting, payload limit, HTML/CSP e provider errors; backend headless sem ferramentas Windows.
+- Erro descoberto pelo teste: o Orchestrator original pode converter excepções do provider em texto de resposta. `SafeLabProvider` transforma estas excepções num resultado fixo, e a API devolve `503 MODEL_REQUEST_FAILED` sem divulgar o erro interno.
+- Estes testes NÃO comprovam Ollama real, wake word, conversação em português, WebSockets, áudio, UX no browser nem deploy HTTPS.
