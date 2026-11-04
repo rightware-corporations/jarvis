@@ -114,3 +114,13 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **JAR-HUD-00** Receber preview **real** Chromium/Playwright do frontend `adewaskar/jarvis` produzido pelo Manus, com imagens, galeria, consola e mocks explícitos.
 - [ ] **JAR-UX-03A** Claude entregar plano integral M0, 31 testes/8 áreas, critérios numéricos e matriz CPU/RAM/GPU. **Não afirmar plano aprovado com base em resumo.**
 - [ ] **JAR-UX-03B** RIGHTWARE autorizar smoke Windows com Python 3.11 / PySide6 6.6.1 num venv isolado; se relevante comparar 6.11.3 em outro venv e segundo hardware, preservando constraints e manifesto de origem.
+
+## JAR-SLICE-01 — primeira fatia vertical
+
+- [x] **JAR-SLICE-01A** Plano e auditoria da fatia (sem código).
+- [x] **JAR-SLICE-01B** Núcleo testável com fakes: STT PT por composição, contrato TTS, provider injectável, máquina de estados, allowlist de 3 ferramentas, política PT `sim/não/cancela`, confirmação com digest/TTL/anti-replay, cancelamento seguro e testes de ciclo completo — **236 PASS simulados**; commits locais, sem push.
+- [ ] **JAR-SLICE-01C** PC QA Windows: instalar Ollama e `qwen3.5:4b` manualmente, Faster-Whisper `small` local, inventário de vozes PT SAPI, testes reais dos seis comandos, latências, gravações **não** publicadas.
+- [ ] **JAR-SLICE-01D** Activar `WindowsApplicationLauncher` (só Windows + `allow_real_windows_actions=true`) e testar Calculadora/Bloco de Notas reais, incluindo nomes localizados.
+- [ ] **JAR-SLICE-01E** Orb PySide6 mínimo ligado aos sinais `UiEvent`.
+- [ ] **VOICE-WAKE-01** `WAKE_WORD_BLOCKED`: escolher wake word com licença comercial ou treinar modelo próprio; até lá activação manual.
+- [ ] **VOICE-TTS-LIC-01** Kokoro: rever obrigações de espeak-ng (GPL-3.0-or-later) via misaki antes de distribuir.

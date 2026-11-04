@@ -80,3 +80,15 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **V3:** [draft arquivado](reference/CLAUDE_V3_PROPOSTA_2026-11-04.md), [diff V2→V3](reference/CLAUDE_V2_PARA_V3_2026-11-04.diff), [validação do plugin](reference/CLAUDE_PLUGIN_VALIDATION_V011_2026-11-04.md). Quatro correcções recomendadas, nenhuma aprovação de `CLAUDE.md` na raiz.
 - **M0:** 31 testes/8 áreas declarados pelo Claude, plano integral e limiares não recebidos. Não há Windows aprovado ou POC executada; preview visual Chromium do Manus ainda sem evidência entregue.
 - **Próximo passo real:** RIGHTWARE instalar v0.1.1 em Customize→Plugins e confirmar skills; aguardar PNG/galeria do Manus; Claude rever V3 e enviar M0 completo. Preservar os 182 ficheiros upstream.
+
+## JAR-SLICE-01B — núcleo funcional testável (simulado), 04/11/2026
+
+**Base:** `develop@f3e145698483f8fb67c8f12b8752a5efd29a3e9a`. Commits **apenas locais**, sem push nem merge.
+
+- **Novo código (só ficheiros novos):** `jarvis/` (config, linguagem PT, provider PT, voz, ferramentas allowlist, estados, núcleo), `configs/jarvis_slice.toml`, `tests_vexel/`. Os 182 ficheiros do manifesto Wyzer, `pyproject.toml`, `wyzer.toml` e o instalador **não foram alterados** (verificação 182/182 PASS).
+- **Composição:** `Orchestrator` Wyzer original com registry fechado de 3 ferramentas (`get_local_time`, `get_system_status`, `open_allowed_application` com enum `calculator|notepad` e `ConfirmationMode.ALWAYS`); provider injectável embrulhado por `PortugueseProvider` (instrução PT, falhas sanitizadas). STT PT por subclasse de `FasterWhisperRecognizer` (sem tocar em `whisper.py`). TTS por contrato substituível (`windows_system`, `kokoro` só vozes pt-BR, `text`).
+- **Política PT determinística:** `sim`/`não`/`cancela` e variantes aprovadas por correspondência exacta; silêncio, timeout e frases ambíguas cancelam; confirmação ligada a `action_id` + digest SHA-256 + TTL; `sim` repetido não reexecuta; resposta tardia após cancelamento é descartada.
+- **Estados para o orb 01E:** `OFFLINE, IDLE, LISTENING, THINKING, TOOL_RUNNING, AWAITING_CONFIRMATION, SPEAKING, MUTED, ERROR` com tabela de transições e log JSONL sem texto transcrito por defeito. HUD **não** implementado.
+- **Testes:** 236 PASS em `tests_vexel` + 16 PASS em `tests_lab`, venv isolado Python 3.11.18 (pydantic 2.12.3, psutil 7.1.3, pytest 8.4.2), Linux cloud. **Tudo com fakes** (LLM, STT, TTS, lançador de aplicações, relógio, sonda do sistema).
+- **WAKE_WORD_BLOCKED:** modelos openWakeWord `hey_jarvis` (CC BY-NC-SA 4.0) não usados nem descarregados; activação manual.
+- **Ainda não testado com componentes reais (01C, PC QA Windows):** Ollama + `qwen3.5:4b` e tool calling real, Faster-Whisper `small` com microfone e áudio PT-MZ, vozes PT Windows disponíveis (Maria/Helia/outra), latências reais, abertura real de Calculadora/Bloco de Notas (01D, `allow_real_windows_actions` continua `false`).
