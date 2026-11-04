@@ -45,3 +45,12 @@
 > Retoma **VEXEL Jarvis — Issa Edition** da RIGHTWARE. Abre o repo **https://github.com/rightware-corporations/jarvis** na branch **develop** e lê integralmente **docs/20_RECOVERY_START_HERE_2026-11-04.md**, **docs/21_MASTER_HANDOFF_2026-11-04.md**, **docs/22_DECISION_REGISTER_2026-11-04.md** e **docs/23_EXECUTION_PLAYBOOK_2026-11-04.md**. Confirma HEAD, PR#2, branches e CI antes de afirmar estado. Wyzer já foi escolhido/importado: não recomeçar comparação, não construir outro assistente, não substituir motor por Claude/OpenClaw. Python/Ollama local-first, voz PT e HUD flutuante são requisitos; frontend `adewaskar` apenas visual, ainda não integrado. Claude trabalha na correcção de skills/CLAUDE.md; Manus foi encarregado do preview real Chromium mas não entregou ainda. Respeita apenas main/develop, upstream intocado, direitos, segurança e decisões RIGHTWARE. Indica estado exacto, tarefas, blockers e próxima acção, **sem instalar/deployar ou modificar código sem pedido**.
 
 **Veracidade:** se um resultado posterior chegar (Claude, Manus, novo commit), registar aqui ou em `01_CURRENT` com prova e data; **não apagar o histórico nem reescrever estados antigos como se fossem aprovados**.
+
+## ADENDA — nova entrega Claude recebida (04-11-2026, posterior ao handoff mestre)
+
+**Ler agora também:** [24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md](24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md). A primeira versão do handoff descrevia a v0.1.1 como **aguardada**; depois recebemos o ZIP 0.1.1, relatório, draft V3 e diff V2→V3.
+
+- **Plugin 0.1.1:** ZIP enviado e verificado por SHA-256 `919e1e3acd589f95f749d056b59baabf292cfb2cbe8eb10882612c300ec577f4`; 40 ficheiros, 9 skills, 34 hashes internos verificados; `pyside6-desktop` limita a pré-aprovação a Read/Grep/Glob. **Ainda não há prova de upload da v0.1.1 à conta**; a v0.1.0 era a última visualmente instalada.
+- **CLAUDE.md V3:** [draft](reference/CLAUDE_V3_PROPOSTA_2026-11-04.md) e [diff](reference/CLAUDE_V2_PARA_V3_2026-11-04.diff) arquivados. Recomendado com quatro ajustes em 24; **NÃO aprovado/commitado na raiz**.
+- **M0:** Claude relatou plano de 31 testes/8 áreas, mas o plano integral/limiares **não foi anexado**. Primeiro receber preview Manus/Chromium, depois smoke Windows isolado e só então matriz expandida sob autorização.
+- **Instalador Wyzer:** `PySide6==6.6.1` em `installer/constraints-windows-py311.txt`, venv/pip, sem PyInstaller. Não fazer upgrade upstream sem política JAR-ARCH-02.
