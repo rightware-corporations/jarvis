@@ -19,11 +19,14 @@ Legenda: [x] documentação/implementação verificada; [ ] pendente; cada teste
 
 ## P1 — Laboratório remoto
 - [x] `JAR-P1-00` Criar factory headless com registry vazio e memória por subject.
-- [ ] `JAR-P1-01` API remota autenticada que instancia a factory.
+- [x] `JAR-P1-01A` Criar API headless autenticada em código (token em header, sessions, limite de pedidos); CI pendente.
+- [ ] `JAR-P1-01B` Executar testes API e validar segurança/autenticação em ambiente remoto.
 - [ ] `JAR-P1-02` Simulador controlado de tarefas de computador; proibição verificável de operações reais.
 - [ ] `JAR-P1-03` Integrar Ollama real auto-hospedado e testar function calling, segurança e latência.
-- [ ] `JAR-P1-04` UI web premium com chat, mic, estado e logs de tools simuladas.
-- [ ] `JAR-P1-05` Sessões, autenticação, limites, logs e privacidade.
+- [x] `JAR-P1-04A` Implementar shell web próprio VEXEL Jarvis com chat, estado, diagnostics e Inter; não inclui voz activa.
+- [ ] `JAR-P1-04B` Testar UI com modelo real, adicionar microfone/TTS seguro quando prontos.
+- [x] `JAR-P1-05A` Autenticação simples com token, rate-limit em memória, TTL e limites de sessões (protótipo single-operator).
+- [ ] `JAR-P1-05B` Fortalecer para preview cloud: identidade, HTTPS, logs, multiworker, CSRF/origem e revisão de exposição pública.
 - [ ] `JAR-P1-06` Testes remotos PASS/FAIL com evidências e preview privado.
 
 ## P2 — Português e conversa por voz
