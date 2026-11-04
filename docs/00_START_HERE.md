@@ -1,6 +1,6 @@
 # VEXEL Jarvis — Issa Edition | Handoff
 
-**Data:** 2026-11-04 | **Estado:** upstream importado em `develop`; QA remoto preparado, não executado.
+**Data:** 2026-11-04 | **Estado:** upstream importado em `develop`; integridade 182/182, compilação e 5 testes headless PASS em GitHub Actions.
 
 ## Decisões
 - **Base:** [XtraWyze/Wyzer-Ai](https://github.com/XtraWyze/Wyzer-Ai) `v0.3.1`, SHA `db83c085feca32d3c091361165cb9ac7ecadafe0`.
@@ -14,8 +14,8 @@
 ## Implementação actual
 - 182 fontes textuais e de código do upstream importadas, **182 hashes Git iguais aos originais**; 44 assets binários deliberadamente omitidos.
 - `LICENSE`, `NOTICE.md`, `UPSTREAM_PROVENANCE.md`, manifesto de SHA e `docs/upstream/` preservados.
-- `jarvis_lab/headless.py` cria núcleo Wyzer com ferramentas vazias, sem acesso a OS; `tests_lab/` escritos, ainda sem PASS.
-- Workflow `.github/workflows/source-integrity.yml` publicado; execução em GitHub Actions ainda não confirmada.
+- `jarvis_lab/headless.py` cria núcleo Wyzer com ferramentas vazias, sem acesso a OS; `tests_lab/` escritos e **cinco contratos headless PASS em runner GitHub Ubuntu**.
+- Workflow `.github/workflows/source-integrity.yml` executado: [run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553) **PASS em dois jobs**; 5 testes headless passaram.
 - Nada foi instalado ou executado no PC do operador nem do Issa.
 
 ## Ordem de leitura

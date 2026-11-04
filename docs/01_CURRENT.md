@@ -9,8 +9,8 @@
 - **BRANCHES:** `main` e `develop` criadas; `feat/wyzer-v031-core-import` ainda existe e deve ser removida.
 - **CÓDIGO DO UPSTREAM:** `wyzer/` (89 ficheiros), `tests/` (49), configs/scripts/installer/docs em `develop`.
 - **INTEGRIDADE:** validada estaticamente por comparação Git de árvores. Workflow remoto criado.
-- **CI REMOTO:** NENHUMA execução confirmada; NÃO declarar PASS.
-- **HEADLESS:** `jarvis_lab/headless.py` usa `Orchestrator` original com registry vazio, e `tests_lab/` contém testes de contrato; execução pendente.
+- **CI REMOTO:** [run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553) **PASS nos jobs `source-integrity` e `headless-contract`**. Integridade SHA 182/182 e compilação sintática PASS; 5 testes headless PASS. Foram corrigidas falhas iniciais de dependência `psutil`.
+- **HEADLESS:** `jarvis_lab/headless.py` usa `Orchestrator` original com registry vazio, e `tests_lab/` contém testes de contrato; **5 PASS em Ubuntu/Python 3.11 remoto**.
 - **INFERÊNCIA REAL:** Ollama previsto; endpoint/hosting e modelo em produção por decidir.
 - **PORTUGUÊS:** ainda sem implementação/validação.
 - **WEB LAB:** API e UI não implementadas; não há deploy.
@@ -26,8 +26,8 @@
 - Confirmação e controlo determinístico upstream reconhecem expressões inglesas; PT requer localização cuidadosa.
 
 ## Gates seguintes
-1. **Gate QA remoto:** observar execução real do workflow; capturar run ID, falhas e logs.
-2. **Gate headless Linux:** assegurar que imports do `Orchestrator` funcionam com dependências mínimas.
+1. **Gate QA remoto (parcial PASS):** integridade, compilação e cinco contratos headless confirmados no run 41813747553; testes de integração mais profundos pendentes.
+2. **Gate headless Linux (parcial PASS):** instância do `Orchestrator` com Pydantic e psutil no GitHub Ubuntu; mapear restantes dependências e plataforma.
 3. **Gate segurança:** testar negação, confirmação, cancelamento e separação por utilizador; nenhuma ferramenta real no lab.
 4. **Gate IA real:** escolher e testar endpoint Ollama remoto, tool calling e latência.
 5. **Gate web:** API autenticada, ambiente isolado e UI de demonstração, sem exposição pública insegura.
@@ -35,4 +35,4 @@
 7. **Gate entrega:** direitos de modelos/assets, instalador, hardware e QA no equipamento Issa autorizado.
 
 ## Próxima execução
-Obter PASS/FAIL reais do workflow no GitHub e corrigir as falhas, depois iniciar API headless e model runner. **A presença dos testes não equivale a PASS.**
+Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelamento, isolamento de serviços e iniciação de API headless autenticada / model runner. **A presença dos testes não equivale a PASS.**

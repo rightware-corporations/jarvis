@@ -9,10 +9,10 @@ Legenda: [x] documentação/implementação verificada; [ ] pendente; cada teste
 - [x] `JAR-P0-04` Criar branch `develop`; manter `main` estável.
 - [x] `JAR-P0-05` Importar 182 ficheiros fonte/texto upstream, MIT/NOTICE e manifesto; excluir 44 binários até revisão.
 - [x] `JAR-P0-05A` Comparar hashes SHA de todos os 182 importados — 182/182 iguais.
-- [ ] `JAR-P0-06` Confirmar imports headless em Linux com execução de CI e mapear dependências Win32.
+- [x] `JAR-P0-06A` Confirmar importação/instanciação headless no GitHub Ubuntu (run 41813747553).\n- [ ] `JAR-P0-06B` Mapear todas as dependências específicas de Windows e a execução do modelo real.
 - [x] `JAR-P0-07` Criar composição lab sem coding agent, shell, browser ou ferramentas do Windows.
-- [ ] `JAR-P0-08` Executar e validar testes de contrato (código publicado, resultados pendentes).
-- [x] `JAR-P0-09` Publicar workflow de GitHub Actions para integridade/compilação/headless tests.
+- [x] `JAR-P0-08A` Executar cinco testes de contrato headless em runner remoto — 5 PASS.\n- [ ] `JAR-P0-08B` Expandir testes de confirmação, cancelamento, concorrência e protecção multiutilizador.
+- [x] `JAR-P0-09` GitHub Actions: SHA 182/182, compilação e 5 testes headless PASS, run 41813747553.
 - [ ] `JAR-P0-10` Eliminar branch temporária `feat/wyzer-v031-core-import` (ferramenta GitHub actual não fornece delete ref).
 
 ## P1 — Laboratório remoto

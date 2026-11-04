@@ -1,6 +1,6 @@
 # Headless adapter — primeira implementação
 
-**Estado:** código publicado; execução dos testes em GitHub Actions por verificar.
+**Estado:** código publicado e cinco testes headless PASS em [GitHub Actions run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553).
 
 ## Ficheiros
 - `jarvis_lab/headless.py`: constrói o **Orchestrator original** com `ToolRegistry()` vazia e `InProcessExecutor`; não publica API HTTP.
@@ -19,4 +19,4 @@
 - Execução real de ferramentas Windows; será fase separada sujeita a autorização.
 - Revisão de licenças dos 44 binários excluídos.
 
-**Gate:** não expor este adaptador à Internet como serviço de produção. Primeiro obter os resultados efectivos da execução remota, acrescentar autenticação/isolamento e testar modelo real.
+**Gate:** primeiros testes remotos PASS, mas não expor este adaptador à Internet como serviço de produção. Acrescentar autenticação/isolamento, testes de riscos e provider Ollama real antes de disponibilizar a web.
