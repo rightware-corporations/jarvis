@@ -35,4 +35,4 @@
 7. **Gate entrega:** direitos de modelos/assets, instalador, hardware e QA no equipamento Issa autorizado.
 
 ## Próxima execução
-Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelamento, isolamento de serviços e iniciação de API headless autenticada / model runner. **A presença dos testes não equivale a PASS.**
+Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelamento, isolamento de serviços e iniciação de API headless autenticada / model runner. **A presença de novos testes não equivale a PASS até existir execução e logs correspondentes.**
