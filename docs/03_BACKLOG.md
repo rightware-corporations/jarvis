@@ -50,3 +50,25 @@ Legenda: [x] documentação/implementação verificada; [ ] pendente; cada teste
 - Repositório é **público**. Sem credenciais, ficheiros privados, gravações reais ou modelos não licenciados.
 - Não fazer deploy público nem entregar ao Issa antes dos gates de segurança, modelo real e voz.
 - Não usar PC do operador para programar, executar testes ou instalar componentes.
+
+
+## Nova linha de execução derivada da auditoria arquitectural (2026-11-04)
+
+Fonte de requisitos e evidência: [11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md](11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md). **Estas linhas são recomendações, não funcionalidades entregues.**
+
+- [x] `JAR-ARCH-01` Auditar o código real e definir a árvore modular alvo sem movimentar arquivos upstream.
+- [ ] `JAR-ARCH-02` Aprovar e implementar política de patch/fork que preserve upstream imutável e permita evolução com diffs auditáveis.
+- [ ] `JAR-SEC-01` Serialização por sessão, identidade/session ownership, logout/revogação no backend, concorrência, quotas e isolamento multiworker; testes adversariais.
+- [ ] `JAR-SEC-02` Confirmação por risco explícito/metadados de ferramentas e comandos PT, TTL e digest; negação de bypass por LLM.
+- [ ] `JAR-CORE-01` Contratos estáveis do núcleo/voz/ferramentas, composição por interfaces; não refactor Big Bang.
+- [ ] `JAR-VOICE-01` STT multilingue português e testes sem microfone em CI.
+- [ ] `JAR-VOICE-02` ONNX Jarvis legalmente utilizável, TTS português e barge-in com testes reais.
+- [ ] `JAR-MODEL-01` Testes end-to-end com Ollama real, desempenho e tool calling num host controlado.
+- [ ] `JAR-MEM-01` Memória persistente, isolamento, consentimento, edição, esquecimento e continuidade.
+- [ ] `JAR-API-01` Separação progressiva da API e esquemas; sem quebrar testes anteriores.
+- [ ] `JAR-UX-01` Fluxos e wireframes voice-first reais (desktop) antes de redesenhar a interface.
+- [ ] `JAR-WEB-01` Tokens, acessibilidade, estados e modularização do frontend; escolher framework somente por necessidade comprovada.
+- [ ] `JAR-AGENT-01` Agente Windows seguro e escopado, nunca integrado no Web Lab sem gate de autorização.
+- [ ] `JAR-RELEASE-01` Licenças, instalação, testes no PC Issa e aceitação de entrega.
+
+**Ordem crítica:** arquitectura de patches → segurança de sessão/políticas → STT/LLM reais → UX/desktop → agentes e distribuição. Preferir incrementos isolados com CI e evidência PASS/FAIL.
