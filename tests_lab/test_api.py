@@ -80,3 +80,64 @@ def test_response_headers_block_inline_scripts_and_frames():
         res = client.get("/")
         assert "script-src 'self'" in res.headers["content-security-policy"]
         assert res.headers["x-frame-options"] == "DENY"
+
+
+def test_distinct_sessions_do_not_share_conversation_history():
+    auth = {"X-Jarvis-Lab-Token": TOKEN}
+    providers = []
+    def factory():
+        provider = FakeChatProvider([
+            ProviderChatResponse(message=ChatMessage(role="assistant", content="Concluído"))
+        ])
+        providers.append(provider)
+        return provider
+
+    with TestClient(create_app(LabConfig(token=TOKEN), provider_factory=factory)) as client:
+        first = client.post("/api/v1/sessions", headers=auth).json()["session_id"]
+        second = client.post("/api/v1/sessions", headers=auth).json()["session_id"]
+        assert first != second
+        assert client.post("/api/v1/chat", headers=auth, json={
+            "session_id": first, "message": "segredo-da-sessao-A"
+        }).status_code == 200
+        assert client.post("/api/v1/chat", headers=auth, json={
+            "session_id": second, "message": "pedido-da-sessao-B"
+        }).status_code == 200
+        second_context = " ".join(m.content or "" for m in providers[1].requests[0][0])
+        assert "pedido-da-sessao-B" in second_context
+        assert "segredo-da-sessao-A" not in second_context
+
+
+def test_rate_limit_is_enforced():
+    auth = {"X-Jarvis-Lab-Token": TOKEN}
+    with TestClient(create_app(LabConfig(
+        token=TOKEN, max_requests_per_minute=2
+    ), provider_factory=mock_provider)) as client:
+        assert client.post("/api/v1/sessions", headers=auth).status_code == 200
+        assert client.post("/api/v1/sessions", headers=auth).status_code == 200
+        rejected = client.post("/api/v1/sessions", headers=auth)
+        assert rejected.status_code == 429
+        assert rejected.json()["detail"] == "RATE_LIMITED"
+
+
+def test_provider_failure_does_not_expose_server_exception():
+    auth = {"X-Jarvis-Lab-Token": TOKEN}
+    with TestClient(create_app(
+        LabConfig(token=TOKEN), provider_factory=lambda: FakeChatProvider([])
+    )) as client:
+        session_id = client.post("/api/v1/sessions", headers=auth).json()["session_id"]
+        failed = client.post("/api/v1/chat", headers=auth, json={
+            "session_id": session_id, "message": "Teste de falha"
+        })
+        assert failed.status_code == 503
+        assert failed.json()["detail"] == "MODEL_REQUEST_FAILED"
+        assert "scripted response" not in failed.text
+
+
+def test_chat_body_limit_is_enforced():
+    auth = {"X-Jarvis-Lab-Token": TOKEN}
+    with TestClient(create_app(LabConfig(token=TOKEN), provider_factory=mock_provider)) as client:
+        session_id = client.post("/api/v1/sessions", headers=auth).json()["session_id"]
+        too_long = client.post("/api/v1/chat", headers=auth, json={
+            "session_id": session_id, "message": "x" * 2001
+        })
+        assert too_long.status_code == 422
