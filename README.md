@@ -1,5 +1,13 @@
 # VEXEL Jarvis — Issa Edition
 
+
+## Recuperação do projecto e continuidade (04/11/2026)
+
+**Se a conversa anterior falhar, não recomeçar o Jarvis:** iniciar por [docs/20_RECOVERY_START_HERE_2026-11-04.md](docs/20_RECOVERY_START_HERE_2026-11-04.md), depois ler o [handoff mestre](docs/21_MASTER_HANDOFF_2026-11-04.md), [decisões](docs/22_DECISION_REGISTER_2026-11-04.md) e [checklist/playbook](docs/23_EXECUTION_PLAYBOOK_2026-11-04.md).
+
+Wyzer permanece o motor. O frontend `adewaskar/jarvis` é apenas candidato visual; Claude trabalha em skills/governação e Manus fará preview real Chromium. **Nenhum HUD externo importado, nenhuma voz Jarvis validada e nenhum serviço Ollama real testado.** O `CLAUDE.md` existe apenas como [draft original](docs/reference/CLAUDE_ORIGINAL_DRAFT_2026-11-04.md) e [revisão V2](docs/reference/CLAUDE_REVIEW_V2_DRAFT_2026-11-04.md), ainda não aprovada.
+
+
 Assistente pessoal da **VEXEL / RIGHTWARE**, derivado de [Wyzer AI v0.3.1](https://github.com/XtraWyze/Wyzer-Ai), para activação por «Jarvis», conversação por voz em português, memória e execução de tarefas autorizadas. **Meta de runtime:** sem subscrição obrigatória nem APIs pagas de IA. A escolha entre local, servidor e híbrido continua pendente de testes.
 
 > **Estado em 2026-11-04 — EM DESENVOLVIMENTO.** O código upstream foi importado para `develop` e preservado com hashes verificáveis. Existe uma API FastAPI headless e um protótipo web de laboratório com **16 testes de contrato anteriormente PASS**, utilizando provider simulado. Não foi validado um LLM Ollama real, wake word «Jarvis», STT/TTS em português, controlo Windows real nem uma release instalada no equipamento do Issa. **A UI web não é o produto de voz final.**
