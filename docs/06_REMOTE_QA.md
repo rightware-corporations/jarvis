@@ -5,7 +5,9 @@ The workflow `.github/workflows/source-integrity.yml` runs on `develop` and pull
 1. Verifies all **182** imported text/source files against the immutable upstream Git blob SHA-1 identifiers from `upstream-v0.3.1-manifest.json`.
 2. Runs `python -m compileall -q wyzer tests scripts` on GitHub-hosted Ubuntu/Python 3.11.
 
-**First confirmed PASS:** [run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553) — both jobs succeeded. `source-integrity` verified 182/182 Git blobs and Python compilation. `headless-contract` ran five tests successfully on Ubuntu/Python 3.11 after installing `psutil` in addition to Pydantic/pytest. Prior failed runs were caused by missing `psutil` during module import and are retained as historical failure evidence.\n\n**What it DOES NOT prove:** dependency installation, imports under Linux, unit-test results, voice/wake-word quality, Ollama replies, tool execution, browser access or Windows readiness.
+**First confirmed PASS:** [run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553) — both jobs succeeded. `source-integrity` verified 182/182 Git blobs and Python compilation. `headless-contract` ran five tests successfully on Ubuntu/Python 3.11 after installing `psutil` in addition to Pydantic/pytest. Prior failed runs were caused by missing `psutil` during module import and are retained as historical failure evidence.
+
+**What it DOES NOT prove:** installation of the full original Windows dependency set, execution of the original 49-file upstream test suite, voice/wake-word quality, real Ollama replies, real desktop tool execution, browser automation, API authentication, or Windows readiness.
 
 ## Branch policy
 - `main`: stable, documented work; no directly developed experimental features.
