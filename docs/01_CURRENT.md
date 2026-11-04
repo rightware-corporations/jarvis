@@ -42,3 +42,13 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - `jarvis_lab/api.py`: API FastAPI que exige token e falha com `503` sem modelo. Modelo real ainda não testado.
 - `jarvis_lab/web/`: frontend inicial com Inter como fallback da tipografia usada no website VEXEL, CSS configurável.
 - Uma regressão detectada em CI demonstrou exposição possível de texto de erro do provider pelo Orchestrator upstream. Adicionado `SafeLabProvider` para devolver falha genérica sem dados internos; teste passou.
+
+
+## Revisão arquitectural — 2026-11-04 (JAR-ARCH-01)
+
+- **Auditoria estática concluída e publicada:** [11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md](11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md). Mapas do frontend web, backend FastAPI, UI PySide6, orquestrador Wyzer, ferramentas, voz, memória, políticas, dependências e proposta de árvore futura.
+- **Riscos P0 identificados por leitura, sem prova de exploração:** sessão do Web Lab com token partilhado e estado em memória; ausência de serialização por sessão de `assistant.handle()`; falta de revogação de sessão no backend; comandos e heurísticas de risco inglesas. Antes de preview externo com executor, exigir testes e segurança.
+- **Não foi executada refactorização:** `wyzer/`, `jarvis_lab/`, `tests/` e manifesto de integridade continuam no lugar; `apps/` e `jarvis/` são apenas estrutura recomendada no documento.
+- **README reconciliado:** já reflecte a existência da API/GUI de laboratório, ao contrário do texto anterior.
+- **Próxima execução recomendada:** JAR-ARCH-02 (política de patches/snapshot da origem) e JAR-SEC-01 (isolamento, concorrência e sessões revogáveis) com contract tests; em paralelo preparar STT PT/JAR-VOICE-01. Não disponibilizar ao Issa até testes reais de LLM, voz e ferramentas.
+- **QA desta revisão:** alterações documentais; GitHub Actions da respectiva HEAD só conta como PASS após conclusão explícita do workflow. O laboratório permanece sem modelo Ollama real e sem voz funcional.
