@@ -1,36 +1,38 @@
 # 01 — CURRENT
 
-## Estado de referência (2026-11-04)
-- **Escolha upstream:** DEFINIDA — `XtraWyze/Wyzer-Ai` / `v0.3.1` / `db83c085feca32d3c091361165cb9ac7ecadafe0`.
-- **Licença do código upstream:** MIT, identificada no ficheiro LICENSE; direitos de modelos/vozes/assets sujeitos a verificação separada.
-- **Código upstream dentro da RIGHTWARE:** NÃO IMPORTADO.
-- **Repositório definitivo Jarvis:** CRIADO — `rightware-corporations/jarvis` (público); documentos migrados para `docs/` na `main`.
-- **Testes do upstream:** NÃO EXECUTADOS.
-- **Laboratório web:** NÃO IMPLEMENTADO.
-- **Deploy cloud:** NÃO EXECUTADO.
-- **Português:** NÃO IMPLEMENTADO/VALIDADO.
-- **IA local/servidor:** fornecedor Ollama identificado; modelo e hardware finais por definir.
-- **PC do Issa:** NÃO ACEDIDO.
-- **Entrega ao cliente:** NÃO PRONTA.
+**Data:** 2026-11-04 | **Repositório:** `rightware-corporations/jarvis` (público)
 
-## Evidência estática do upstream
-- `pyproject.toml`: Python >=3.11,<3.12, runtime orientado para Windows.
-- `wyzer.toml`: `llm.provider=ollama`; `model=qwen3.5:4b`; `speech.whisper_model=small.en`; `speech.voice=af_heart`; `coding_agent.enabled=true`.
-- `wyzer/app/cli.py`: `build_assistant(...)` constrói o Orchestrator, registry, executor isolado, memória e tarefas persistentes.
-- `docs/ARCHITECTURE.md`: ciclo `provider -> registry -> validação -> confirmação -> worker -> resultado`; sessão, memória, ferramentas, percepção; não substitui QA real.
-- `docs/SAFETY.md`: confirmações de operações consequentes, isolamento e interrupções descritos.
-- `docs/MODEL_ACCEPTANCE.md`: suites de aceitação simuladas sem executar ferramentas reais.
-- `docs/SPEECH.md`: wake word `Hey Wyzer`, STT local e TTS local; `--voice` opt-in.
-- MIT não concede automaticamente direitos sobre modelos e vozes externos.
+## Estado
+- **BASE ESCOLHIDA:** Wyzer `v0.3.1` / upstream commit `db83c085feca32d3c091361165cb9ac7ecadafe0`.
+- **IMPORTAÇÃO:** 182/182 ficheiros textuais/ código copiados, comparados por hash SHA Git; ZERO diferença. Excluídos 42 PNG + 2 ONNX.
+- **LICENÇA DO CÓDIGO:** MIT, com NOTICE original. Licenças de assets/modelos/vozes por rever antes da distribuição.
+- **BRANCHES:** `main` e `develop` criadas; `feat/wyzer-v031-core-import` ainda existe e deve ser removida.
+- **CÓDIGO DO UPSTREAM:** `wyzer/` (89 ficheiros), `tests/` (49), configs/scripts/installer/docs em `develop`.
+- **INTEGRIDADE:** validada estaticamente por comparação Git de árvores. Workflow remoto criado.
+- **CI REMOTO:** NENHUMA execução confirmada; NÃO declarar PASS.
+- **HEADLESS:** `jarvis_lab/headless.py` usa `Orchestrator` original com registry vazio, e `tests_lab/` contém testes de contrato; execução pendente.
+- **INFERÊNCIA REAL:** Ollama previsto; endpoint/hosting e modelo em produção por decidir.
+- **PORTUGUÊS:** ainda sem implementação/validação.
+- **WEB LAB:** API e UI não implementadas; não há deploy.
+- **PC ISSA:** não utilizado; requisitos de hardware desconhecidos.
+- **ENTREGA:** não pronta.
 
-## Bloqueadores/gates actuais
-1. Importar upstream no repositório Jarvis independente com histórico/licença ou snapshot rastreável.
-2. Verificar se componentes WinRT/pywinauto/pacotes exclusivos Windows impedem importação/instalação do núcleo em Linux.
-3. Desenhar/implementar modo `headless`/adapters sem Win32 e sem execução de acções de desktop no servidor.
-4. Validar STT multilingue e TTS português; localização de comandos, confirmações e barge-in.
-5. Validar requisitos de alojamento Ollama ou alternativa auto-hospedada; web frontend isolado não equivale a inferência.
-6. Executar testes automatizados isolados; relatórios de PASS/FAIL com comandos, ambiente, SHA e logs.
-7. Fazer QA Windows e voz no equipamento de destino somente após autorização.
+## Verificações efectuadas
+- GitHub upstream `v0.3.1`: 226 blobs, 182 importados, 44 assets binários excluídos.
+- Hash original de todos os 182 importados verificado com GitHub git trees (nenhum mismatch).
+- `Orchestrator(registry, executor, provider,...)` suporta injecção; `jarvis_lab` separa-se dos tool packs Win32.
+- `MemoryStore` original não recebe `user_id`; a composição lab cria uma DB SQLite por identificador de utilizador.
+- Configuração upstream: `small.en`, UI/voz inglesa, `coding_agent.enabled=true`. Lab **não** activa coding agent nem ferramentas do Windows.
+- Confirmação e controlo determinístico upstream reconhecem expressões inglesas; PT requer localização cuidadosa.
 
-## Próxima acção técnica
-Importar o código upstream `v0.3.1` no repositório `rightware-corporations/jarvis` e efectuar a auditoria de importações e dependências por plataforma. O repositório é público: verificar direitos dos binários/modelos antes de importar. Até lá, os documentos aqui registam a fundação, não um produto executável.
+## Gates seguintes
+1. **Gate QA remoto:** observar execução real do workflow; capturar run ID, falhas e logs.
+2. **Gate headless Linux:** assegurar que imports do `Orchestrator` funcionam com dependências mínimas.
+3. **Gate segurança:** testar negação, confirmação, cancelamento e separação por utilizador; nenhuma ferramenta real no lab.
+4. **Gate IA real:** escolher e testar endpoint Ollama remoto, tool calling e latência.
+5. **Gate web:** API autenticada, ambiente isolado e UI de demonstração, sem exposição pública insegura.
+6. **Gate PT:** STT, TTS, wake word, confirmações e comandos em português.
+7. **Gate entrega:** direitos de modelos/assets, instalador, hardware e QA no equipamento Issa autorizado.
+
+## Próxima execução
+Obter PASS/FAIL reais do workflow no GitHub e corrigir as falhas, depois iniciar API headless e model runner. **A presença dos testes não equivale a PASS.**

@@ -1,22 +1,38 @@
 # VEXEL Jarvis — Issa Edition
 
-Base de engenharia para o assistente de voz Jarvis desenvolvido pela RIGHTWARE a partir de [Wyzer AI](https://github.com/XtraWyze/Wyzer-Ai).
+Assistente de voz da RIGHTWARE, derivado de [Wyzer AI](https://github.com/XtraWyze/Wyzer-Ai).
 
-> Estado: fundação e auditoria estática. O código upstream ainda não foi importado, não há testes de runtime aprovados nem deploy de demonstração.
+> **Estado (4 nov 2026):** código-fonte original importado em `develop`, integridade verificada; adaptador headless e contratos de teste criados. Não existem ainda resultados de testes remotos, aplicação web funcional ou release para o utilizador.
 
-## Fonte escolhida
+## Branches
+- **`main`:** documentação e base estável; não desenvolver directamente aqui.
+- **`develop`:** única branch de engenharia activa. Contém upstream + adaptador headless.
+- **`feat/wyzer-v031-core-import`:** branch temporária antiga, sem uso, a eliminar para ficar estritamente com duas branches.
 
-- Repositório upstream: `XtraWyze/Wyzer-Ai`
+## Proveniência
+- Upstream: `XtraWyze/Wyzer-Ai`
 - Tag: `v0.3.1`
-- Commit fixado: [`db83c085feca32d3c091361165cb9ac7ecadafe0`](https://github.com/XtraWyze/Wyzer-Ai/commit/db83c085feca32d3c091361165cb9ac7ecadafe0)
-- Licença do código upstream: MIT; modelos, vozes e outros assets exigem verificação específica.
+- Commit: [`db83c085feca32d3c091361165cb9ac7ecadafe0`](https://github.com/XtraWyze/Wyzer-Ai/commit/db83c085feca32d3c091361165cb9ac7ecadafe0)
+- **182/182** ficheiros de código/texto verificados contra os hashes Git originais; 44 binários (imagens/ONNX) excluídos até revisão jurídica.
+- `LICENSE` e `NOTICE.md`: licença MIT do código; licenças de vozes/modelos/assets verificadas separadamente.
+- `UPSTREAM_README.md` e `docs/upstream/`: documentação de origem preservada.
+- `UPSTREAM_PROVENANCE.md` / `upstream-v0.3.1-manifest.json`: rasto auditável.
 
-## Direcção
+## QA remoto
+Workflow: [Source Integrity](.github/workflows/source-integrity.yml).
+- `python scripts/verify_import.py`: verifica a integridade dos ficheiros originais.
+- `python -m compileall -q wyzer tests scripts`: compila sintaticamente.
+- `python -m pytest -q tests_lab`: testa o laboratório headless com Pydantic e provider **simulado**.
 
-Desenvolvimento e testes remotos, sem instalação no computador de desenvolvimento do operador. Um laboratório web deve usar ferramentas simuladas; o controlo real do Windows depende de um executor local autorizado. O modelo de inferência deve ser local ou auto-hospedado, sem APIs pagas obrigatórias. Português será a língua prioritária.
+A presença do workflow e dos testes **não comprova execução nem PASS**. Consultar os resultados reais no separador Actions.
+
+## Desenvolvimento
+- `jarvis_lab/headless.py`: constrói o `Orchestrator` original com registry vazio, sem acesso ao Windows.
+- `tests_lab/`: testes de negação de ferramentas e memória isolada.
+- Não existe ainda servidor web, login, provider Ollama validado ou STT/TTS português aprovado.
+- A distribuição local, servidor ou híbrida continua pendente de validação.
 
 ## Documentação
+Começar em [`docs/00_START_HERE.md`](docs/00_START_HERE.md), depois `01_CURRENT.md`, `02_ARCHITECTURE.md`, `03_BACKLOG.md`, `04_ACCEPTANCE.md`, `05_SOURCE_AUDIT_P0.md`, `06_REMOTE_QA.md` e `08_HEADLESS_ADAPTER.md`.
 
-Começar por [`docs/00_START_HERE.md`](docs/00_START_HERE.md), seguido de `01_CURRENT.md`, `02_ARCHITECTURE.md`, `03_BACKLOG.md`, `04_ACCEPTANCE.md` e `05_SOURCE_AUDIT_P0.md`.
-
-**Nota:** este repositório é público. Não incluir credenciais, dados pessoais do destinatário ou gravações reais de voz nos testes.
+**Segurança:** repositório público. Não publicar segredos, dados pessoais, gravações reais, credenciais ou modelos sem direitos verificados. O operador não precisa de instalar nada no seu computador.
