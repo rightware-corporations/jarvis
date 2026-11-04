@@ -53,3 +53,9 @@ A **arquitectura-alvo proposta**, incluindo separação entre frontend, backend,
 4. [11_ARCHITECTURE_REVIEW_AND_EVOLUTION](docs/11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md) — inventário, riscos e estrutura futura
 
 **Segurança:** repositório público. Não publicar credenciais, gravações, perfis pessoais ou modelos sem direitos. Não expor o laboratório na Internet sem HTTPS, autenticação e ensaios de segurança. Claude/ChatGPT são ferramentas de desenvolvimento, nunca dependências obrigatórias do Jarvis em produção.
+
+## Referências externas em estudo (sem integração)
+
+- **Visual/HUD:** [12 — UX, overlay e grafo](docs/12_HUD_REFERENCES_AND_UX_VISION.md). React/Three.js, PySide6 e referências de orb flutuante; propostas, não interface final.
+- **Voz:** [13 — VoiceStudio](docs/13_VOICESTUDIO_STATIC_ASSESSMENT.md). Candidato de STT/TTS local com APIs HTTP/WebSocket, mas **AGPL-3.0-only** na aplicação e pesos OmniVoice default com restrição não comercial. Não está integrado nem instalado.
+- O Wyzer continua como motor; tecnologias/arte visual de terceiros só após verificação de direitos e QA.
