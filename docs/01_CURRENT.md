@@ -73,3 +73,10 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Manus:** recebeu/receberá o prompt de preview do frontend exclusivamente Vite, sem bridge/IA externa, para entregar PNGs, galeria e consola com mocks marcados. **Nenhuma captura real foi recebida ou validada neste handoff**.
 - **Próxima avaliação RIGHTWARE:** rever resultados Manus e Claude; aprovar a política de patches, o `CLAUDE.md` e só então autorizar POC M0. **Sem instalação/deploy/mudança de código nesta preservação.**
 
+## Estado posterior — revisão da entrega Claude v0.1.1 / V3 / M0, 04/11/2026
+
+- [24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md](24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md) é a revisão actual dos ficheiros recebidos.
+- **VALIDADO neste chat:** ZIP `rightware-jarvis-dev-0.1.1.zip` 100834 bytes, SHA-256 `919e1e3acd589f95f749d056b59baabf292cfb2cbe8eb10882612c300ec577f4`; 34/34 hashes conforme manifesto, 9 skills, PySide6 pré-aprova só Read/Grep/Glob; não instalado aqui.
+- **V3:** [draft arquivado](reference/CLAUDE_V3_PROPOSTA_2026-11-04.md), [diff V2→V3](reference/CLAUDE_V2_PARA_V3_2026-11-04.diff), [validação do plugin](reference/CLAUDE_PLUGIN_VALIDATION_V011_2026-11-04.md). Quatro correcções recomendadas, nenhuma aprovação de `CLAUDE.md` na raiz.
+- **M0:** 31 testes/8 áreas declarados pelo Claude, plano integral e limiares não recebidos. Não há Windows aprovado ou POC executada; preview visual Chromium do Manus ainda sem evidência entregue.
+- **Próximo passo real:** RIGHTWARE instalar v0.1.1 em Customize→Plugins e confirmar skills; aguardar PNG/galeria do Manus; Claude rever V3 e enviar M0 completo. Preservar os 182 ficheiros upstream.
