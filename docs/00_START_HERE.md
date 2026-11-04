@@ -1,5 +1,15 @@
 # VEXEL Jarvis — Issa Edition | Handoff
 
+
+## HANDOFF MESTRE DE RECUPERAÇÃO — 04/11/2026
+
+> **PRIMEIRO DOCUMENTO A LER:** [20_RECOVERY_START_HERE_2026-11-04.md](20_RECOVERY_START_HERE_2026-11-04.md). A situação evoluiu além do primeiro import.
+>
+> **Pacote completo:** [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md) (história integral, Wyzer, voz, HUD, Claude, Manus); [22_DECISION_REGISTER_2026-11-04.md](22_DECISION_REGISTER_2026-11-04.md) (aprovado vs proposto); [23_EXECUTION_PLAYBOOK_2026-11-04.md](23_EXECUTION_PLAYBOOK_2026-11-04.md) (checklist e prompt de recuperação).
+>
+> **AGORA:** plugin Claude v0.1.0 com 9 skills instalado visualmente, v0.1.1 e CLAUDE.md definitivo pendentes; **Manus foi solicitado para screenshots reais do frontend adewaskar no Chromium**, sem resultados entregues. **Nenhuma integração HUD, modelo Ollama real, voz PT funcional ou Jarvis entregue.** Os cinco finalistas do handoff antigo são históricos e NÃO substituem a escolha Wyzer.
+
+
 **Data:** 2026-11-04 | **Estado:** upstream importado em `develop`; integridade 182/182, compilação e 5 testes headless PASS em GitHub Actions.
 
 ## Decisões
