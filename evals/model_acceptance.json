@@ -1,0 +1,294 @@
+[
+  {
+    "case_id": "conversation",
+    "prompt": "How are you today?",
+    "expected_tools": [],
+    "forbidden_tools": ["diagnose_system"]
+  },
+  {
+    "case_id": "general_question",
+    "prompt": "Explain the difference between RAM and storage in one sentence.",
+    "expected_tools": [],
+    "forbidden_tools": ["get_system_profile"]
+  },
+  {
+    "case_id": "discuss_browser_without_action",
+    "prompt": "In one sentence, what is a web browser?",
+    "expected_tools": [],
+    "forbidden_tools": ["list_tool_capabilities", "activate_tool_capability", "browser_open_url"]
+  },
+  {
+    "case_id": "discuss_files_without_action",
+    "prompt": "Explain why file names often have extensions.",
+    "expected_tools": [],
+    "forbidden_tools": ["list_tool_capabilities", "activate_tool_capability", "search_files"]
+  },
+  {
+    "case_id": "open_calculator",
+    "prompt": "Open Calculator.",
+    "expected_tools": ["open_application"],
+    "forbidden_tools": ["task_plan_create"]
+  },
+  {
+    "case_id": "find_uncertain_application",
+    "prompt": "Find the installed application whose name sounds like crumb.",
+    "expected_tools": ["search_installed_applications"],
+    "forbidden_tools": ["open_application"]
+  },
+  {
+    "case_id": "count_installed_games",
+    "prompt": "How many games do I have installed? Don't list them.",
+    "expected_tools": ["list_installed_games"],
+    "forbidden_tools": ["task_plan_create", "list_installed_applications"]
+  },
+  {
+    "case_id": "list_installed_games_reported",
+    "prompt": "what games are installed",
+    "expected_tools": ["list_installed_games"],
+    "forbidden_tools": ["task_plan_create", "list_installed_applications"]
+  },
+  {
+    "case_id": "open_named_project_folder",
+    "prompt": "open my WyzerNext project",
+    "expected_tools": ["open_indexed_folder"],
+    "forbidden_tools": ["task_plan_create", "open_application"]
+  },
+  {
+    "case_id": "check_window_open",
+    "prompt": "Check whether Notepad is currently open.",
+    "expected_tools": ["list_open_windows"],
+    "forbidden_tools": ["open_application"]
+  },
+  {
+    "case_id": "check_background_process",
+    "prompt": "Is the Discord process currently running in the background?",
+    "expected_tools": ["is_process_running"],
+    "forbidden_tools": ["list_open_windows"]
+  },
+  {
+    "case_id": "move_named_window",
+    "prompt": "Move the Notepad window to the monitor on the right.",
+    "expected_tools": ["move_named_window_to_monitor"],
+    "forbidden_tools": ["get_monitor_layout", "task_plan_create"]
+  },
+  {
+    "case_id": "lower_master_volume",
+    "prompt": "Turn the computer volume down.",
+    "expected_tools": ["control_master_audio"],
+    "forbidden_tools": ["list_audio_sessions"]
+  },
+  {
+    "case_id": "application_volume",
+    "prompt": "Set Spotify's volume to 35 percent.",
+    "expected_tools": ["control_application_audio"],
+    "forbidden_tools": ["control_master_audio"]
+  },
+  {
+    "case_id": "pause_media",
+    "prompt": "Pause the music that's playing.",
+    "expected_tools": ["control_media"],
+    "forbidden_tools": ["control_master_audio"]
+  },
+  {
+    "case_id": "current_media",
+    "prompt": "What song is currently playing?",
+    "expected_tools": ["get_current_media"],
+    "forbidden_tools": []
+  },
+  {
+    "case_id": "web_search",
+    "prompt": "Search the web for local LLM tool calling.",
+    "expected_tools": ["browser_search_web"],
+    "forbidden_tools": ["open_application", "browser_start"]
+  },
+  {
+    "case_id": "open_website",
+    "prompt": "Open https://example.com in the browser.",
+    "expected_tools": ["browser_open_url"],
+    "forbidden_tools": ["open_application", "browser_start"]
+  },
+  {
+    "case_id": "close_managed_browser",
+    "prompt": "Close the browser after that managed-browser work.",
+    "expected_tools": ["browser_stop"],
+    "forbidden_tools": ["control_named_window", "browser_close_tab"]
+  },
+  {
+    "case_id": "close_personal_chrome",
+    "prompt": "Close my personal Chrome window.",
+    "expected_tools": ["control_named_window"],
+    "forbidden_tools": ["browser_stop", "browser_close_tab"]
+  },
+  {
+    "case_id": "close_unqualified_chrome",
+    "prompt": "Close Chrome.",
+    "expected_tools": ["control_named_window"],
+    "forbidden_tools": ["browser_stop", "browser_close_tab"]
+  },
+  {
+    "case_id": "inspect_web_page",
+    "prompt": "Inspect the current webpage so you can tell me what controls are available.",
+    "expected_tools": ["browser_inspect_page"],
+    "forbidden_tools": ["inspect_screen"]
+  },
+  {
+    "case_id": "inspect_desktop_screen",
+    "prompt": "Look at my screen and tell me what is visible.",
+    "expected_tools": ["inspect_screen"],
+    "forbidden_tools": ["inspect_desktop_ui"]
+  },
+  {
+    "case_id": "activate_visible_target",
+    "prompt": "Click the visible Save button in the focused desktop application.",
+    "expected_tools": ["activate_visual_target"],
+    "forbidden_tools": ["click_desktop_element", "inspect_desktop_ui"]
+  },
+  {
+    "case_id": "copy_selection",
+    "prompt": "Copy the currently highlighted text.",
+    "expected_tools": ["copy_selected_text"],
+    "forbidden_tools": ["read_clipboard"]
+  },
+  {
+    "case_id": "read_clipboard",
+    "prompt": "What text is currently on my clipboard?",
+    "expected_tools": ["read_clipboard"],
+    "forbidden_tools": ["copy_selected_text"]
+  },
+  {
+    "case_id": "search_file",
+    "prompt": "Find a file named quarterly-notes.txt on this computer.",
+    "expected_tools": ["search_files"],
+    "forbidden_tools": ["open_file"]
+  },
+  {
+    "case_id": "list_downloads",
+    "prompt": "List the files currently in my Downloads folder.",
+    "expected_tools": ["list_directory"],
+    "forbidden_tools": ["search_files"]
+  },
+  {
+    "case_id": "read_known_file",
+    "prompt": "Read the text file C:\\Users\\Public\\notes.txt.",
+    "expected_tools": ["read_text_file"],
+    "forbidden_tools": ["open_file"]
+  },
+  {
+    "case_id": "create_folder",
+    "prompt": "Create a folder named Receipts on my Desktop.",
+    "expected_tools": ["create_directory"],
+    "forbidden_tools": ["task_plan_create"]
+  },
+  {
+    "case_id": "create_text_file_directly",
+    "prompt": "Make a text file called test on my Desktop with the word test123 in it.",
+    "expected_tools": ["write_text_file"],
+    "forbidden_tools": [
+      "open_application",
+      "open_file",
+      "type_desktop_text",
+      "task_plan_create"
+    ]
+  },
+  {
+    "case_id": "create_batch_file_directly",
+    "prompt": "Create a correctly formatted batch file on my Desktop that opens Facebook. Do not open Notepad or any other editor.",
+    "expected_tools": ["write_text_file"],
+    "forbidden_tools": [
+      "open_application",
+      "open_file",
+      "type_desktop_text",
+      "task_plan_create"
+    ]
+  },
+  {
+    "case_id": "delete_to_recycle_bin",
+    "prompt": "Delete C:\\Users\\Public\\old-notes.txt by moving it to the Recycle Bin.",
+    "expected_tools": ["delete_path"],
+    "forbidden_tools": []
+  },
+  {
+    "case_id": "simple_compound_open_and_volume",
+    "prompt": "Open Calculator and turn the computer volume down.",
+    "expected_tools": ["open_application", "control_master_audio"],
+    "forbidden_tools": ["task_plan_create"]
+  },
+  {
+    "case_id": "simple_compound_open_and_type",
+    "prompt": "Open Notepad and type hello.",
+    "expected_tools": ["open_application", "type_desktop_text"],
+    "forbidden_tools": ["task_plan_create"]
+  },
+  {
+    "case_id": "simple_compound_open_and_move",
+    "prompt": "Open Calculator and move it to monitor two.",
+    "expected_tools": ["open_application", "move_named_window_to_monitor"],
+    "forbidden_tools": ["task_plan_create", "get_monitor_layout"]
+  },
+  {
+    "case_id": "complex_report_chart_plan",
+    "prompt": "Find my latest sales report, extract the values, create a chart in Excel, save it, and verify the result.",
+    "expected_tools": ["task_plan_create"],
+    "forbidden_tools": ["search_files", "open_application"]
+  },
+  {
+    "case_id": "complex_research_document_plan",
+    "prompt": "Search for several sources, compare them, create a document, save it, and verify the result.",
+    "expected_tools": ["task_plan_create"],
+    "forbidden_tools": ["browser_search_web"]
+  },
+  {
+    "case_id": "open_known_file",
+    "prompt": "Open C:\\Users\\Public\\report.pdf in its default app.",
+    "expected_tools": ["open_file"],
+    "forbidden_tools": ["read_text_file"]
+  },
+  {
+    "case_id": "identify_focused_window",
+    "prompt": "Which desktop application window is focused right now?",
+    "expected_tools": ["get_foreground_window"],
+    "forbidden_tools": ["list_open_windows"]
+  },
+  {
+    "case_id": "inspect_screen_overview",
+    "prompt": "What is on my screen?",
+    "expected_tools": ["inspect_screen"],
+    "forbidden_tools": ["activate_visual_target"]
+  },
+  {
+    "case_id": "click_visible_settings",
+    "prompt": "Click the Settings button I can see.",
+    "expected_tools": ["activate_visual_target"],
+    "forbidden_tools": ["inspect_screen"]
+  },
+  {
+    "case_id": "inspect_visible_error",
+    "prompt": "What does this error say?",
+    "expected_tools": ["inspect_screen"],
+    "forbidden_tools": ["activate_visual_target"]
+  },
+  {
+    "case_id": "click_visible_retry",
+    "prompt": "Click the Retry button.",
+    "expected_tools": ["activate_visual_target"],
+    "forbidden_tools": ["inspect_screen"]
+  },
+  {
+    "case_id": "create_python_calculator_with_coding_agent",
+    "prompt": "Make me a usable Python calculator and test it.",
+    "expected_tools": ["coding_agent_start"],
+    "forbidden_tools": ["write_text_file", "task_plan_create", "coding_agent_cancel"]
+  },
+  {
+    "case_id": "create_new_python_game_with_coding_agent",
+    "prompt": "Create a small Python number guessing game in C:\\Projects\\TestGame, run it, and fix any errors.",
+    "expected_tools": ["coding_agent_start"],
+    "forbidden_tools": ["create_directory", "write_text_file", "task_plan_create", "coding_agent_cancel"]
+  },
+  {
+    "case_id": "create_desktop_relative_python_game_with_coding_agent",
+    "prompt": "Create a small Python number guessing game in Desktop\\Projects\\TestGame, run it, and fix any errors.",
+    "expected_tools": ["coding_agent_start"],
+    "forbidden_tools": ["create_directory", "write_text_file", "task_plan_create", "coding_agent_cancel"]
+  }
+]
