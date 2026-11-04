@@ -72,3 +72,17 @@ Fonte de requisitos e evidência: [11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md](11_A
 - [ ] `JAR-RELEASE-01` Licenças, instalação, testes no PC Issa e aceitação de entrega.
 
 **Ordem crítica:** arquitectura de patches → segurança de sessão/políticas → STT/LLM reais → UX/desktop → agentes e distribuição. Preferir incrementos isolados com CI e evidência PASS/FAIL.
+
+## Pesquisa de UI voice-first e motores de voz — gates pendentes (2026-11-04)
+
+- [x] `JAR-UX-REF-01` Registar fontes visuais, fluxos, licenças identificadas, ambiguidade dos vídeos/capturas e modos Floating / Expanded / Graph ([12](12_HUD_REFERENCES_AND_UX_VISION.md)).
+- [x] `JAR-VOICE-REF-01` Auditar `debpalash/VoiceStudio` **estaticamente**: STT/TTS HTTP/WS, PT, engines, API, licenças e comparação com Wyzer ([13](13_VOICESTUDIO_STATIC_ASSESSMENT.md)).
+- [ ] `JAR-UX-02` Criar fluxos e wireframes da UI nativa PySide6 para os três modos, estados reais e privacidade.
+- [ ] `JAR-UX-03` Avaliar por POC e medição `QPainter/Qt Quick/QML` versus `QWebEngine + Three.js`; não adoptar React/Electron sem justificação.
+- [ ] `JAR-UX-04` Verificar licenças/atribuições dos componentes visuais exactos antes de qualquer cópia.
+- [ ] `VOICE-LIC-01` Matriz de modelos TTS/STT por licença de software, pesos, direitos sobre outputs, redistribuição e consentimento; **OmniVoice default não autorizado para distribuição comercial** com a evidência actual.
+- [ ] `VOICE-PT-01` Definir corpus e critérios PT-MZ com Issa; testar `pt-BR`/`pt-PT`, qualidade e falsos positivos.
+- [ ] `VOICE-STT-01` Adaptar Faster-Whisper multilingue existente em Wyzer antes de acrescentar VoiceStudio.
+- [ ] `VOICE-TTS-01` Avaliar Kokoro PT existente e **um** segundo motor local com licenças admissíveis.
+- [ ] `VOICE-API-01` Desenhar adapter opcional para endpoints VoiceStudio locais, validando segurança, erro, streaming, cancelamento, CPU/RAM e licença; sem instalar serviço agora.
+- [ ] `VOICE-ARCH-01` Escolher estratégia de voz com base em evidências e não no README ou no número publicitado de línguas.
