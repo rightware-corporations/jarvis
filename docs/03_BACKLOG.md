@@ -103,3 +103,14 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **JAR-HUD-02:** integrar só componentes visuais licenciados após M0, sem bridge/Anthropic, e com backend Wyzer/Python.
 - [ ] Continuar JAR-SEC-01/02, JAR-MODEL-01, JAR-VOICE-01/02 e JAR-RELEASE-01 mediante tarefas aprovadas (ver [playbook](23_EXECUTION_PLAYBOOK_2026-11-04.md)).
 
+## Adenda Claude v0.1.1 / CLAUDE V3 — 04/11/2026
+
+[Revisão técnica detalhada / estado de aceite](24_CLAUDE_V011_V3_REVIEW_AND_M0_GATE_2026-11-04.md).
+
+- [x] **JAR-CLAUDE-01A** Receber e inspeccionar ZIP `rightware-jarvis-dev-0.1.1.zip`, validação, SHA256 e manifesto — PASS quanto à integridade interna; `allowed-tools=Read,Grep,Glob`.
+- [ ] **JAR-CLAUDE-01B** RIGHTWARE substituir plugin 0.1.0 por 0.1.1 em Customize→Plugins; abrir sessão nova e confirmar as 9 skills e permissão efectiva instalada.
+- [x] **JAR-ARCH-02A** Receber V3 e diff V2→V3, arquivar propostas e emitir parecer técnico.
+- [ ] **JAR-ARCH-02B** Rever §4 docs/2*, §14 semântica `allowed-tools`, licença PySide6/LGPL e papel Manus; aprovar documento final e **só depois** publicar `/CLAUDE.md`.
+- [ ] **JAR-HUD-00** Receber preview **real** Chromium/Playwright do frontend `adewaskar/jarvis` produzido pelo Manus, com imagens, galeria, consola e mocks explícitos.
+- [ ] **JAR-UX-03A** Claude entregar plano integral M0, 31 testes/8 áreas, critérios numéricos e matriz CPU/RAM/GPU. **Não afirmar plano aprovado com base em resumo.**
+- [ ] **JAR-UX-03B** RIGHTWARE autorizar smoke Windows com Python 3.11 / PySide6 6.6.1 num venv isolado; se relevante comparar 6.11.3 em outro venv e segundo hardware, preservando constraints e manifesto de origem.
