@@ -33,3 +33,9 @@
 - Não publicar dados pessoais, tokens, vozes ou wake models sem direitos verificáveis.
 - O lab não expõe ferramentas de Windows ou shell. Autorizações e políticas antes de qualquer execução real.
 - `main` é estável; funcionalidades entram via `develop` e revisão.
+
+## Pesquisa complementar — HUD flutuante e VoiceStudio (2026-11-04)
+
+- [12_HUD_REFERENCES_AND_UX_VISION.md](12_HUD_REFERENCES_AND_UX_VISION.md): estudo das referências visuais enviadas (vídeo do orb, captura de grafo, guia comercial, guia Claude), inventário open source, licenças e proposta de Floating/Expanded/Graph HUD. **Design não aprovado, nada importado**.
+- [13_VOICESTUDIO_STATIC_ASSESSMENT.md](13_VOICESTUDIO_STATIC_ASSESSMENT.md): auditoria de `debpalash/VoiceStudio` para STT/TTS e voz PT; APIs locais, recursos, riscos AGPL e pesos OmniVoice não comerciais. **Candidato avaliado, não seleccionado nem executado**.
+- Nenhuma alteração ao motor Wyzer, ao código do frontend ou aos 182 hashes de origem nesta pesquisa. Evitar confundir interfaces de referência com Jarvis operacional e documentação com QA.
