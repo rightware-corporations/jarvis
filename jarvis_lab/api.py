@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field
 
 from wyzer.brain.provider import ChatProvider
 from wyzer.brain.providers import OllamaChatProvider
-from .headless import create_headless_assistant
+from .headless import MODEL_FAILURE_SENTINEL, create_headless_assistant
 
 
 WEB_DIR = Path(__file__).resolve().parent / "web"
@@ -174,6 +174,8 @@ def create_app(
         except Exception:
             # Intentionally avoid returning provider errors or internal endpoints.
             raise HTTPException(503, detail="MODEL_REQUEST_FAILED") from None
+        if answer.text == MODEL_FAILURE_SENTINEL:
+            raise HTTPException(503, detail="MODEL_REQUEST_FAILED")
         return {"reply": answer.text, "mode": "headless", "computer_control": False}
 
     return app

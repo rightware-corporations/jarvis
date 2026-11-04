@@ -12,6 +12,33 @@ from pathlib import Path
 
 from wyzer.app import Orchestrator
 from wyzer.brain.provider import ChatProvider
+from wyzer.models import ChatMessage, ProviderChatResponse
+
+# Explicit adapter-level sentinel; must never contain provider exception details.
+MODEL_FAILURE_SENTINEL = "[JARVIS_LAB_PROVIDER_FAILED]"
+
+
+class SafeLabProvider:
+    """Translate upstream provider failures into a fixed, non-sensitive lab result."""
+
+    def __init__(self, inner: ChatProvider) -> None:
+        self.inner = inner
+
+    @property
+    def available(self) -> bool:
+        return self.inner.available
+
+    async def chat(self, messages, tools, settings=None) -> ProviderChatResponse:
+        try:
+            return await self.inner.chat(messages, tools, settings)
+        except Exception:
+            return ProviderChatResponse(
+                message=ChatMessage(
+                    role="assistant",
+                    content=MODEL_FAILURE_SENTINEL,
+                )
+            )
+
 from wyzer.memory import MemoryStore
 from wyzer.tools import ToolRegistry
 from wyzer.workers.in_process import InProcessExecutor
@@ -52,7 +79,7 @@ def create_headless_assistant(
     return Orchestrator(
         registry,
         executor,
-        provider,
+        SafeLabProvider(provider),
         memory=memory,
         tasks=None,
         coding_manager=None,
