@@ -103,3 +103,15 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Limitação documentada:** o `InProcessExecutor` do Wyzer não interrompe uma ferramenta já em execução; cancelar depois de um efeito não o reverte. Para `open_allowed_application` o efeito só ocorre depois de um `sim` válido.
 - **CI preparado (não publicado):** `.github/workflows/source-integrity.yml` passa a compilar `jarvis/`, `tests_vexel/`, `tests_lab/` e a correr `pytest -q tests_vexel` e `python -m jarvis --check-config`, sem novas dependências. Reprodução local num venv novo com a linha `pip` do workflow: todos os passos rc=0; falha injectada → rc=1.
 - **Testes:** 321 PASS (305 `tests_vexel` + 16 `tests_lab`), 15 execuções consecutivas sem falhas. Continua tudo simulado: LLM, STT, TTS, lançador, relógio e sonda.
+
+## JAR-SLICE-01C-PRE — preparação para IA e voz reais no Windows, 05/11/2026
+
+**Estado:** `PREP_READY` local; **não equivale a funcionamento real**. Commits apenas locais sobre `develop@372c219`; nada publicado.
+
+- **Novo modo `python -m jarvis --voice`:** activação manual pela consola (Enter / `c` / `q`) → microfone → Faster-Whisper `small` em português → Wyzer → Ollama local → voz SAPI portuguesa. Só arranca se o preflight estiver `READY`. As aplicações ficam **sempre** com o `SimulatedLauncher`; com `allow_real_windows_actions=true` o arranque é bloqueado.
+- **`python -m jarvis --diagnose [--json]`:** preflight read-only. Verifica plataforma, Python 3.11, pacotes, modelo Whisper na cache (via `wyzer.install_check`), microfone (lista de dispositivos, sem abrir stream), voz PT (inventário SAPI; pt-PT antes de pt-BR), Ollama e modelo (`/api/tags` via `diagnose()` do Wyzer), política de aplicações e activação manual.
+- **Reutilização do Wyzer:** captura (`WindowsSpeechRecognizer.capture_utterance`), `PowerShellSpeechRunner`, `OllamaChatProvider.diagnose()`, `install_check._whisper_present`, `WindowsSpeechSynthesizer`. Nenhum ficheiro upstream foi alterado (182/182).
+- **Falhas tratadas:** falha de captura ou STT ≠ silêncio (`STT_FAILED`, estado `ERROR`, confirmação pendente cancelada); falha de TTS (R01); cancelamento durante o reconhecimento descarta o áudio e avisa o adapter; shutdown fecha os adapters; tempos por fase em `voice-turns.jsonl` (sem texto por omissão).
+- **Preflight Windows para QA:** `qa/windows/Invoke-JarvisPreflight.ps1`, read-only, para revisão; **não executado**.
+- **Plano de QA:** [25_JAR-SLICE-01C_WINDOWS_QA_PLAN.md](25_JAR-SLICE-01C_WINDOWS_QA_PLAN.md), com gates G1–G10, licenças, corpus PT-MZ e rollback.
+- **Testes:** 399 PASS (`tests_vexel` + `tests_lab`), com fakes.

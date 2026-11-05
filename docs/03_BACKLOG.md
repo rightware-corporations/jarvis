@@ -127,3 +127,6 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [x] **JAR-SLICE-01B-R01** Correcções P0 (TTS/confirmação fail-closed), P1 (estado `SIMULATED/SUCCEEDED/FAILED/DENIED`), P1 (ordem de eventos, threads, cancelamento, concorrência), workflow CI preparado — `CANDIDATE_PASS` local, 321 PASS; push e CI remoto pendentes de autorização.
 - [ ] **JAR-SLICE-01B-PUB** Publicar os commits 01B + R01 na `develop` e registar o run do CI remoto com `tests_vexel`.
 - [ ] **JAR-SLICE-01D-EVID** Definir a evidência de `SUCCEEDED` real (janela/processo visível) antes de activar o lançador Windows.
+- [x] **JAR-SLICE-01C-PRE** Runtime de voz (`--voice`, `--diagnose`), preflight read-only, script PowerShell de inventário, plano QA G1–G10 — `PREP_READY` local, 399 PASS com fakes; push pendente.
+- [ ] **JAR-SLICE-01C** Executar G1–G10 no PC Windows de QA autorizado (Ollama + `qwen3.5:4b`, Whisper `small`, voz SAPI PT), com aplicações simuladas.
+- [ ] **JAR-CI-WIN-01** (proposta) Job `windows-latest` só de leitura: correr `tests_vexel` e `--diagnose` no runner para apanhar diferenças Linux/Windows antes do PC de QA.
