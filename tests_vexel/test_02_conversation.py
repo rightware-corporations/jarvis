@@ -59,7 +59,11 @@ def test_provider_failure_becomes_fixed_portuguese_sentence() -> None:
     async def run() -> str | None:
         provider = PortugueseProvider(ExplodingProvider())
         response = await provider.chat([], [], None)
-        assert response.metadata == {"vexel_provider_failure": "ConnectionError"}
+        assert response.metadata == {
+            "vexel_provider_failure": "ConnectionError",
+            "vexel_failure_code": "PROVIDER_UNREACHABLE",
+        }
+        assert provider.meter.snapshot().last_failure == "PROVIDER_UNREACHABLE"
         return response.message.content
 
     text = asyncio.run(run())

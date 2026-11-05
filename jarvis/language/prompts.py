@@ -39,6 +39,8 @@ _EXACT: dict[str, str] = {
 _PREFIXES: tuple[tuple[str, str], ...] = (
     ("I couldn't confirm it because", "Não consegui confirmar, porque o pedido mudou."),
     ("A tool-capable local model is not configured", SAY_MODEL_UNAVAILABLE),
+    # Orchestrator text when a provider call raises past the PT wrapper (defence in depth).
+    ("The local model could not respond", SAY_MODEL_UNAVAILABLE),
 )
 
 

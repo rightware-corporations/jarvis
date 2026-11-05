@@ -28,6 +28,12 @@ and suppresses the reply, but it does not undo the effect. For
 
 The Orchestrator still validates TTL and the argument digest on ``yes``; VEXEL's binding
 check is an additional, earlier gate.
+
+Metrics (JAR-ENGINE-01): with a ``ProviderMeter`` each turn also records the local
+model's share of ``think_ms`` (``llm_calls``, ``llm_ms``, ``llm_eval_count``,
+``llm_model_ms``, ``llm_failures``, ``llm_cancelled``, ``llm_truncated``). A provider
+failure is spoken as the fixed "model unavailable" sentence and its fixed code (e.g.
+``PROVIDER_TIMEOUT``) is put in ``TurnResult.detail``; no provider text is kept.
 """
 
 from __future__ import annotations
@@ -44,6 +50,7 @@ from uuid import UUID
 from wyzer.app.orchestrator import Orchestrator
 from wyzer.models import AssistantResponse, PendingConfirmation
 
+from jarvis.brain.pt_provider import MeterSnapshot, ProviderMeter
 from jarvis.config import VexelSettings
 from jarvis.language.prompts import (
     SAY_CANCELLED,
@@ -168,6 +175,8 @@ class _Turn:
     seen_steps: set[Any]
     metrics: dict[str, float] = field(default_factory=dict)
     confirmed_arguments: dict[str, Any] = field(default_factory=dict)
+    meter_before: MeterSnapshot | None = None
+    llm_failure: str | None = None
 
 
 class VoiceSession:
@@ -182,8 +191,10 @@ class VoiceSession:
         settings: VexelSettings,
         session_id: str = "local",
         timer: Callable[[], float] = time.perf_counter,
+        provider_meter: ProviderMeter | None = None,
     ) -> None:
         self.orchestrator = orchestrator
+        self.provider_meter = provider_meter
         self.stt = stt
         self.speech = tts if isinstance(tts, GuardedSpeech) else GuardedSpeech(tts)
         self.activation = activation
@@ -325,7 +336,23 @@ class VoiceSession:
             self.start()
         self._turn_generation = self._generation
         seen = {result.step_id for result in self.orchestrator.world.snapshot().recent_tool_calls}
-        return _Turn(self._generation, seen)
+        before = self.provider_meter.snapshot() if self.provider_meter is not None else None
+        return _Turn(self._generation, seen, meter_before=before)
+
+    def _record_llm(self, turn: _Turn) -> None:
+        """Add the local model's share of this turn to its metrics (no text). Never raises."""
+        if self.provider_meter is None or turn.meter_before is None:
+            return
+        try:
+            now = self.provider_meter.snapshot()
+            llm = now.since(turn.meter_before)
+            for key in [k for k in turn.metrics if k.startswith("llm_")]:
+                del turn.metrics[key]
+            turn.metrics.update(llm)
+            if llm.get("llm_failures"):
+                turn.llm_failure = now.last_failure
+        except Exception as error:
+            LOGGER.warning("llm metrics failed: %s", type(error).__name__)
 
     async def _listen_and_handle(self, timeout_seconds: float) -> TurnResult:
         self._loop = asyncio.get_running_loop()
@@ -423,6 +450,7 @@ class VoiceSession:
             started = self._timer()
             response = await self.orchestrator.handle(heard)
             turn.metrics["think_ms"] = round((self._timer() - started) * 1000, 1)
+            self._record_llm(turn)
             return await self._respond(
                 response, TurnOutcome.ANSWERED, turn, heard=heard, intent=intent
             )
@@ -432,6 +460,7 @@ class VoiceSession:
         except Exception as error:
             LOGGER.exception("turn failed: %s", type(error).__name__)
             self._clear_pending("turn error")
+            self._record_llm(turn)
             if turn.generation != self._generation:
                 return TurnResult(
                     TurnOutcome.DISCARDED, heard=heard, intent=intent, metrics=turn.metrics
@@ -456,6 +485,7 @@ class VoiceSession:
                 started = self._timer()
                 response = await self.orchestrator.handle(_WYZER_YES)
                 turn.metrics["think_ms"] = round((self._timer() - started) * 1000, 1)
+                self._record_llm(turn)
                 return await self._respond(
                     response, TurnOutcome.CONFIRMED, turn, heard=heard, intent=intent
                 )
@@ -523,6 +553,8 @@ class VoiceSession:
         result.reply_translated = translated
         result.action_status = action_status
         result.claim_blocked = claim_blocked
+        if turn.llm_failure is not None and result.detail is None:
+            result.detail = turn.llm_failure
         return result
 
     async def _present_confirmation(

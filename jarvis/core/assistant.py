@@ -123,6 +123,7 @@ def build_voice_session(
         sink=sink,
         settings=config.vexel,
         session_id=session_id,
+        provider_meter=parts.provider.meter,
     )
     holder.append(session)
     return session, parts

@@ -1,13 +1,14 @@
 """Command line entry point for the slice.
 
     python -m jarvis --check-config [--config configs/jarvis_slice.toml]
-    python -m jarvis --text          # type instead of speaking; local provider only
+    python -m jarvis --text          # type instead of speaking; local provider only;
+                                     # apps always simulated; text-turns.jsonl timings
     python -m jarvis --diagnose [--json]  # read-only readiness report (exit 3 if blocked)
     python -m jarvis --voice         # manual activation → mic → Whisper PT → Ollama → SAPI PT
 
-Voice mode refuses to start unless the preflight is READY. Application launches stay
-simulated in voice mode (JAR-SLICE-01C). Real launches remain off in text mode unless
-the config enables them *and* the process runs on Windows (JAR-SLICE-01D).
+Voice mode refuses to start unless the preflight is READY. Application launches are
+always simulated in voice and text mode (JAR-SLICE-01C, JAR-ENGINE-01); real launches
+are JAR-SLICE-01D and are not wired to any entry point.
 """
 
 from __future__ import annotations
@@ -46,45 +47,10 @@ def _check(path: Path) -> int:
 
 
 async def _text_mode(path: Path) -> int:
-    from jarvis.brain.pt_provider import create_local_provider
-    from jarvis.core.assistant import build_voice_session
-    from jarvis.tools.allowlist import SimulatedLauncher, WindowsApplicationLauncher
-    from jarvis.ui.events import RecordingSink
-    from jarvis.voice.activation import ManualActivation
-    from jarvis.voice.tts import TextOnlySpeech
+    from jarvis.runtime.text_mode import run_text_mode
 
-    config = load_slice_config(path)
-    launcher = (
-        WindowsApplicationLauncher(allow_real_windows_actions=True)
-        if config.vexel.allow_real_windows_actions and sys.platform == "win32"
-        else SimulatedLauncher()
-    )
-
-    class _NoStt:
-        def listen(self, timeout_seconds: float) -> None:
-            return None
-
-    session, _ = build_voice_session(
-        config,
-        create_local_provider(config.wyzer),
-        stt=_NoStt(),
-        tts=TextOnlySpeech(),
-        activation=ManualActivation(),
-        sink=RecordingSink(),
-        launcher=launcher,
-    )
-    session.start()
-    print("Modo texto. Escreve 'sair' para terminar.")
-    while True:
-        try:
-            line = await asyncio.to_thread(input, "Tu: ")
-        except (EOFError, KeyboardInterrupt):
-            break
-        if line.strip().casefold() in {"sair", "exit", "quit"}:
-            break
-        await session.handle_text(line)
-    session.shutdown()
-    return 0
+    result = await run_text_mode(load_slice_config(path))
+    return result.exit_code
 
 
 async def _diagnose(path: Path, as_json: bool) -> int:
@@ -124,7 +90,14 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, SliceConfigError) as error:
         print(f"CONFIG_INVALID: {error}", file=sys.stderr)
         return 2
-    return asyncio.run(_text_mode(args.config))
+    try:
+        return asyncio.run(_text_mode(args.config))
+    except SliceConfigError as error:
+        print(f"CONFIG_INVALID: {error}", file=sys.stderr)
+        return 2
+    except OSError as error:  # e.g. unreadable config or unwritable log directory
+        print(f"TEXT_MODE_IO_ERROR: {type(error).__name__}", file=sys.stderr)
+        return 4
 
 
 if __name__ == "__main__":

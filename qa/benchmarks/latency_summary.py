@@ -3,7 +3,11 @@
 Reads **metrics only** (``outcome``, ``intended``, ``action_status``, ``metrics``); the
 ``heard``/``reply`` text fields are never read or printed, even if text logging was
 enabled. Prints p50/p95/max per stage and the acceptance check (p50 ≤ 4 s, p95 ≤ 8 s
-for think + tts, i.e. end of speech → end of reply).
+for think + tts, i.e. end of speech → end of reply). ``llm_ms`` (JAR-ENGINE-01) is the
+local model's share of ``think_ms`` and is reported, not added. It also reads
+``text-turns.jsonl`` from ``python -m jarvis --text`` (records with ``"mode": "text"``):
+stage timings are reported, but the G9 acceptance is ``NOT_APPLICABLE`` and never PASS,
+because text mode has no STT and its ``tts_ms`` is a console print, not speech.
 
     python qa/benchmarks/latency_summary.py .wyzer/vexel/logs/voice-turns.jsonl [--json]
 """
@@ -17,8 +21,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-STAGES = ("stt_ms", "think_ms", "tts_ms")
-SAFE_FIELDS = ("outcome", "intended", "action_status", "metrics")
+STAGES = ("stt_ms", "think_ms", "llm_ms", "tts_ms")  # llm_ms is part of think_ms
+SAFE_FIELDS = ("outcome", "intended", "action_status", "metrics", "mode")
 P50_LIMIT_MS = 4000.0
 P95_LIMIT_MS = 8000.0
 MIN_SAMPLES = 20
@@ -64,6 +68,7 @@ def summarise(turns: list[dict[str, Any]]) -> dict[str, Any]:
     ]
     p50, p95 = percentile(responses, 50), percentile(responses, 95)
     enough = len(responses) >= MIN_SAMPLES
+    text_mode = any(t.get("mode") == "text" for t in turns)
     return {
         "turns": len(turns),
         "outcomes": dict(Counter(t.get("outcome") for t in turns)),
@@ -75,8 +80,10 @@ def summarise(turns: list[dict[str, Any]]) -> dict[str, Any]:
             "p95_limit_ms": P95_LIMIT_MS,
             "min_samples": MIN_SAMPLES,
             "enough_samples": enough,
+            # Text-mode logs are not voice latency evidence: never a G9 PASS.
+            "applicable": not text_mode,
             # Fewer than MIN_SAMPLES timed turns is never a PASS (G9 needs >= 20).
-            "pass": enough and p50 <= P50_LIMIT_MS and p95 <= P95_LIMIT_MS,
+            "pass": (not text_mode) and enough and p50 <= P50_LIMIT_MS and p95 <= P95_LIMIT_MS,
         },
     }
 
@@ -92,7 +99,10 @@ def render(summary: dict[str, Any]) -> str:
         lines.append(f"  {stage:9} n={data['count']:3}  p50={ms(data['p50']):>10}  p95={ms(data['p95']):>10}  max={ms(data['max']):>10}")
     response = summary["response_ms"]
     acceptance = summary["acceptance"]
-    verdict = "PASS" if acceptance["pass"] else "FAIL"
+    verdict = (
+        "PASS" if acceptance["pass"] else "FAIL" if acceptance.get("applicable", True)
+        else "NOT_APPLICABLE (text mode)"
+    )
     lines.append(
         f"Response (think+tts) n={response['count']}  p50={ms(response['p50'])}  p95={ms(response['p95'])}"
         f"  -> {verdict} (p50 <= {acceptance['p50_limit_ms']:.0f} ms, p95 <= {acceptance['p95_limit_ms']:.0f} ms)"
