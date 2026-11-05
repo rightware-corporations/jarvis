@@ -36,6 +36,7 @@ class Reply:
     delay: float = 0.0
     hold: bool = False
     drop: bool = False
+    headers: dict[str, str] = field(default_factory=dict)
 
 
 def chat_text(text: Any, **extra: Any) -> Reply:
@@ -124,6 +125,8 @@ class FakeOllama:
                     self.send_response(reply.status)
                     self.send_header("Content-Type", "application/json; charset=utf-8")
                     self.send_header("Content-Length", str(len(data)))
+                    for name, value in reply.headers.items():
+                        self.send_header(name, value)
                     self.end_headers()
                     self.wfile.write(data)
                 except OSError:  # client gave up (timeout/cancel)
@@ -140,8 +143,10 @@ class FakeOllama:
                 if self.path == "/api/tags":
                     models = [{"name": name, "model": name} for name in fake.models]
                     self._send(Reply({"models": models}))
-                else:
-                    self._send(Reply({"error": "not found"}, status=404))
+                else:  # other GET paths answer from the script (e.g. redirect tests)
+                    with fake._lock:
+                        reply = fake.chat_script.popleft() if fake.chat_script else None
+                    self._send(reply or Reply({"error": "not found"}, status=404))
 
             def do_POST(self) -> None:  # noqa: N802 - http.server API
                 body = self._read_body()
@@ -191,3 +196,65 @@ class FakeOllama:
     def chats(self) -> list[Received]:
         with self._lock:
             return [item for item in self.received if item.path == "/api/chat"]
+
+
+class RecordingProxy:
+    """A hostile "proxy" on loopback: records every connection and byte it receives.
+
+    Any request that reaches it (plain HTTP via proxy, ``CONNECT`` tunnel, anything)
+    is a privacy failure for the local model transport (JAR-NET-01, T5/T12).
+    """
+
+    def __init__(self) -> None:
+        self.connections = 0
+        self.data: list[bytes] = []
+        self._lock = threading.Lock()
+        self._server: Any = None
+        self._thread: threading.Thread | None = None
+
+    def start(self) -> RecordingProxy:
+        import socketserver
+
+        proxy = self
+
+        class Handler(socketserver.BaseRequestHandler):
+            def handle(self) -> None:
+                with proxy._lock:
+                    proxy.connections += 1
+                self.request.settimeout(1.0)
+                try:
+                    chunk = self.request.recv(65536)
+                except OSError:
+                    chunk = b""
+                with proxy._lock:
+                    proxy.data.append(chunk)
+                try:
+                    self.request.sendall(b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n")
+                except OSError:
+                    pass
+
+        class Server(socketserver.ThreadingTCPServer):
+            daemon_threads = True
+            allow_reuse_address = True
+
+        self._server = Server(("127.0.0.1", 0), Handler)
+        self._thread = threading.Thread(
+            target=self._server.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True
+        )
+        self._thread.start()
+        return self
+
+    @property
+    def url(self) -> str:
+        return f"http://127.0.0.1:{self._server.server_address[1]}"
+
+    def stop(self) -> None:
+        if self._server is not None:
+            self._server.shutdown()
+            self._server.server_close()
+        if self._thread is not None:
+            self._thread.join(5)
+
+    def received(self) -> bytes:
+        with self._lock:
+            return b"".join(self.data)

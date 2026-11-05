@@ -22,6 +22,9 @@ Procedimento completo: skill `jarvis-quality-gates`. Plano de QA real: [`docs/25
 
 **Como se escrevem:**
 - Só fakes e fixtures sintéticos (`tests_vexel/fakes.py`): sem microfone, GPU, rede, Ollama, modelos ou ferramentas Windows reais.
+- Excepção autorizada (D01, JAR-NET-01): servidores HTTP sintéticos **só em `127.0.0.1` ou `::1`, em portas efémeras** (ex.: `tests_vexel/ollama_loopback.py`), com threads e respostas por script.
+  - Continuam proibidas ligações externas, modelos remotos, serviços pagos e portas expostas.
+  - A evidência destes testes é `HTTP_CONTRACT_PASS`, nunca inferência real.
 - Não se remove nem se enfraquece um teste, nem o guard de processos, sem justificação aprovada.
 - Um teste tem de poder falhar. Por exemplo, nada de `or True`.
 - Não há Hypothesis (dependência não aprovada).

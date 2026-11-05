@@ -2,8 +2,8 @@
 
 The file is ordinary Wyzer TOML plus one ``[vexel]`` table. ``WyzerSettings`` forbids
 unknown keys, so the ``[vexel]`` table is split off and validated here first. The
-slice also refuses settings that would break the RIGHTWARE rules: a non-loopback or
-keyed LLM endpoint, English-only Whisper models, pre-trained non-commercial wake
+slice also refuses settings that would break the RIGHTWARE rules: an LLM endpoint that
+is not ``http`` on a loopback IP literal, or that is keyed, English-only Whisper models, pre-trained non-commercial wake
 models, memory/tasks/coding agent, and worker isolation (tools must notify state).
 """
 
@@ -68,12 +68,9 @@ class SliceConfig:
     source: Path | None
 
 
-_LOOPBACK_NAMES = {"localhost"}
-
-
 def _is_loopback(host: str) -> bool:
-    if host.casefold() in _LOOPBACK_NAMES:
-        return True
+    """A loopback IP literal. Names (even ``localhost``) resolve through the OS and a
+    hosts file can point them elsewhere, so they are not accepted (JAR-NET-01)."""
     try:
         return ipaddress.ip_address(host.strip("[]")).is_loopback
     except ValueError:
@@ -85,10 +82,18 @@ def _validate_slice_rules(settings: WyzerSettings) -> None:
     if llm.provider == "none":
         raise SliceConfigError("the slice requires a local LLM provider (llm.provider)")
     if llm.endpoint is not None:
-        host = urlparse(str(llm.endpoint)).hostname or ""
+        from jarvis.brain.local_transport import loopback_origin
+
+        parsed = urlparse(str(llm.endpoint))
+        host = parsed.hostname or ""
         if not _is_loopback(host):
             raise SliceConfigError(
-                f"llm.endpoint must be loopback for the slice, got host {host!r}"
+                f"llm.endpoint must be a loopback IP (127.0.0.1 or ::1), got host {host!r}"
+            )
+        if loopback_origin(str(llm.endpoint)) is None:
+            raise SliceConfigError(
+                "llm.endpoint must be plain http on a loopback IP, without credentials, "
+                "zone id or port 0 (the same rule as the local transport)"
             )
     if llm.api_key is not None and llm.api_key.get_secret_value():
         raise SliceConfigError("llm.api_key must be empty: no keyed or paid AI endpoint")

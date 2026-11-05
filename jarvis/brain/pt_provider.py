@@ -42,6 +42,7 @@ FAILURE_TIMEOUT = "PROVIDER_TIMEOUT"
 FAILURE_UNREACHABLE = "PROVIDER_UNREACHABLE"
 FAILURE_INVALID_RESPONSE = "PROVIDER_INVALID_RESPONSE"
 FAILURE_ERROR = "PROVIDER_ERROR"
+FAILURE_DESTINATION_DENIED = "PROVIDER_DESTINATION_DENIED"
 FAILURE_HTTP_PREFIX = "PROVIDER_HTTP_"
 
 
@@ -56,7 +57,13 @@ def _causes(error: BaseException) -> list[BaseException]:
 
 def classify_provider_failure(error: BaseException) -> str:
     """Map a provider exception to a fixed code, from types and HTTP status only."""
+    from jarvis.brain.local_transport import LoopbackDestinationError, OversizedResponseError
+
     chain = _causes(error)
+    if any(isinstance(item, LoopbackDestinationError) for item in chain):
+        return FAILURE_DESTINATION_DENIED
+    if any(isinstance(item, OversizedResponseError) for item in chain):
+        return FAILURE_INVALID_RESPONSE
     for item in chain:
         code = getattr(item, "code", None)
         if code == "PROVIDER_NOT_CONFIGURED":
@@ -253,8 +260,57 @@ class PortugueseProvider:
             LOGGER.warning("provider meter failed: %s", type(error).__name__)
 
 
-def create_local_provider(settings: WyzerSettings) -> PortugueseProvider:
-    """Build the configured local provider (Ollama by default). Makes no network call."""
-    from wyzer.brain import create_chat_provider
+def create_direct_chat_provider(llm: Any) -> ChatProvider:
+    """Wyzer's own provider for ``llm.provider``, with the loopback transport injected.
 
-    return PortugueseProvider(create_chat_provider(settings.llm, settings.personality))
+    Mirrors ``wyzer.brain.factory.create_chat_provider`` (same arguments and defaults)
+    and only adds ``transport=LoopbackJsonTransport(endpoint)``: requests can then only
+    go, without any proxy, to the configured loopback origin (JAR-NET-01) — and forces
+    ``auto_start=False`` (no subprocess, even for settings that bypassed the slice
+    config). Makes no network call. Raises ``LoopbackDestinationError`` for a
+    non-loopback endpoint.
+    """
+    from wyzer.brain.factory import _default_endpoint
+    from wyzer.brain.provider import FakeChatProvider
+    from wyzer.brain.providers import (
+        LlamaCppChatProvider,
+        OllamaChatProvider,
+        OpenAICompatibleChatProvider,
+    )
+
+    from jarvis.brain.local_transport import LoopbackJsonTransport
+
+    if llm.provider == "none":
+        return FakeChatProvider(available=False)
+    endpoint = str(llm.endpoint).rstrip("/") if llm.endpoint else _default_endpoint(llm.provider)
+    common: dict[str, Any] = {
+        "temperature": llm.temperature,
+        "think": llm.think,
+        "max_output_tokens": llm.max_output_tokens,
+        "timeout_seconds": llm.request_timeout_seconds,
+        "transport": LoopbackJsonTransport(endpoint),
+    }
+    if llm.provider == "ollama":
+        return OllamaChatProvider(
+            endpoint,
+            llm.model,
+            **common,
+            context_length=llm.context_length,
+            auto_start=False,  # never ``ollama serve`` from VEXEL, whatever the settings say
+            startup_timeout_seconds=llm.startup_timeout_seconds,
+            keep_alive=llm.keep_alive,
+        )
+    # The slice config refuses any api_key, so none is ever sent.
+    if llm.provider == "llama_cpp":
+        return LlamaCppChatProvider(endpoint, llm.model, **common, api_key=None)
+    if llm.provider == "openai_compatible":
+        return OpenAICompatibleChatProvider(endpoint, llm.model, **common, api_key=None)
+    raise ValueError(f"unsupported LLM provider: {llm.provider}")
+
+
+def create_local_provider(settings: WyzerSettings) -> PortugueseProvider:
+    """Build the configured local provider (Ollama by default). Makes no network call.
+
+    The transport is ``LoopbackJsonTransport``: never a proxy, only the configured
+    loopback origin (JAR-NET-01)."""
+    return PortugueseProvider(create_direct_chat_provider(settings.llm))

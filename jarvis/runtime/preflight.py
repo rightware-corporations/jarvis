@@ -93,10 +93,12 @@ def _default_whisper_present(settings: Any) -> bool:
 
 
 async def _default_llm_diagnose(config: SliceConfig) -> Any:
-    from wyzer.brain import create_chat_provider
     from wyzer.brain.factory import diagnostic_provider
 
-    provider = diagnostic_provider(create_chat_provider(config.wyzer.llm))
+    from jarvis.brain.pt_provider import create_direct_chat_provider
+
+    # Same loopback-only, proxy-free transport as the runtime (JAR-NET-01).
+    provider = diagnostic_provider(create_direct_chat_provider(config.wyzer.llm))
     if provider is None:
         return None
     return await provider.diagnose()

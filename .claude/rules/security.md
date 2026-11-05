@@ -21,6 +21,10 @@ Cada item é um contrato coberto por testes. Enfraquecê-lo é motivo de recusa.
    - O guard de processos de `tests_vexel/conftest.py` só permite `[sys.executable, scripts/verify_import.py]`.
 5. **Local e gratuito.**
    - LLM via Ollama em `127.0.0.1`, `auto_start = false`.
+   - Transporte do LLM local (D02, JAR-NET-01): `jarvis.brain.local_transport.LoopbackJsonTransport`, injectado em todos os providers do VEXEL (runtime e preflight).
+     - Nunca usa proxies (ambiente, registo Windows ou sistema) e não segue redireccionamentos.
+     - Só aceita `http` para a origem configurada, que tem de ser um IP de loopback (sem `localhost`).
+     - Não se volta ao `create_chat_provider` do Wyzer nem se ajustam variáveis globais de proxy.
    - Sem APIs pagas, chaves ou SDKs comerciais obrigatórios.
    - Em CI e cloud: sem download de modelos.
 6. **Wake word bloqueada** (`WAKE_WORD_BLOCKED`): activação manual; não usar os modelos `hey_jarvis`.
