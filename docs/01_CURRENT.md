@@ -175,3 +175,20 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Push para `develop` a partir do Claude Code Cloud:** verificado (fast-forward).
 - **Continua não testado:** Ollama real, modelo, latência real, microfone, Whisper e SAPI. Requisito do Ollama: Windows 10 22H2 ou posterior.
 - Relatório: [docs/reports/2026-11-05_JAR-ENGINE-01-FINAL.md](reports/2026-11-05_JAR-ENGINE-01-FINAL.md).
+
+## JAR-NET-01 — transporte do LLM local sem proxy, 05/11/2026 (`NET_SECURITY_PASS` + `REAL_INFERENCE_PENDING`)
+
+- **Risco fechado:** o `UrllibJsonTransport` do Wyzer usa o opener global do urllib, que respeita os proxies do ambiente e o proxy do registo Windows (a excepção `<local>` não cobre `127.0.0.1`).
+- **Correcção:** `jarvis/brain/local_transport.py` (`LoopbackJsonTransport`) é injectado em todos os providers do VEXEL (runtime e preflight).
+  - Usa `ProxyHandler({})` e não segue redireccionamentos.
+  - Só aceita `http` para a origem configurada, que tem de ser um IP de loopback.
+  - Força `auto_start=False`.
+  - O Wyzer continua 182/182.
+- **Mudança de configuração:** `llm.endpoint` só aceita IPs de loopback (`127.0.0.1`/`::1`). `localhost` é recusado.
+- **Evidência:**
+  - um proxy hostil em loopback recebe 0 bytes do transporte VEXEL, e o transporte upstream é capturado (controlo);
+  - CI 12/12 em `f31e688`; `tests_vexel` 545 no `windows-latest`, com o leitor do registo simulado.
+  - **Não testado:** o proxy real do registo num PC.
+- **D01:** servidores HTTP sintéticos em loopback autorizados nos testes (`.claude/rules/testing.md`).
+- **Contagens:** `tests_vexel` 545, `tests_lab` 16, `tests_desktop` 87.
+- Relatório, com a matriz da primeira inferência real: [docs/reports/2026-11-05_JAR-NET-01-FINAL.md](reports/2026-11-05_JAR-NET-01-FINAL.md).

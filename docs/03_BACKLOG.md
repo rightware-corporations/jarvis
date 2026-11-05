@@ -140,5 +140,7 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [x] **JAR-ENGINE-01** Integração funcional do backend por HTTP (provider Wyzer real contra Ollama falso em loopback), métricas LLM, `--text` sempre simulado — `ENGINE_INTEGRATION_PASS` + `REAL_INFERENCE_PENDING`, CI 12/12 em `eea5bac`.
 - [ ] **JAR-INFER-01** Primeira inferência real no PC de QA autorizado (procedimento no relatório JAR-ENGINE-01, §16): Windows 10 22H2 ou posterior, Ollama manual, `--text`, critério `REAL_INFERENCE_PASS`.
 - [ ] **JAR-MODEL-ADR** ADR do modelo local (4b / 2b / 0.8b), depois de medir `llm_ms` e a qualidade das ferramentas no hardware-alvo. `configs/` não muda sem decisão.
-- [ ] **JAR-NET-PROXY** (P3, decisão RIGHTWARE) Garantir que o tráfego para `127.0.0.1` nunca passa pelo proxy do sistema (urllib/registo Windows): `NO_PROXY` no runtime ou aviso no preflight.
-- [ ] **JAR-TEST-LOOPBACK** (`REVIEW_REQUIRED`) Confirmar que um servidor HTTP só em loopback nos testes é compatível com a regra «sem rede» de `testing.md`.
+- [x] **JAR-NET-PROXY → JAR-NET-01** Transporte loopback sem proxy (`LoopbackJsonTransport`) — `NET_SECURITY_PASS`, CI 12/12 em `f31e688`.
+- [x] **JAR-TEST-LOOPBACK** Decisão D01: servidores sintéticos só em `127.0.0.1`/`::1`, em portas efémeras, autorizados (`testing.md`).
+- [ ] **JAR-NET-02** (P2, fora do produto) `apps/weblab/api.py`: injectar `LoopbackJsonTransport` e validar `JARVIS_OLLAMA_URL` no arranque.
+- [ ] **JAR-INFER-01** Seguir a matriz do relatório JAR-NET-01, §11: 0.8b → 2b → 4b no PC de QA (Windows 10 22H2 ou posterior), com evidência independente (`ollama ps`/`list`/`--version` e nonce). Confirmar no PC o comportamento com proxy real.
