@@ -125,8 +125,9 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **VOICE-WAKE-01** `WAKE_WORD_BLOCKED`: escolher wake word com licença comercial ou treinar modelo próprio; até lá activação manual.
 - [ ] **VOICE-TTS-LIC-01** Kokoro: rever obrigações de espeak-ng (GPL-3.0-or-later) via misaki antes de distribuir.
 - [x] **JAR-SLICE-01B-R01** Correcções P0 (TTS/confirmação fail-closed), P1 (estado `SIMULATED/SUCCEEDED/FAILED/DENIED`), P1 (ordem de eventos, threads, cancelamento, concorrência), workflow CI preparado — `CANDIDATE_PASS` local, 321 PASS; push e CI remoto pendentes de autorização.
-- [ ] **JAR-SLICE-01B-PUB** Publicar os commits 01B + R01 na `develop` e registar o run do CI remoto com `tests_vexel`.
+- [x] **JAR-SLICE-01B-PUB** Publicados os commits 01B + R01 em `develop@372c219` (fast-forward); CI remoto `REMOTE_CI_PASS`: runs [42007778632](https://github.com/rightware-corporations/jarvis/actions/runs/42007778632) (push) e [42007788982](https://github.com/rightware-corporations/jarvis/actions/runs/42007788982) (PR #2), 182/182, `tests_lab` 16/16, `tests_vexel` 305/305, `--check-config` OK.
 - [ ] **JAR-SLICE-01D-EVID** Definir a evidência de `SUCCEEDED` real (janela/processo visível) antes de activar o lançador Windows.
-- [x] **JAR-SLICE-01C-PRE** Runtime de voz (`--voice`, `--diagnose`), preflight read-only, script PowerShell de inventário, plano QA G1–G10 — `PREP_READY` local, 399 PASS com fakes; push pendente.
+- [x] **JAR-SLICE-01C-PRE** Runtime de voz (`--voice`, `--diagnose`), preflight read-only, script PowerShell de inventário, plano QA G1–G10 — `PREP_READY`, 399 PASS com fakes.
+- [ ] **JAR-SLICE-01C-PUB** Correcções do plano (FIX-01 dependências dos gates, FIX-02 rollback sem remoção automática, FIX-03 privacidade de áudio), job CI Windows de parsing PowerShell, publicação e CI remoto.
 - [ ] **JAR-SLICE-01C** Executar G1–G10 no PC Windows de QA autorizado (Ollama + `qwen3.5:4b`, Whisper `small`, voz SAPI PT), com aplicações simuladas.
-- [ ] **JAR-CI-WIN-01** (proposta) Job `windows-latest` só de leitura: correr `tests_vexel` e `--diagnose` no runner para apanhar diferenças Linux/Windows antes do PC de QA.
+- [ ] **JAR-CI-WIN-01** (proposta, para além do parsing da 01C-PUB) Correr também `tests_vexel` no runner `windows-latest` para apanhar diferenças Linux/Windows antes do PC de QA.

@@ -1,36 +1,68 @@
 # 25 — JAR-SLICE-01C: Plano de execução no PC Windows de QA
 
-**Estado:** preparado em JAR-SLICE-01C-PRE; **não executado**. Cada gate exige autorização explícita da RIGHTWARE antes de começar.
+**Estado:** preparado em JAR-SLICE-01C-PRE e corrigido em JAR-SLICE-01C-PUB (FIX-01 a FIX-03); **não executado**. Cada gate exige autorização explícita da RIGHTWARE antes de começar.
 **Base de código:** `develop` no SHA aprovado para a 01C (registar o SHA exacto em cada relatório).
 **Âmbito:** activação manual → microfone → Whisper PT → Wyzer → Ollama local → voz SAPI PT. Aplicações **sempre simuladas**; wake word **bloqueada** (`WAKE_WORD_BLOCKED`).
+
+### Alterações na JAR-SLICE-01C-PUB
+
+- **FIX-01, dependências dos gates.** A versão anterior tinha duas dependências circulares:
+  - o G1 exigia uma voz PT, que só o G6 instalava;
+  - o G5 corria `--voice`, que só arranca com o preflight completo (voz PT incluída), verificado apenas no G6.
+
+  Agora o G1 é um inventário que nunca é bloqueado pela falta de voz ou de microfone, e regista-as como *bloqueadores da fase de voz*. O G5 apenas instala e verifica o modelo STT e o microfone. O G6 apenas garante a voz PT. O primeiro teste de reconhecimento real acontece no G7, depois de um `--diagnose` READY.
+- **FIX-02, rollback.** O G10 passou a validar o plano de rollback sem apagar nada. Qualquer remoção (modelos, venv, Ollama, vozes, evidências) é um passo separado, o R1, que exige autorização específica da RIGHTWARE e só acontece depois de as evidências estarem arquivadas.
+- **FIX-03, privacidade de áudio.** Nova secção 2: o WAV temporário do Wyzer, os logs locais de transcrições e as regras de higienização antes de partilhar evidências.
 
 ## 0. Regras de execução
 
 - PC Windows de QA autorizado; nunca o PC pessoal do Issa sem autorização separada.
 - Utilizador Windows normal (sem administrador). Pedir elevação só onde estiver escrito, e só com autorização.
 - Tudo dentro de uma pasta de trabalho, `C:\VEXEL-QA\jarvis`, e de um venv local `.venv` (git-ignored). Não fazer `pip install` global.
-- **Privacidade:**
-  - gravações e transcrições ficam apenas no PC de QA, em `evidence\` ou `.wyzer\` (ambas git-ignored);
-  - nunca enviar áudio para o repositório público;
-  - `log_transcript_text = true` só numa cópia local da configuração (`evidence\qa.toml`), nunca em commit.
-- Qualquer gate FAIL → STOP, relatório, nenhum passo seguinte.
-- Evidência mínima por gate: comando executado, saída relevante, PASS/FAIL, data/hora, SHA do código.
+- Privacidade: ver a secção 2. **Nunca publicar áudio, transcrições ou identificadores pessoais no GitHub.**
+- Nada é apagado durante ou depois dos testes sem autorização específica (secção 1, R1).
+- Gate com FAIL → STOP e relatório; os gates que dependem dele não começam. Excepção explícita: no G1, a falta de voz PT ou de microfone é registada como bloqueador da fase de voz (BLOCKER_VOICE) e não pára o inventário nem os gates G2–G4.
+- Evidência mínima por gate: comando executado, saída relevante, PASS/FAIL/BLOCKER, data/hora, SHA do código.
+
+### Dependências
+
+```
+G1 inventário ──► G2 dependências ──► G3 Ollama+modelo ──► G4 modo texto
+                        │
+                        ├──► G5 modelo STT + microfone ─┐
+                        └──► G6 voz PT ─────────────────┤
+                                       G3 ──────────────┤
+                                                        ▼
+                                  G7 ciclo de voz real (exige --diagnose READY)
+                                                        ▼
+                                  G8 seis comandos por voz ──► G9 benchmark
+                                                        ▼
+                         G10 validação do plano de rollback (sem apagar nada)
+                                                        ▼
+                         R1 remoção — só com autorização específica
+```
+
+G4 depende apenas de G2 e G3 e pode correr sem microfone nem voz. G5 e G6 são independentes entre si. G7 é o primeiro gate que usa microfone e voz em conjunto, e só começa se G3, G5 e G6 estiverem PASS e `--diagnose` der `PREFLIGHT READY`.
 
 ## 1. Gates
 
-### G1 — Inventário de hardware aprovado
+### G1 — Inventário de hardware (read-only)
 1. Copiar o repositório (zip do SHA aprovado ou `git clone`) para `C:\VEXEL-QA\jarvis`.
-2. `powershell -NoProfile -ExecutionPolicy Bypass -File .\qa\windows\Invoke-JarvisPreflight.ps1`. Opcional: `-CopySummary` para colar o resumo no relatório. O `Bypass` aplica-se apenas a este processo.
-3. Anexar `evidence\jarvis-preflight-*\report.txt` e `report.json` (higienizados), depois de revistos à mão.
+2. `powershell -NoProfile -ExecutionPolicy Bypass -File .\qa\windows\Invoke-JarvisPreflight.ps1`. Opcional: `-CopySummary`. O `Bypass` aplica-se apenas a este processo.
+3. Rever à mão `evidence\jarvis-preflight-*\report.txt` e `report.json` (secção 2.4) antes de os anexar.
 
-**PASS:**
-- Windows 10/11 x64.
-- RAM ≥ 16 GB (8–16 GB → WARN e plano com `qwen3.5:2b`; < 8 GB → FAIL).
-- Disco livre ≥ 15 GB.
-- ≥ 1 entrada de áudio activa.
-- Indicação de pelo menos uma voz PT.
+**Classificação:**
 
-**STOP:** sem microfone activo, ou RAM < 8 GB.
+| Item | PASS | BLOCKER_VOICE (continua para G2–G4) | STOP (pára tudo) |
+|---|---|---|---|
+| Windows | 10/11 x64 | — | outra arquitectura ou versão |
+| RAM | ≥ 16 GB (8–16 GB = WARN → plano `qwen3.5:2b`) | — | < 8 GB |
+| Disco livre | ≥ 15 GB | — | < 10 GB |
+| Python 3.11 | registado no `py` | — | ausente e sem autorização para instalar |
+| Microfone | ≥ 1 entrada activa | nenhuma entrada activa | — |
+| Voz PT | SAPI PT activa | ausente, ou só OneCore (WARN) | — |
+
+O G1 nunca exige voz PT nem microfone. Regista-os para que o G5 e o G6 os resolvam.
 
 ### G2 — Instalação isolada e reversível de dependências
 ```powershell
@@ -45,7 +77,7 @@ py -3.11 -m venv .venv
 ```
 As versões são fixadas pelas constraints do próprio Wyzer: `pydantic==2.12.3`, `psutil==7.1.3`, `numpy==1.26.4`, `sounddevice==0.5.3`, `faster-whisper==1.2.1`, `ctranslate2==4.6.2`, `av==16.0.1`, `onnxruntime==1.23.2`, `huggingface-hub==0.36.2`. Não instalar `kokoro`, `torch`, `openwakeword` nem `PySide6` nesta fase.
 
-**PASS:** integridade 182/182, `CONFIG_OK`, freeze anexado com as versões acima.
+**PASS:** integridade 182/182, `CONFIG_OK`, freeze anexado com as versões acima. **STOP:** um pacote não instala com estas versões.
 
 ### G3 — Ollama e modelo autorizados
 Requer autorização explícita para (a) instalar o Ollama e (b) descarregar os pesos.
@@ -53,13 +85,13 @@ Requer autorização explícita para (a) instalar o Ollama e (b) descarregar os 
 2. `ollama pull qwen3.5:4b`.
 3. `ollama show qwen3.5:4b --license > evidence\g3-license.txt`: confirmar a licença **antes** de qualquer uso. Fontes secundárias indicam Apache-2.0; não foi verificado numa fonte primária.
 4. `ollama list > evidence\g3-models.txt`.
-5. `.\.venv\Scripts\python -m jarvis --diagnose`: `llm` tem de dar `LLM_MODEL_OK`.
+5. `.\.venv\Scripts\python -m jarvis --diagnose`: o item `llm` tem de dar `LLM_MODEL_OK`. Os outros itens podem continuar em FAIL nesta fase.
 
-**PASS:** licença registada e compatível, modelo listado, `LLM_MODEL_OK`.
+**PASS:** licença registada e compatível, modelo listado, `LLM_MODEL_OK`. **STOP:** licença incompatível, ou modelo não carrega.
 **Nota:** o Jarvis nunca arranca o Ollama (`auto_start = false`); a aplicação do Ollama tem de estar a correr.
 
-### G4 — Conversação real em modo texto
-`.\.venv\Scripts\python -m jarvis --text`. Escrever os seis comandos:
+### G4 — Conversação real em modo texto (depende de G2, G3)
+`.\.venv\Scripts\python -m jarvis --text`. Não usa microfone nem voz. Escrever os seis comandos:
 
 | # | Comando | Esperado |
 |---|---|---|
@@ -75,36 +107,43 @@ Requer autorização explícita para (a) instalar o Ollama e (b) descarregar os 
 - nenhuma afirmação de abertura real;
 - nenhuma resposta em inglês.
 
-Registar respostas incorrectas do modelo (são o principal risco desta fase).
+**STOP:** qualquer execução sem `sim`, ou resposta que afirme ter aberto uma aplicação.
 
-### G5 — Faster-Whisper com microfone
-1. Descarregar o modelo `small` (multilingue, MIT) para a cache local, com autorização:
+### G5 — Modelo STT e microfone: instalação e verificação (sem reconhecimento)
+1. Com autorização, descarregar o modelo `small` (multilingue, MIT) para a cache local:
    `.\.venv\Scripts\python -c "from huggingface_hub import snapshot_download; snapshot_download('Systran/faster-whisper-small', cache_dir='.wyzer/models')"`
    (Não se usa `wyzer.install_check --download-model` porque esse comando lê o `wyzer.toml`, que aponta para `small.en`.)
-2. `--diagnose` → `stt_model` = `STT_MODEL_OK`, `microphone` = `MIC_OK`.
-3. Criar `evidence\qa.toml` (cópia local de `configs\jarvis_slice.toml` com `log_transcript_text = true`).
-4. `python -m jarvis --voice --config evidence\qa.toml`. Ler 20 frases do corpus PT-MZ (secção 3), uma por activação.
+2. Registar o tamanho da pasta e a origem do modelo (`evidence\g5-model.txt`).
+3. Se o G1 deu BLOCKER_VOICE no microfone: ligar ou activar um microfone (Definições → Privacidade → Microfone, para aplicações de ambiente de trabalho) e repetir o G1.
+4. `--diagnose` → `stt_model` = `STT_MODEL_OK` e `microphone` = `MIC_OK`.
+
+**PASS:** `STT_MODEL_OK` e `MIC_OK`. Não há testes de reconhecimento neste gate: passam para o G7.
+
+### G6 — Voz portuguesa disponível (sem ciclo de voz)
+1. `--diagnose` → `tts_voice` = `PT_VOICE_SELECTED` ou `PT_VOICE_CONFIGURED` (preferência pt-PT, depois pt-BR).
+2. Se `PT_VOICE_MISSING`: instalar uma voz PT em Definições → Hora e idioma → Voz, **com autorização** (pode exigir administrador). Repetir o G1 e o `--diagnose`.
+3. Se a voz aparecer só como OneCore (WARN no G1, `PT_VOICE_MISSING` no `--diagnose`): STOP da fase de voz e registo como bloqueador técnico de SAPI para decisão da RIGHTWARE.
+
+**PASS:** `tts_voice` em PASS. A qualidade audível é avaliada no G7.
+
+### G7 — Primeiro ciclo de voz real (depende de G3, G5 e G6)
+**Pré-condição obrigatória:** `.\.venv\Scripts\python -m jarvis --diagnose` → `PREFLIGHT READY`. Se não estiver READY, não começar.
+1. Criar `evidence\qa.toml` (cópia local de `configs\jarvis_slice.toml`). Só se a RIGHTWARE autorizar o registo de transcrições para avaliação: `log_transcript_text = true` (secção 2.2).
+2. `.\.venv\Scripts\python -m jarvis --voice --config evidence\qa.toml`.
+3. **Reconhecimento:** ler as 20 frases do corpus PT-MZ (secção 4), uma por activação (Enter).
+4. **Voz:** ouvir pelo menos 5 respostas.
+5. **Controlo:** `c` durante a escuta, o pensamento e a fala; `q` para terminar.
 
 **PASS:**
-- ≥ 18/20 transcrições com o sentido correcto;
-- 0 falhas de captura não reportadas;
-- comandos de controlo (`sim`, `não`, `cancela`) 100% correctos.
+- ≥ 18/20 frases com o sentido correcto;
+- `sim`, `não` e `cancela` 100% correctos;
+- voz PT audível e inteligível, sem cortes;
+- `c` interrompe nas três fases;
+- sequência de estados válida em `ui-events.jsonl`;
+- `q` termina sem deixar processos (Gestor de Tarefas);
+- nenhum `wyzer-whisper-*.wav` em `%TEMP%` no fim (secção 2.1).
 
-### G6 — TTS português instalado e testado
-1. `--diagnose` → `tts_voice` = `PT_VOICE_SELECTED` ou `PT_VOICE_CONFIGURED` (ordem de preferência: pt-PT, depois pt-BR).
-2. Se `PT_VOICE_MISSING`: instalar uma voz PT em Definições → Hora e idioma → Voz, **com autorização** (pode exigir administrador). Repetir o diagnóstico. Se a voz aparecer só como OneCore (o preflight dá WARN), registar como bloqueador técnico de SAPI.
-3. No modo de voz, ouvir 5 respostas.
-
-**PASS:** voz PT audível e inteligível, sem cortes; `cancela` durante a fala pára o áudio.
-
-### G7 — Ciclo completo com activação manual
-`python -m jarvis --voice`. Enter → falar → resposta falada.
-
-**PASS:**
-- 10 ciclos sem erro;
-- a sequência de estados em `ui-events.jsonl` é válida;
-- `c` cancela durante a escuta, o pensamento e a fala;
-- `q` termina sem deixar processos (verificar no Gestor de Tarefas).
+**STOP:** qualquer execução sem `sim` válido, ou falha de captura não reportada.
 
 ### G8 — Seis comandos demonstrados por voz, aplicações simuladas
 Os mesmos seis comandos do G4, por voz. Incluir:
@@ -131,18 +170,68 @@ Os mesmos seis comandos do G4, por voz. Incluir:
 | think_ms p50 / p95 | medir | medir |
 | Memória do modelo (`ollama ps`) | medir | medir |
 
-### G10 — Rollback validado
+### G10 — Validação do plano de rollback (não apaga nada)
+Objectivo: provar que o ambiente pode ser revertido, **sem** o reverter. O ambiente fica pronto para repetir a demonstração.
+1. Arquivar as evidências: copiar `evidence\` para o local de arquivo acordado com a RIGHTWARE e registar o SHA-256 de cada ficheiro (`Get-FileHash`) em `evidence\g10-manifest.txt`.
+2. Inventário do que uma reversão removeria, só com leitura:
+   - `ollama list` (modelos);
+   - tamanho de `.venv`, `.wyzer\models` e `.wyzer\vexel\logs`;
+   - versão do Ollama instalada;
+   - vozes instaladas durante o G6, se as houver.
+3. Confirmar que tudo o que foi instalado está dentro de `C:\VEXEL-QA`, excepto o Ollama, os seus modelos em `%USERPROFILE%\.ollama` e eventuais vozes do Windows. Estas excepções ficam listadas explicitamente.
+4. Escrever o procedimento R1 com os caminhos exactos encontrados neste PC.
+
+**PASS:** evidências arquivadas com hash, inventário completo, R1 escrito com caminhos reais, nada removido.
+
+### R1 — Remoção (opcional; só com autorização específica)
+Executar **apenas** depois de: G10 PASS, evidências arquivadas, e uma autorização escrita da RIGHTWARE que diga *o quê* remover. Cada linha é independente; remover apenas o que for autorizado.
 ```powershell
-ollama rm qwen3.5:4b            # e qwen3.5:2b, se tiver sido instalado
-# Desinstalar o Ollama em Definições → Aplicações (se a RIGHTWARE pedir remoção total)
+ollama rm qwen3.5:4b                         # e/ou qwen3.5:2b
 Remove-Item -Recurse C:\VEXEL-QA\jarvis\.venv
-Remove-Item -Recurse C:\VEXEL-QA\jarvis\.wyzer
-# Guardar e depois apagar evidence\ conforme a política de retenção acordada
+Remove-Item -Recurse C:\VEXEL-QA\jarvis\.wyzer\models
+Remove-Item -Recurse C:\VEXEL-QA\jarvis\.wyzer\vexel\logs   # só depois de arquivar
+# Desinstalação do Ollama / vozes: Definições → Aplicações / Voz (decisões separadas)
 powershell -NoProfile -ExecutionPolicy Bypass -File .\qa\windows\Invoke-JarvisPreflight.ps1
 ```
-**PASS:** o novo preflight mostra o modelo ausente e/ou o Ollama não instalado; não fica nenhuma alteração fora de `C:\VEXEL-QA` (excepto a desinstalação explícita do Ollama e de vozes, que são decisões separadas).
+**PASS:** o novo preflight confirma a remoção autorizada, e só essa.
 
-## 2. Licenças a confirmar no G2/G3
+## 2. Privacidade de áudio e de transcrições
+
+### 2.1 WAV temporário do reconhecedor Wyzer
+- **Quem cria:** `FasterWhisperRecognizer.listen()` (`wyzer/speech/whisper.py`), usado pelo Jarvis através do `PortugueseWhisperRecognizer`.
+- **O quê:** um ficheiro `wyzer-whisper-<aleatório>.wav` (16 kHz, mono, 16 bits) com **a fala de uma activação**.
+- **Onde:** a pasta temporária do utilizador (`%TEMP%`, via `tempfile.mkstemp`).
+- **Ciclo de vida:**
+  1. criado depois de a captura terminar;
+  2. lido pelo Faster-Whisper;
+  3. apagado num bloco `finally` (`path.unlink(missing_ok=True)`), mesmo que a transcrição falhe.
+
+  Em funcionamento normal existe apenas durante a transcrição, normalmente menos de alguns segundos.
+- **Pode ficar no disco se:** o processo for terminado à força (Gestor de Tarefas, falha de energia, crash do interpretador) durante a transcrição.
+- **Verificação no fim do G7, G8 e G9:** `Get-ChildItem $env:TEMP -Filter 'wyzer-whisper-*.wav'` tem de estar vazio. Se houver ficheiros, registar a contagem (nunca o conteúdo) e pedir autorização para os remover.
+- **Outros pontos:** a captura do Jarvis (`CancellableCapture`) mantém o áudio só em memória. A voz SAPI recebe o texto pelo stdin do PowerShell e não escreve ficheiros. Não existe gravação contínua: o microfone só é lido depois de Enter.
+
+### 2.2 Registos locais
+| Ficheiro | Conteúdo por omissão | Com `log_transcript_text = true` |
+|---|---|---|
+| `.wyzer\vexel\logs\voice-turns.jsonl` | resultado, decisão, estado da acção, tempos, nº de caracteres | **mais** o texto ouvido e a resposta |
+| `.wyzer\vexel\logs\ui-events.jsonl` | estados, tempos, nº de caracteres | **mais** o texto associado aos eventos |
+| `evidence\jarvis-preflight-*\` | inventário higienizado | — |
+
+- `log_transcript_text = true` só numa cópia local (`evidence\qa.toml`), só com autorização, e nunca em commit.
+- `.wyzer\` e `evidence\` estão no `.gitignore` do repositório; mesmo assim, não copiar estas pastas para outro local versionado.
+
+### 2.3 Proibições
+- Não publicar no GitHub (commits, issues, PRs, comentários, artefactos de CI) nenhum áudio, transcrição, excerto de `voice-turns.jsonl` com texto, nome de pessoa, nome de máquina, nome de utilizador ou identificador de dispositivo.
+- Não gravar áudio com outras ferramentas durante os testes.
+
+### 2.4 Antes de partilhar qualquer evidência
+1. Rever o ficheiro à mão.
+2. Confirmar que não contém texto de transcrição (excepto se a partilha da transcrição foi autorizada), nem nomes de pessoas, de utilizador ou de máquina, caminhos com o nome do utilizador, números de série, MAC ou IP.
+3. Para logs com texto: partilhar só as métricas (`outcome`, `intended`, `metrics`), removendo `heard` e `reply`.
+4. Registar quem reviu e quando.
+
+## 3. Licenças a confirmar no G2/G3
 
 | Componente | Licença (fonte) | Estado |
 |---|---|---|
@@ -161,9 +250,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\qa\windows\Invoke-JarvisPr
 | openWakeWord `hey_jarvis` | CC BY-NC-SA 4.0 | **não usar** (`WAKE_WORD_BLOCKED`) |
 | Kokoro + espeak-ng | Apache-2.0 + GPL-3.0-or-later | **não instalar na 01C** |
 
-## 3. Corpus PT-MZ mínimo (G5/G8)
+## 4. Corpus PT-MZ mínimo (G7/G8)
 
-Ler cada frase com a voz natural do operador. Não gravar ficheiros, porque o Jarvis só transcreve. Registar a transcrição obtida.
+Ler cada frase com a voz natural do operador. Não gravar ficheiros; o Jarvis só transcreve (secção 2.1). Registar a transcrição obtida apenas se autorizado.
 
 1. Que horas são?
 2. Jarvis, que horas são agora?
@@ -186,6 +275,6 @@ Ler cada frase com a voz natural do operador. Não gravar ficheiros, porque o Ja
 19. Olá Jarvis.
 20. Obrigado, Jarvis.
 
-## 4. O que esta preparação não prova
+## 5. O que esta preparação não prova
 
-Os testes da 01C-PRE usam fakes para o microfone, o Whisper, as vozes, o Ollama e o lançador de aplicações. Provam o comportamento do código perante falhas e cancelamentos. Não provam a qualidade do reconhecimento, a voz, a latência nem o comportamento do modelo real: isso é o objectivo dos gates G4–G9.
+Os testes da 01C-PRE usam fakes para o microfone, o Whisper, as vozes, o Ollama e o lançador de aplicações. Provam o comportamento do código perante falhas e cancelamentos. Não provam a qualidade do reconhecimento, a voz, a latência nem o comportamento do modelo real: isso é o objectivo dos gates G4 e G7–G9. A validação sintáctica do script PowerShell no CI Windows (JAR-SLICE-01C-PUB) prova que o script é analisável pelo parser oficial, não que as sondas funcionam em todos os PCs.

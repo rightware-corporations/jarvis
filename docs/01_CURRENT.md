@@ -115,3 +115,12 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Preflight Windows para QA:** `qa/windows/Invoke-JarvisPreflight.ps1`, read-only, para revisão; **não executado**.
 - **Plano de QA:** [25_JAR-SLICE-01C_WINDOWS_QA_PLAN.md](25_JAR-SLICE-01C_WINDOWS_QA_PLAN.md), com gates G1–G10, licenças, corpus PT-MZ e rollback.
 - **Testes:** 399 PASS (`tests_vexel` + `tests_lab`), com fakes.
+
+## JAR-SLICE-01B-PUB e JAR-SLICE-01C-PUB — publicação, 05/11/2026
+
+- **01B-PUB concluída (`REMOTE_CI_PASS`):** `origin/develop` avançou de `f3e1456` para `372c219` por fast-forward. Os runs [42007778632](https://github.com/rightware-corporations/jarvis/actions/runs/42007778632) (push) e [42007788982](https://github.com/rightware-corporations/jarvis/actions/runs/42007788982) (PR #2) passaram no SHA exacto: 182/182, compilação, `tests_lab` 16/16, `tests_vexel` 305/305 e `--check-config`. As secções R01 e 01C-PRE acima, que dizem «commits apenas locais», descrevem o estado no momento em que foram escritas.
+- **01C-PUB (em curso):** o plano de QA ([25](25_JAR-SLICE-01C_WINDOWS_QA_PLAN.md)) foi corrigido:
+  - FIX-01: o G1 é um inventário que regista a falta de voz e de microfone como bloqueador da fase de voz; G5 e G6 só instalam e verificam; o primeiro reconhecimento real é no G7, depois de um `--diagnose` READY;
+  - FIX-02: o G10 valida o rollback sem apagar nada, e a remoção (R1) exige autorização específica;
+  - FIX-03: nova secção sobre o WAV temporário do Wyzer, os logs com texto e a higienização das evidências.
+- **CI:** novo job `windows-preflight-parse` (Windows PowerShell 5.1, parser oficial, sem executar o script). O resultado só conta depois do run remoto.
