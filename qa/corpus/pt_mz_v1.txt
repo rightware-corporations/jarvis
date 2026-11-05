@@ -1,0 +1,21 @@
+# VEXEL Jarvis — corpus PT-MZ v1 (G7/G8). Uma frase por linha; linhas com # são comentários.
+Que horas são?
+Jarvis, que horas são agora?
+Abre a calculadora.
+Abre o Bloco de Notas, por favor.
+Qual é o estado do computador?
+Como está a memória do computador?
+Explica novamente a última resposta.
+Podes repetir isso de outra forma?
+Cancela essa operação.
+Pára.
+Sim.
+Sim, confirmo.
+Não.
+Não, obrigado.
+Esquece.
+Pode avançar.
+Quanto tempo o computador está ligado?
+Jarvis, abre a calculadora.
+Olá Jarvis.
+Obrigado, Jarvis.

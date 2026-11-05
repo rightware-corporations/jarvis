@@ -10,20 +10,36 @@ Wyzer permanece o motor. O frontend `adewaskar/jarvis` é apenas candidato visua
 
 Assistente pessoal da **VEXEL / RIGHTWARE**, derivado de [Wyzer AI v0.3.1](https://github.com/XtraWyze/Wyzer-Ai), para activação por «Jarvis», conversação por voz em português, memória e execução de tarefas autorizadas. **Meta de runtime:** sem subscrição obrigatória nem APIs pagas de IA. A escolha entre local, servidor e híbrido continua pendente de testes.
 
-> **Estado em 2026-11-04 — EM DESENVOLVIMENTO.** O código upstream foi importado para `develop` e preservado com hashes verificáveis. Existe uma API FastAPI headless e um protótipo web de laboratório com **16 testes de contrato anteriormente PASS**, utilizando provider simulado. Não foi validado um LLM Ollama real, wake word «Jarvis», STT/TTS em português, controlo Windows real nem uma release instalada no equipamento do Issa. **A UI web não é o produto de voz final.**
+> **Estado em 2026-11-05 — EM DESENVOLVIMENTO.** O núcleo VEXEL (`jarvis/`) já tem o ciclo de voz em português, a política de confirmação `sim/não/cancela`, três ferramentas autorizadas (aplicações sempre **simuladas**), o modo `--voice` e o diagnóstico `--diagnose`. São 399 testes com componentes simulados, todos PASS no CI (Linux, e parsing PowerShell 5.1 em Windows). **Ainda não foi validado** com Ollama real, microfone, voz SAPI portuguesa nem no PC do Issa: isso é a JAR-SLICE-01C, num PC de QA autorizado. A wake word «Jarvis» está bloqueada até haver um modelo com licença comercial.
 
-## Estrutura actual — não confundir com a árvore-alvo
+## Estrutura do repositório
 
-| Local | Conteúdo |
-| --- | --- |
-| `wyzer/` | Código upstream original (núcleo, voz, providers, memória, ferramentas, desktop). Preservado. |
-| `jarvis_lab/` | Composição headless, API HTTP experimental e `web/` (HTML/CSS/JS); sem ferramentas Windows reais. |
-| `tests/` | Testes importados do upstream, sem declaração de execução integral nesta migração. |
-| `tests_lab/` | Testes de contrato do laboratório, já executados remotamente. |
-| `docs/` | Estado, arquitectura, auditorias, backlog e aceitação. |
-| `installer/` | Scripts upstream importados, não validados para distribuição RIGHTWARE. |
+Definida no [ADR-0001](docs/adr/0001-estrutura-do-repositorio.md). O VEXEL Jarvis é uma **aplicação de desktop Windows local**, não uma aplicação web.
 
-A **arquitectura-alvo proposta**, incluindo separação entre frontend, backend, agente Windows, memória, voz e segurança, está em [docs/11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md](docs/11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md). **Ainda não foram movidos ficheiros para `apps/` ou `jarvis/`**. Será uma migração incremental após testes e definição de política de patches.
+```
+wyzer/ tests/ installer/ wyzer.toml pyproject.toml   upstream Wyzer v0.3.1 — imutável (182 ficheiros)
+jarvis/                 BACKEND: núcleo VEXEL em Python (voz, PT, política, ferramentas, preflight)
+  core/ voice/ brain/ tools/ language/ runtime/ ui/
+apps/
+  desktop/              FRONTEND do produto (orb 01E, HUD) — por iniciar
+  weblab/               laboratório web FastAPI + HTML (não é o produto; antigo jarvis_lab/)
+configs/                perfis TOML sem segredos
+qa/
+  windows/              inventário read-only do PC de QA (PowerShell)
+  corpus/               frases PT-MZ de teste (só texto)
+  benchmarks/           scripts de medição (G9)
+tests_vexel/ tests_lab/ testes RIGHTWARE (CI)
+docs/
+  adr/                  decisões de arquitectura
+  plans/                planos de fase
+  reports/              relatórios de fase
+  00–25_*.md            histórico e documentos de referência
+scripts/  .github/workflows/
+```
+
+- **Base de dados:** ainda não existe no produto. A memória futura será um SQLite local no PC do utilizador, nunca no repositório.
+- **IA:** modelo local servido pelo Ollama em `127.0.0.1`, instalado fora do repositório. Nenhuma API paga no runtime.
+- **Nunca no git:** áudio, transcrições, logs de voz, bases de dados, modelos e venvs (`.wyzer/`, `evidence/`, `logs/` e `.venv/` estão ignorados).
 
 ## Branches e integração
 
@@ -40,9 +56,9 @@ A **arquitectura-alvo proposta**, incluindo separação entre frontend, backend,
 
 ## Verificação remota
 
-- [CI — Source Integrity](.github/workflows/source-integrity.yml): integridade de ficheiros, sintaxe Python e contratos do `tests_lab/` em GitHub Actions Ubuntu/Python 3.11.
+- [CI — Source Integrity](.github/workflows/source-integrity.yml): integridade 182/182, compilação, `tests_lab/`, `tests_vexel/` e `--check-config` em Ubuntu/Python 3.11, e parsing do script de QA com o PowerShell 5.1 em Windows.
 - Exemplo confirmado: [run 41816985515](https://github.com/rightware-corporations/jarvis/actions/runs/41816985515) PASS no commit da auditoria anterior. Estes testes **não** exercitam voz, GPU, browser, Ollama ou Windows real.
-- Lab: `jarvis_lab/api.py` (FastAPI), `jarvis_lab/web/` (UI). A ausência de modelo configurado provoca `MODEL_UNAVAILABLE`; um provider falso só é injectado nos testes.
+- Laboratório: `apps/weblab/api.py` (FastAPI, entrypoint `apps.weblab.api:app`), `apps/weblab/web/` (UI). A ausência de modelo configurado provoca `MODEL_UNAVAILABLE`; um provider falso só é injectado nos testes.
 
 ## Próxima sequência recomendada
 

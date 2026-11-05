@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from jarvis_lab.headless import create_headless_assistant, memory_for_subject
+from apps.weblab.headless import create_headless_assistant, memory_for_subject
 from wyzer.brain.provider import FakeChatProvider
 from wyzer.models import ChatMessage, ProviderChatResponse
 from wyzer.tools.registry import UnknownToolError

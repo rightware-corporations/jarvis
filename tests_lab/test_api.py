@@ -1,6 +1,6 @@
 """HTTP lab contract tests; no Ollama or Windows execution."""
 from fastapi.testclient import TestClient
-from jarvis_lab.api import LabConfig, create_app
+from apps.weblab.api import LabConfig, create_app
 from wyzer.brain.provider import FakeChatProvider
 from wyzer.models import ChatMessage, ProviderChatResponse
 

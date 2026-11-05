@@ -132,5 +132,11 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
   - frontend de desktop em `apps/desktop/`, a criar só com a 01E;
   - contratos de UI em `jarvis/ui/`;
   - base de dados futura como SQLite local fora do repositório;
-  - laboratório web em `jarvis_lab/` (não é o produto).
-- Novas pastas: `docs/adr/` (decisões) e `docs/reports/` (relatórios de fase R01, 01B-PUB, 01C-PRE e 01C-PUB). Nenhum ficheiro existente foi movido. Não se cria `data/`, `apps/` vazio nem se move o `jarvis_lab/`.
+  - laboratório web em `apps/weblab/` (não é o produto).
+- Novas pastas: `docs/adr/` (decisões), `docs/plans/` (planos) e `docs/reports/` (relatórios de fase R01, 01B-PUB, 01C-PRE e 01C-PUB).
+- **Estrutura completa aplicada** (opção escolhida pelo operador):
+  - `apps/desktop/` (README; código só na 01E);
+  - `apps/weblab/` (o laboratório, movido de `jarvis_lab/` com `git mv`; imports, `tests_lab`, CI e documentos de instruções actualizados; entrypoint `apps.weblab.api:app`);
+  - `qa/corpus/` (corpus PT-MZ v1);
+  - `qa/benchmarks/` (README).
+- Não se cria `data/`. As referências a `jarvis_lab/` nos documentos históricos e nos relatórios descrevem o estado de então.

@@ -1,13 +1,15 @@
 # 09 — VEXEL Jarvis Web Lab (código inicial)
 
+> **05/11/2026:** o laboratório passou de `jarvis_lab/` para `apps/weblab/` ([ADR-0001](adr/0001-estrutura-do-repositorio.md)). Os caminhos abaixo já estão actualizados; o cabeçalho HTTP `X-Jarvis-Lab-Token` não mudou.
+
 **Estado:** backend e frontend adicionados à branch `develop`; CI dos testes API em verificação. **Sem URL publicada, modelo configurado ou voz real**.
 
 ## Visual / fonte
 O website VEXEL em `rightware-corporations/vexel` usa `Inter` como família `sans`. Este laboratório adopta a mesma família na variável CSS `--font-interface`; sem terceiros nem fontes binárias embutidas. Se Inter não estiver instalado no navegador, aplica-se o fallback system-ui; a entrega de um ficheiro Inter auto-hospedado poderá ser analisada separadamente. A tipografia original do operador não foi identificada por nome e poderá substituir o token. Sem copiar o layout do website, o Jarvis mantém cor de fundo escura, prata e azul/íris.
 
 ## Código implementado
-- `jarvis_lab/api.py`: API FastAPI, health sem estado sensível, sessões de curta duração, autenticação obrigatória pelo header `X-Jarvis-Lab-Token`, rate limit básico por host, resposta de erro quando Ollama indisponível, restrições de cache/frame/JS.
-- `jarvis_lab/web/index.html`, `lab.css`, `lab.js`: interface conversacional e diagnósticos; sem acesso ao desktop, sem microfone funcional; o token é mantido somente na memória JS e expurgado ao terminar a sessão.
+- `apps/weblab/api.py`: API FastAPI, health sem estado sensível, sessões de curta duração, autenticação obrigatória pelo header `X-Jarvis-Lab-Token`, rate limit básico por host, resposta de erro quando Ollama indisponível, restrições de cache/frame/JS.
+- `apps/weblab/web/index.html`, `lab.css`, `lab.js`: interface conversacional e diagnósticos; sem acesso ao desktop, sem microfone funcional; o token é mantido somente na memória JS e expurgado ao terminar a sessão.
 - `tests_lab/test_api.py`: contratos HTTP com provider de teste explicitamente simulado. **Não** atestam resposta de modelo real.
 
 ## Configuração do servidor de testes — apenas ambiente remoto
@@ -16,7 +18,7 @@ Os seguintes nomes são configurações para um operador de servidor autorizado;
 - `JARVIS_LAB_TOKEN`: segredo forte com pelo menos 16 caracteres, somente no ambiente privado do servidor.
 - `JARVIS_OLLAMA_MODEL`: nome de um modelo auto-hospedado instalado no servidor ou endpoint autorizado, e.g. `qwen3.5:4b` sujeito a disponibilidade/recursos.
 - `JARVIS_OLLAMA_URL`: endereço privado do serviço Ollama, default `http://127.0.0.1:11434`.
-- Entrypoint da aplicação (quando uma infraestrutura de deploy segura estiver preparada): `jarvis_lab.api:app` por um processo ASGI.
+- Entrypoint da aplicação (quando uma infraestrutura de deploy segura estiver preparada): `apps.weblab.api:app` por um processo ASGI.
 
 Sem segredo ou modelo, o chat recusa novas sessões e mostra `MODEL_UNAVAILABLE`. Nunca se faz fallback silencioso para Claude/ChatGPT, modelos pagos ou respostas simuladas na API de produção.
 

@@ -1,9 +1,11 @@
 # Headless adapter — primeira implementação
 
+> **05/11/2026:** o laboratório passou de `jarvis_lab/` para `apps/weblab/` ([ADR-0001](adr/0001-estrutura-do-repositorio.md)). Os caminhos abaixo já estão actualizados; o cabeçalho HTTP `X-Jarvis-Lab-Token` não mudou.
+
 **Estado:** código publicado e cinco testes headless PASS em [GitHub Actions run 41813747553](https://github.com/rightware-corporations/jarvis/actions/runs/41813747553).
 
 ## Ficheiros
-- `jarvis_lab/headless.py`: constrói o **Orchestrator original** com `ToolRegistry()` vazia e `InProcessExecutor`; não publica API HTTP.
+- `apps/weblab/headless.py`: constrói o **Orchestrator original** com `ToolRegistry()` vazia e `InProcessExecutor`; não publica API HTTP.
 - `tests_lab/test_headless.py`: conversa com provider simulado, ausência de ferramentas reais, negação de execução desconhecida e memória separada por subject.
 - `.github/workflows/source-integrity.yml`: valida SHA/compilação e executa testes de contrato em runner remoto com Python 3.11 + Pydantic + pytest.
 

@@ -23,7 +23,7 @@ jobs:
       - name: Check all imported source hashes
         run: python scripts/verify_import.py
       - name: Compile imported Python and test modules
-        run: python -m compileall -q wyzer tests scripts jarvis tests_vexel tests_lab
+        run: python -m compileall -q wyzer tests scripts jarvis apps tests_vexel tests_lab
 
 
   headless-contract:
