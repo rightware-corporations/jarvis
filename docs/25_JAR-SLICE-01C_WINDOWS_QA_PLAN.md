@@ -71,11 +71,12 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\python -m pip install --upgrade pip
 .\.venv\Scripts\python -m pip install -c installer\constraints-windows-py311.txt `
     pydantic psutil numpy sounddevice faster-whisper huggingface-hub
+.\.venv\Scripts\python -m pip install tzdata==2025.2   # IANA timezones: Windows Python has none
 .\.venv\Scripts\python -m pip freeze > evidence\g2-freeze.txt
 .\.venv\Scripts\python scripts\verify_import.py
 .\.venv\Scripts\python -m jarvis --check-config
 ```
-As versões são fixadas pelas constraints do próprio Wyzer: `pydantic==2.12.3`, `psutil==7.1.3`, `numpy==1.26.4`, `sounddevice==0.5.3`, `faster-whisper==1.2.1`, `ctranslate2==4.6.2`, `av==16.0.1`, `onnxruntime==1.23.2`, `huggingface-hub==0.36.2`. Não instalar `kokoro`, `torch`, `openwakeword` nem `PySide6` nesta fase.
+As versões são fixadas pelas constraints do próprio Wyzer: `pydantic==2.12.3`, `psutil==7.1.3`, `numpy==1.26.4`, `sounddevice==0.5.3`, `faster-whisper==1.2.1`, `ctranslate2==4.6.2`, `av==16.0.1`, `onnxruntime==1.23.2`, `huggingface-hub==0.36.2`. Mais `tzdata==2025.2` (Apache-2.0): sem ele, o Python no Windows não conhece `Africa/Maputo` e a ferramenta de hora usa o relógio do sistema (`timezone_source = "system"`). Não instalar `kokoro`, `torch`, `openwakeword` nem `PySide6` nesta fase (o Orb Desktop tem instalação própria, ver `apps/desktop/README.md`).
 
 **PASS:** integridade 182/182, `CONFIG_OK`, freeze anexado com as versões acima. **STOP:** um pacote não instala com estas versões.
 
