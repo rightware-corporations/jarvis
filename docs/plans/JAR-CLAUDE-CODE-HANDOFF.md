@@ -213,6 +213,10 @@ O backlog completo está em [`03_BACKLOG.md`](../03_BACKLOG.md).
 
 [F] Esta sessão de migração conseguiu fazer push para `develop` com acesso concedido pela RIGHTWARE. Não está garantido que uma sessão nova tenha o mesmo acesso.
 
+[F] Limitações observadas nesta sessão:
+- `gh` com GraphQL bloqueada (`gh pr view` → HTTP 403); a REST (`gh api repos/…`) e `gh run …` funcionam.
+- O `curl`/`wget` da shell só alcança a allowlist da rede.
+
 [F/ANUNCIADO] Relatos públicos indicam que sessões Claude Code na web podem limitar o push a branches `claude/*`. Não foi verificado em documentação oficial nesta sessão.
 
 [D] A política de dois ramos mantém-se. Se o ambiente não permitir respeitá-la:

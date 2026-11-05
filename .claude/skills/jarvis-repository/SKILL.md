@@ -17,11 +17,13 @@ git rev-parse HEAD origin/develop      # devem coincidir
 git branch -a                          # só main e develop (locais e remotos)
 git log --oneline -8 origin/develop
 python scripts/verify_import.py        # Wyzer 182/182
-gh pr view 2 --json state,isDraft,headRefOid,baseRefName   # OPEN, isDraft=true
+gh api repos/rightware-corporations/jarvis/pulls/2 --jq '{state,draft,head:.head.sha,base:.base.ref}'   # open, draft=true
 gh run list --branch develop --limit 4
 ```
 
-Se o `gh` não tiver acesso, registar a limitação e não procurar outro caminho com credenciais manuais.
+Notas sobre o `gh`:
+- Nas sessões Claude Code Cloud, a GraphQL do GitHub está bloqueada. `gh pr view` falha com HTTP 403; usar a REST (`gh api …`), como acima. `gh run list/watch/view` funcionam.
+- Se o `gh` não tiver acesso, registar a limitação e não procurar outro caminho com credenciais manuais.
 
 **Divergências** (árvore suja, HEAD ≠ origin, ramos extra, PR não-draft, 182 ≠ 182, CI vermelho):
 - parar e reportar à RIGHTWARE com a evidência;
