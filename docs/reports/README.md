@@ -8,6 +8,7 @@ Relatórios técnicos entregues no fim de cada ordem RIGHTWARE. Cada relatório 
 | 2026-11-05 | JAR-SLICE-01B-PUB — publicação e CI | `REMOTE_CI_PASS` | [2026-11-05_JAR-SLICE-01B-PUB.md](2026-11-05_JAR-SLICE-01B-PUB.md) |
 | 2026-11-05 | JAR-SLICE-01C-PRE — preparação de voz real | `PREP_READY` | [2026-11-05_JAR-SLICE-01C-PRE.md](2026-11-05_JAR-SLICE-01C-PRE.md) |
 | 2026-11-05 | JAR-SLICE-01C-PUB — correcções do plano, CI Windows, publicação | `REMOTE_CI_PASS` | [2026-11-05_JAR-SLICE-01C-PUB.md](2026-11-05_JAR-SLICE-01C-PUB.md) |
+| 2026-11-05 | JAR-MISSION-02-CONT — CI Windows com Python, preflight no runner, Orb Desktop MVP, kit QA, revisão independente | `MISSION_PASS` | [2026-11-05_JAR-MISSION-02-CONT.md](2026-11-05_JAR-MISSION-02-CONT.md) |
 
 O relatório da JAR-SLICE-01B (implementação inicial) foi entregue apenas na conversa; o seu conteúdo está resumido em `docs/01_CURRENT.md` e no relatório R01.
 

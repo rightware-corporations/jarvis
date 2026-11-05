@@ -140,3 +140,11 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
   - `qa/corpus/` (corpus PT-MZ v1);
   - `qa/benchmarks/` (README).
 - Não se cria `data/`. As referências a `jarvis_lab/` nos documentos históricos e nos relatórios descrevem o estado de então.
+
+## JAR-MISSION-02-CONT — 05/11/2026 (`MISSION_PASS`, com componentes simulados)
+
+- **CI Windows real** (`windows-python`): Python 3.11 num venv; 182/182; `tests_lab` e `tests_vexel`; `--check-config`; `--diagnose` com as ausências esperadas documentadas; execução do preflight PowerShell no runner, com verificação de efeitos colaterais e de identificadores. Foi encontrado e corrigido um defeito real: o preflight lançava `cmd /c ver`.
+- **Orb Desktop MVP** (`apps/desktop/`): 9 estados vectoriais com legendas PT, eventos thread-safe, demo simulada, high-DPI, encerramento verificado; job `desktop-orb` em Ubuntu e Windows. Ainda não está ligado ao ciclo de voz real.
+- **Kit QA:** `qa/windows/DEMO_KIT.md`, `qa/benchmarks/latency_summary.py`; `tzdata` acrescentado ao G2 do plano 25.
+- **Revisão independente:** 0 P0; o P1 e os 5 P2 foram corrigidos.
+- **Testes:** 443 + 16 + 87 PASS em Linux e Windows. Relatório: [docs/reports/2026-11-05_JAR-MISSION-02-CONT.md](reports/2026-11-05_JAR-MISSION-02-CONT.md).

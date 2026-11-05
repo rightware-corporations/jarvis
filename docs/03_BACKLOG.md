@@ -131,3 +131,6 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **JAR-SLICE-01C-PUB** Correcções do plano (FIX-01 dependências dos gates, FIX-02 rollback sem remoção automática, FIX-03 privacidade de áudio), job CI Windows de parsing PowerShell, publicação e CI remoto.
 - [ ] **JAR-SLICE-01C** Executar G1–G10 no PC Windows de QA autorizado (Ollama + `qwen3.5:4b`, Whisper `small`, voz SAPI PT), com aplicações simuladas.
 - [ ] **JAR-CI-WIN-01** (proposta, para além do parsing da 01C-PUB) Correr também `tests_vexel` no runner `windows-latest` para apanhar diferenças Linux/Windows antes do PC de QA.
+- [x] **JAR-MISSION-02** CI Windows com testes Python e preflight no runner; Orb Desktop MVP (`apps/desktop`); kit QA de demonstração; revisão independente — `MISSION_PASS` (simulado), CI 6/6 no SHA `fb9f1ef`.
+- [ ] **JAR-SLICE-01E-WIRE** Ligar o Orb ao `VoiceSession` real (mesmo `QueueSink`), depois de G7/G8 da 01C.
+- [ ] **JAR-CI-NODE24** Actualizar `actions/checkout`, `setup-python` e `upload-artifact` para versões sem Node 20.
