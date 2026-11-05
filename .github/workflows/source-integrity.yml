@@ -44,3 +44,37 @@ jobs:
         run: python -m pytest -q tests_vexel
       - name: Validate VEXEL slice configuration
         run: python -m jarvis --check-config
+
+  windows-preflight-parse:
+    # Syntax gate only: parses the QA preflight with the official Windows PowerShell 5.1
+    # parser. The script is never executed; nothing is installed or downloaded.
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Parse QA preflight script (Windows PowerShell 5.1 parser, no execution)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $edition = $PSVersionTable.PSEdition
+          $version = $PSVersionTable.PSVersion.ToString()
+          Write-Host ("Windows PowerShell {0} ({1}), CLR {2}" -f $version, $edition, $PSVersionTable.CLRVersion)
+          if ($edition -ne 'Desktop' -or $PSVersionTable.PSVersion.Major -ne 5) {
+            Write-Host "::error::expected Windows PowerShell 5.1 (Desktop), got $version ($edition)"
+            exit 1
+          }
+          $relative = 'qa/windows/Invoke-JarvisPreflight.ps1'
+          $path = Join-Path $env:GITHUB_WORKSPACE $relative
+          $tokens = $null
+          $errors = $null
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+          Write-Host ("Parsed {0}: {1} tokens, {2} parse error(s)" -f $relative, $tokens.Count, $errors.Count)
+          foreach ($e in $errors) {
+            Write-Host ("::error file={0},line={1},col={2}::{3}" -f $relative, $e.Extent.StartLineNumber, $e.Extent.StartColumnNumber, $e.Message)
+          }
+          if ($errors.Count -gt 0) { exit 1 }
+          $functions = @($ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true) | ForEach-Object { $_.Name })
+          Write-Host ("Functions: {0}" -f ($functions -join ', '))
+          Write-Host ("#Requires -Version: {0}" -f $ast.ScriptRequirements.RequiredPSVersion)
+          Write-Host 'PARSE_PASS (script parsed, not executed)'
