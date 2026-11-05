@@ -1,5 +1,7 @@
 # VEXEL Jarvis — Issa Edition | Handoff
 
+> **Estrutura do repositório (05/11/2026):** [ADR-0001](adr/0001-estrutura-do-repositorio.md) — onde vivem o backend (`jarvis/`), o futuro frontend de desktop, a futura base de dados, o laboratório web e o que nunca entra no git. Decisões de arquitectura em [`docs/adr/`](adr/README.md); relatórios de fase em [`docs/reports/`](reports/README.md).
+
 
 ## HANDOFF MESTRE DE RECUPERAÇÃO — 04/11/2026
 

@@ -124,3 +124,13 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
   - FIX-02: o G10 valida o rollback sem apagar nada, e a remoção (R1) exige autorização específica;
   - FIX-03: nova secção sobre o WAV temporário do Wyzer, os logs com texto e a higienização das evidências.
 - **CI:** novo job `windows-preflight-parse` (Windows PowerShell 5.1, parser oficial, sem executar o script). O resultado só conta depois do run remoto.
+
+## Organização do repositório — ADR-0001, 05/11/2026
+
+- [ADR-0001](adr/0001-estrutura-do-repositorio.md) define as camadas:
+  - backend local em `jarvis/`;
+  - frontend de desktop em `apps/desktop/`, a criar só com a 01E;
+  - contratos de UI em `jarvis/ui/`;
+  - base de dados futura como SQLite local fora do repositório;
+  - laboratório web em `jarvis_lab/` (não é o produto).
+- Novas pastas: `docs/adr/` (decisões) e `docs/reports/` (relatórios de fase R01, 01B-PUB, 01C-PRE e 01C-PUB). Nenhum ficheiro existente foi movido. Não se cria `data/`, `apps/` vazio nem se move o `jarvis_lab/`.
