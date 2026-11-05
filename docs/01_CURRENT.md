@@ -159,3 +159,19 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
   - o handoff [`plans/JAR-CLAUDE-CODE-HANDOFF.md`](plans/JAR-CLAUDE-CODE-HANDOFF.md).
 - Só documentação: sem alterações de runtime, testes ou Wyzer.
 - Próxima missão identificada, não iniciada (handoff §24).
+
+## JAR-ENGINE-01 — integração funcional do backend, 05/11/2026 (`ENGINE_INTEGRATION_PASS` + `REAL_INFERENCE_PENDING`)
+
+- **Percurso por HTTP real** com o `OllamaChatProvider`/`UrllibJsonTransport` do Wyzer, sem alterações, contra um servidor Ollama falso em `127.0.0.1` (`tests_vexel/ollama_loopback.py`).
+  - Cobre os 12 cenários (disponível, indisponível, modelo em falta, válido, malformado, timeout, rede, cancelamento, PT, tool call válido e não autorizado, dados inesperados) e os casos A–F.
+  - Evidência `HTTP_CONTRACT_PASS`. **Nenhum modelo foi executado.**
+- **Métricas:** `ProviderMeter` regista por turno `llm_ms`, `llm_calls`, `llm_eval_count`, `llm_model_ms`, `llm_failures`, `llm_cancelled` e `llm_truncated`. As falhas ficam com códigos fixos (`PROVIDER_TIMEOUT`, `PROVIDER_HTTP_404`, …), sem texto do provider.
+- **`--text`** (`jarvis/runtime/text_mode.py`):
+  - usa sempre o `SimulatedLauncher`;
+  - faz um diagnóstico read-only do LLM;
+  - escreve `text-turns.jsonl` sanitizado. É a entrada para a primeira inferência real (procedimento no relatório, §16).
+- **Testes:** `tests_vexel` 491, `tests_lab` 16, `tests_desktop` 87. CI 12/12 em `eea5bac` (runs [42088773796](https://github.com/rightware-corporations/jarvis/actions/runs/42088773796), [42088782805](https://github.com/rightware-corporations/jarvis/actions/runs/42088782805)).
+- **Revisão independente:** 0 P0/P1; os P2 foram corrigidos.
+- **Push para `develop` a partir do Claude Code Cloud:** verificado (fast-forward).
+- **Continua não testado:** Ollama real, modelo, latência real, microfone, Whisper e SAPI. Requisito do Ollama: Windows 10 22H2 ou posterior.
+- Relatório: [docs/reports/2026-11-05_JAR-ENGINE-01-FINAL.md](reports/2026-11-05_JAR-ENGINE-01-FINAL.md).
