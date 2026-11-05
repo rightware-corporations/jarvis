@@ -161,3 +161,104 @@ class ImmediateActivation:
 
     def close(self) -> None:
         self.closed = True
+
+
+# ----------------------------------------------------------------- R01 fakes
+
+
+class FailingTts:
+    """TTS that fails at a chosen stage on chosen calls (1-based); other calls succeed."""
+
+    def __init__(self, error: BaseException, *, fail_calls: set[int] | None = None) -> None:
+        self.error = error
+        self.fail_calls = fail_calls  # None = always fail
+        self.calls = 0
+        self.spoken: list[str] = []
+        self.volume = 100
+
+    def warm_up(self) -> None:
+        return None
+
+    def speak(self, text: str) -> None:
+        self.calls += 1
+        if self.fail_calls is None or self.calls in self.fail_calls:
+            raise self.error
+        self.spoken.append(text)
+
+    def stop(self) -> None:
+        return None
+
+
+class SilentTts:
+    """Mimics Wyzer Kokoro at volume 0: returns normally without producing audio."""
+
+    volume = 0
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def warm_up(self) -> None:
+        return None
+
+    def speak(self, text: str) -> None:
+        self.calls += 1
+
+    def stop(self) -> None:
+        return None
+
+
+class FailingLauncher:
+    simulated = True
+
+    def __init__(self, error: BaseException | None = None) -> None:
+        self.error = error or OSError("launcher unavailable")
+        self.requested: list[str] = []
+
+    def launch(self, app: str):
+        self.requested.append(app)
+        raise self.error
+
+
+class StatusLauncher:
+    """Returns a fixed status (e.g. FAILED, or a forged SUCCEEDED for a test)."""
+
+    simulated = False
+
+    def __init__(self, status: str) -> None:
+        self.status = status
+        self.requested: list[str] = []
+
+    def launch(self, app: str):
+        from jarvis.tools.allowlist import ActionStatus, LaunchResult
+
+        self.requested.append(app)
+        status = ActionStatus(self.status)
+        return LaunchResult(
+            app=app,
+            status=status,
+            opened=status is ActionStatus.SUCCEEDED,
+            simulated=status is ActionStatus.SIMULATED,
+            launch_id="fixed",
+        )
+
+
+class StubbornProvider(ScriptedProvider):
+    """Ignores cancellation once and still returns its scripted response (late reply)."""
+
+    async def chat(self, messages, tools, settings=None):
+        self.requests.append((list(messages), list(tools)))
+        self.started.set()
+        try:
+            await asyncio.sleep(self.delay)
+        except asyncio.CancelledError:
+            await asyncio.sleep(0)
+        return self._responses.popleft()
+
+
+class ExplodingSink:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def publish(self, event) -> None:
+        self.calls += 1
+        raise RuntimeError("display crashed")

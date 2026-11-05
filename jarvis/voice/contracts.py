@@ -43,3 +43,11 @@ class Activation(Protocol):
         ...
 
     def close(self) -> None: ...
+
+
+class SpeechSynthesisError(RuntimeError):
+    """Audio could not be generated (model, G2P, voice missing)."""
+
+
+class SpeechPlaybackError(RuntimeError):
+    """Audio was generated but could not be played (device, driver, stream)."""

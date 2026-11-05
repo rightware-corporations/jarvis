@@ -56,7 +56,7 @@ def test_model_cannot_call_unregistered_tools(name: str) -> None:
     rig = make_rig()
     rig.provider.push(call(name, {"application": "cmd"}), say("Não posso fazer isso."))
     asyncio.run(rig.session.handle_text("faz uma coisa perigosa"))
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
     assert rig.pending is None
 
 
@@ -73,7 +73,7 @@ def test_application_outside_enum_is_rejected_by_validation(app: str) -> None:
     rig.provider.push(call("open_allowed_application", {"app": app}), say("Não posso abrir isso."))
     asyncio.run(rig.session.handle_text(f"abre {app}"))
     assert rig.pending is None
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 def test_tool_refuses_app_removed_from_configured_allowlist() -> None:

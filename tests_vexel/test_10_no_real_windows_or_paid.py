@@ -60,7 +60,7 @@ def test_full_cycle_never_imports_windows_backend() -> None:
     rig.provider.push(call("open_allowed_application", {"app": "calculator"}), say("Abri."))
     asyncio.run(rig.session.handle_text("abre a calculadora"))
     asyncio.run(rig.session.handle_text("sim"))
-    assert rig.launcher.launched == ["calculator"]
+    assert rig.launcher.requested == ["calculator"]
     result = rig.launcher.launch("notepad")
     assert result.simulated is True
     assert "wyzer.desktop.windows_backend" not in sys.modules

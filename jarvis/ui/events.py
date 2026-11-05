@@ -4,18 +4,34 @@ The voice loop is the only writer. Sinks (the future orb, an evidence log, test
 recorders) only observe. Transitions outside ``ALLOWED_TRANSITIONS`` are refused so
 that the visible state can never claim something the engine did not do (gate
 ``STATE_SYNC``).
+
+Ordering and threading rules (JAR-SLICE-01B-R01):
+
+* Events of one session are published in strictly increasing ``sequence`` order: the
+  sequence is assigned and the sinks are called under the same lock.
+* Sinks must be fast and must not call ``transition`` (re-entrant transitions raise).
+* A failing sink is logged and counted; it never propagates into the voice loop, so a
+  broken display or log cannot unblock a tool or skip a policy step.
+* A Qt UI must never be called from a worker thread. It subscribes through
+  ``QueueSink`` and drains it on the Qt thread (for example from a ``QTimer``).
+* Every event carries the voice-loop ``generation``; consumers drop events whose
+  generation is older than the newest one they have seen.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import threading
+from collections import deque
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import Protocol, runtime_checkable
+
+LOGGER = logging.getLogger(__name__)
 
 
 class VoiceState(StrEnum):
@@ -67,6 +83,7 @@ class UiEvent:
     text: str | None = None
     detail: str | None = None
     metrics: dict[str, float] = field(default_factory=dict)
+    generation: int = 0
 
 
 @runtime_checkable
@@ -92,12 +109,44 @@ class RecordingSink:
 
 
 class FanOutSink:
+    """Delivers to every sink; one failing sink does not stop the others."""
+
     def __init__(self, sinks: Iterable[UiEventSink]) -> None:
         self._sinks = tuple(sinks)
+        self.failures = 0
 
     def publish(self, event: UiEvent) -> None:
         for sink in self._sinks:
-            sink.publish(event)
+            try:
+                sink.publish(event)
+            except Exception as error:
+                self.failures += 1
+                LOGGER.warning("ui sink %s failed: %s", type(sink).__name__, type(error).__name__)
+
+
+class QueueSink:
+    """Thread-safe hand-off for a UI thread (Qt): publish anywhere, ``drain`` on the UI thread.
+
+    Bounded; when full the oldest event is dropped and counted, because the newest state
+    is what the orb must show.
+    """
+
+    def __init__(self, maxlen: int = 256) -> None:
+        self._events: deque[UiEvent] = deque(maxlen=maxlen)
+        self._lock = threading.Lock()
+        self.dropped = 0
+
+    def publish(self, event: UiEvent) -> None:
+        with self._lock:
+            if len(self._events) == self._events.maxlen:
+                self.dropped += 1
+            self._events.append(event)
+
+    def drain(self) -> list[UiEvent]:
+        with self._lock:
+            events = list(self._events)
+            self._events.clear()
+        return events
 
 
 class JsonlEventLog:
@@ -142,12 +191,19 @@ class StateMachine:
         self._session_id = session_id
         self._state = initial
         self._sequence = 0
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
+        self._publishing = False
+        self.sink_failures = 0
 
     @property
     def state(self) -> VoiceState:
         with self._lock:
             return self._state
+
+    @property
+    def sequence(self) -> int:
+        with self._lock:
+            return self._sequence
 
     def can_transition(self, target: VoiceState) -> bool:
         with self._lock:
@@ -161,9 +217,12 @@ class StateMachine:
         text: str | None = None,
         detail: str | None = None,
         metrics: dict[str, float] | None = None,
+        generation: int = 0,
     ) -> UiEvent | None:
         """Move to ``target`` and publish; repeating the current state is a no-op."""
         with self._lock:
+            if self._publishing:
+                raise RuntimeError("UI sinks must not change the assistant state")
             current = self._state
             if target == current:
                 return None
@@ -181,6 +240,14 @@ class StateMachine:
                 text=text,
                 detail=detail,
                 metrics=dict(metrics or {}),
+                generation=generation,
             )
-        self._sink.publish(event)
+            self._publishing = True
+            try:
+                self._sink.publish(event)
+            except Exception as error:
+                self.sink_failures += 1
+                LOGGER.warning("ui sink failed: %s", type(error).__name__)
+            finally:
+                self._publishing = False
         return event

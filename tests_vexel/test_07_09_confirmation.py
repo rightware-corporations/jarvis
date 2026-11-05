@@ -33,7 +33,7 @@ def _request_open(rig: Rig, app: str = "calculator") -> None:
     result = asyncio.run(rig.session.handle_text(f"abre {app}"))
     assert result.outcome is TurnOutcome.CONFIRMATION_REQUESTED
     assert rig.pending is not None
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 # ----------------------------------------------------------------- policy unit
@@ -79,7 +79,7 @@ def test_valid_confirmation_executes_the_pending_call_once(phrase: str) -> None:
     assert rig.tts.spoken[-1] == "Queres que eu abra a Calculadora? Responde sim ou não."
     result = asyncio.run(rig.session.handle_text(phrase))
     assert result.outcome is TurnOutcome.CONFIRMED
-    assert rig.launcher.launched == ["calculator"]
+    assert rig.launcher.requested == ["calculator"]
     assert rig.pending is None
     assert rig.session.state is VoiceState.IDLE
 
@@ -89,7 +89,7 @@ def test_notepad_prompt_and_execution() -> None:
     _request_open(rig, "notepad")
     assert rig.tts.spoken[-1] == "Queres que eu abra o Bloco de Notas? Responde sim ou não."
     asyncio.run(rig.session.handle_text("sim"))
-    assert rig.launcher.launched == ["notepad"]
+    assert rig.launcher.requested == ["notepad"]
 
 
 def test_all_confirm_phrases_are_recognised() -> None:
@@ -122,13 +122,13 @@ def test_rejections_cancel_and_never_execute(reply: str | None, outcome: TurnOut
     result = asyncio.run(rig.session.handle_text(reply))
     assert result.outcome is outcome
     assert rig.tts.spoken[-1] == spoken
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
     assert rig.pending is None
     # The rejecting phrase is never forwarded to the model as a new request.
     assert len(rig.provider.requests) == requests_before
     # A later "sim" cannot revive it.
     assert asyncio.run(rig.session.handle_text("sim")).outcome is TurnOutcome.NOTHING_TO_CONFIRM
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 def test_voice_timeout_while_awaiting_confirmation_cancels() -> None:
@@ -141,7 +141,7 @@ def test_voice_timeout_while_awaiting_confirmation_cancels() -> None:
         TurnOutcome.CANCELLED_NO_RESPONSE,
     ]
     assert rig.stt.timeouts == [8.0, 8.0]
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
     assert rig.pending is None
 
 
@@ -151,8 +151,12 @@ def test_voice_turn_confirmed_by_voice() -> None:
     rig.stt.push("Jarvis, abre o Bloco de Notas", "sim")
     results = asyncio.run(rig.session.voice_turn())
     assert results[-1].outcome is TurnOutcome.CONFIRMED
-    assert rig.launcher.launched == ["notepad"]
-    assert rig.tts.spoken[-1] == "Abri o Bloco de Notas."
+    assert rig.launcher.requested == ["notepad"]
+    # Simulated launcher: the spoken result must say so, whatever the model wrote.
+    assert rig.tts.spoken[-1] == (
+        "Modo de simulação: não abri o Bloco de Notas. Nenhuma aplicação foi iniciada."
+    )
+    assert results[-1].action_status == "SIMULATED"
 
 
 # --------------------------------------------------------------------- test 9
@@ -166,7 +170,7 @@ def test_repeated_confirmation_is_not_replayed() -> None:
         result = asyncio.run(rig.session.handle_text("sim"))
         assert result.outcome is TurnOutcome.NOTHING_TO_CONFIRM
         assert result.reply == SAY_NOTHING_TO_CONFIRM
-    assert rig.launcher.launched == ["calculator"]
+    assert rig.launcher.requested == ["calculator"]
 
 
 def test_sim_without_any_pending_does_nothing() -> None:
@@ -174,7 +178,7 @@ def test_sim_without_any_pending_does_nothing() -> None:
     result = asyncio.run(rig.session.handle_text("sim"))
     assert result.outcome is TurnOutcome.NOTHING_TO_CONFIRM
     assert rig.provider.requests == []
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 def test_expired_confirmation_is_refused() -> None:
@@ -184,7 +188,7 @@ def test_expired_confirmation_is_refused() -> None:
     result = asyncio.run(rig.session.handle_text("sim"))
     assert result.outcome is TurnOutcome.CANCELLED_NO_RESPONSE
     assert result.reply == "Essa confirmação expirou. Pede-me de novo, por favor."
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
     assert rig.pending is None
 
 
@@ -204,7 +208,7 @@ def test_confirmation_for_another_operation_is_refused() -> None:
     result = asyncio.run(rig.session.handle_text("sim"))
     assert result.outcome is TurnOutcome.CANCELLED_MISMATCH
     assert result.reply == SAY_CONFIRMATION_MISMATCH
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
     assert rig.pending is None
 
 
@@ -220,7 +224,7 @@ def test_tampered_arguments_fail_orchestrator_digest_check() -> None:
     # VEXEL binding (id + digest) matched, so Wyzer's own digest check is what refuses it.
     assert result.outcome is TurnOutcome.CANCELLED_MISMATCH
     assert result.reply == "Não consegui confirmar, porque o pedido mudou."
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 def test_new_request_while_pending_cancels_it_and_is_not_executed() -> None:
@@ -230,4 +234,4 @@ def test_new_request_while_pending_cancels_it_and_is_not_executed() -> None:
     assert result.outcome is TurnOutcome.CANCELLED_UNCLEAR
     assert rig.pending is None
     assert asyncio.run(rig.session.handle_text("sim")).outcome is TurnOutcome.NOTHING_TO_CONFIRM
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []

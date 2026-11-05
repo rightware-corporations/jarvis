@@ -100,6 +100,10 @@ def _validate_slice_rules(settings: WyzerSettings) -> None:
         raise SliceConfigError(
             f"whisper_model {speech.whisper_model!r} is English-only; use a multilingual model"
         )
+    if speech.volume <= 0:
+        raise SliceConfigError(
+            "speech.volume must be above 0: a silent voice cannot present a confirmation"
+        )
     if speech.wake_word_adapter != "manual":
         raise WakeWordBlockedError(
             "no commercially licensed wake model is approved; set wake_word_adapter = 'manual'"

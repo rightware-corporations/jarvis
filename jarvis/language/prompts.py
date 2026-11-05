@@ -8,6 +8,8 @@
 
 from __future__ import annotations
 
+import re
+
 from wyzer.models import PendingConfirmation
 
 APPLICATION_LABELS: dict[str, str] = {
@@ -58,3 +60,39 @@ def translate_wyzer_reply(text: str) -> tuple[str, bool]:
         if stripped.startswith(prefix):
             return replacement, True
     return text, False
+
+
+# ------------------------------------------------------------ action outcomes
+# Built from the recorded tool result, never from model text (JAR-SLICE-01B-R01 P1).
+
+SAY_NOTHING_OPENED = "Não abri nenhuma aplicação."
+SAY_DENIED = "Não tenho autorização para fazer isso."
+SAY_TTS_UNAVAILABLE_CONFIRMATION = "Cancelei, porque não consegui apresentar a confirmação."
+
+
+def action_outcome_text(status: str, app: str | None) -> str:
+    """Spoken result for an effectful action. ``status`` is an ``ActionStatus`` value."""
+    label = APPLICATION_LABELS.get(app or "")
+    if status == "SUCCEEDED" and label is not None:
+        return f"Abri {label}."
+    if status == "SIMULATED" and label is not None:
+        return f"Modo de simulação: não abri {label}. Nenhuma aplicação foi iniciada."
+    if status == "FAILED" and label is not None:
+        return f"Não consegui abrir {label}."
+    if status == "FAILED":
+        return "Não consegui concluir a acção."
+    return SAY_DENIED
+
+
+# Phrases in which the model claims an application was opened or a command executed.
+_ACTION_CLAIM = re.compile(
+    r"\b(?:abri|abriu|abrimos|abrindo|ja abri|ja esta aberta?o?|esta aberta|esta aberto|"
+    r"foi aberta|foi aberto|aberta com sucesso|aberto com sucesso|iniciei|inicializei|"
+    r"lancei|executei|arranquei|pronto,? a calculadora|pronto,? o bloco)\b"
+)
+
+
+def claims_action(text: str) -> bool:
+    from jarvis.language.pt import normalize
+
+    return bool(_ACTION_CLAIM.search(normalize(text)))

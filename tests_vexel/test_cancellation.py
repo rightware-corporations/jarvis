@@ -77,7 +77,7 @@ def test_cancel_while_awaiting_confirmation_clears_pending() -> None:
     rig.session.cancel()
     assert rig.pending is None
     assert asyncio.run(rig.session.handle_text("sim")).outcome is TurnOutcome.NOTHING_TO_CONFIRM
-    assert rig.launcher.launched == []
+    assert rig.launcher.requested == []
 
 
 def test_shutdown_goes_offline() -> None:

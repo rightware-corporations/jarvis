@@ -9,6 +9,15 @@ perception, audio, coding agent, external packs) is simply not registered, so th
 model cannot see or call it. Side effects go through an ``ApplicationLauncher``; the
 default is a simulated launcher. The Windows launcher refuses to act unless the
 platform is Windows *and* the configuration explicitly allows real actions.
+
+Every launch ends in exactly one ``ActionStatus``:
+
+* ``SIMULATED`` — nothing was started (``opened`` is always ``False``);
+* ``SUCCEEDED`` — the real launcher reported the application open (``opened=True``);
+* ``FAILED``    — the launcher raised or reported failure;
+* ``DENIED``    — the application or the arguments are outside the allowlist.
+
+The voice loop builds the spoken outcome from this status, never from the model text.
 """
 
 from __future__ import annotations
@@ -18,11 +27,12 @@ import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal, Protocol
+from enum import StrEnum
+from typing import Any, Literal, Protocol
 from uuid import uuid4
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from wyzer.models import ConfirmationMode, RiskLevel, ToolArguments
 from wyzer.tools import ToolRegistry
@@ -178,12 +188,34 @@ class OpenAllowedApplicationArguments(ToolArguments):
     )
 
 
+class ActionStatus(StrEnum):
+    SIMULATED = "SIMULATED"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    DENIED = "DENIED"
+
+
+# Error codes that mean "refused by policy", as opposed to "tried and failed".
+DENIED_ERROR_CODES = frozenset(
+    {"APPLICATION_NOT_ALLOWED", "INVALID_TOOL_ARGUMENTS", "UNKNOWN_TOOL", "TOOL_UNAVAILABLE"}
+)
+
+
 class LaunchResult(BaseModel):
     app: str
+    status: ActionStatus
     opened: bool
     simulated: bool
     launch_id: str
     detail: str = ""
+
+    @model_validator(mode="after")
+    def _consistent(self) -> LaunchResult:
+        if self.opened != (self.status is ActionStatus.SUCCEEDED):
+            raise ValueError("opened must be true exactly when status is SUCCEEDED")
+        if self.simulated != (self.status is ActionStatus.SIMULATED):
+            raise ValueError("simulated must be true exactly when status is SIMULATED")
+        return self
 
 
 class ApplicationLauncher(Protocol):
@@ -194,16 +226,20 @@ class ApplicationLauncher(Protocol):
 
 @dataclass
 class SimulatedLauncher:
-    """Records launches without starting any process (cloud, CI, tests)."""
+    """Records launch *requests* without starting any process (cloud, CI, tests).
+
+    It never reports ``opened=True``: a simulation is not an opened application.
+    """
 
     simulated: bool = True
-    launched: list[str] = field(default_factory=list)
+    requested: list[str] = field(default_factory=list)
 
     def launch(self, app: AllowedApplication) -> LaunchResult:
-        self.launched.append(app)
+        self.requested.append(app)
         return LaunchResult(
             app=app,
-            opened=True,
+            status=ActionStatus.SIMULATED,
+            opened=False,
             simulated=True,
             launch_id=uuid4().hex,
             detail="SIMULATED: no process was started",
@@ -226,6 +262,10 @@ class WindowsApplicationLauncher:
 
     Not used in 01B. Construction fails closed unless the platform is Windows and the
     caller passes ``allow_real_windows_actions=True`` from an approved configuration.
+
+    Evidence level for ``SUCCEEDED``: Wyzer's ``OpenApplicationTool`` returned without
+    raising. Window-level verification (the process/window really appeared) is a 01D
+    acceptance item, not proven here.
     """
 
     simulated = False
@@ -258,7 +298,12 @@ class WindowsApplicationLauncher:
                 last_error = error
                 continue
             return LaunchResult(
-                app=app, opened=True, simulated=False, launch_id=uuid4().hex, detail=name
+                app=app,
+                status=ActionStatus.SUCCEEDED,
+                opened=True,
+                simulated=False,
+                launch_id=uuid4().hex,
+                detail=name,
             )
         raise ToolExecutionError(
             "APPLICATION_NOT_OPENED",
@@ -300,7 +345,55 @@ class OpenAllowedApplicationTool(Tool[OpenAllowedApplicationArguments, LaunchRes
                 "APPLICATION_NOT_ALLOWED", f"{arguments.app} is not in the configured allowlist."
             )
         self._on_start(self.name)
-        return self._launcher.launch(arguments.app)
+        try:
+            result = self._launcher.launch(arguments.app)
+        except ToolExecutionError:
+            raise
+        except Exception as error:
+            raise ToolExecutionError(
+                "APPLICATION_NOT_OPENED",
+                f"Could not open {arguments.app}.",
+                details={"error": type(error).__name__},
+            ) from error
+        if result.app != arguments.app:
+            raise ToolExecutionError("APPLICATION_MISMATCH", "Launcher opened a different app.")
+        if result.status is ActionStatus.FAILED:
+            raise ToolExecutionError("APPLICATION_NOT_OPENED", f"Could not open {arguments.app}.")
+        return result
+
+
+@dataclass(frozen=True, slots=True)
+class ActionOutcome:
+    """What an effectful call really did, read from the Orchestrator's recorded result."""
+
+    tool: str
+    status: ActionStatus
+    app: str | None
+    step_id: Any
+    error_code: str | None = None
+
+
+def action_outcome_from_result(result: Any) -> ActionOutcome | None:
+    """Map a Wyzer ``ToolResult`` to an ``ActionOutcome`` when it concerns an action.
+
+    Calls to unregistered tools are reported as ``DENIED`` (the model tried something
+    outside the allowlist); read-only allowlisted tools return ``None``.
+    """
+    tool = getattr(result, "tool", None)
+    if tool != OpenAllowedApplicationTool.name:
+        error = getattr(result, "error", None)
+        if not result.ok and error is not None and error.code == "UNKNOWN_TOOL":
+            return ActionOutcome(tool, ActionStatus.DENIED, None, result.step_id, error.code)
+        return None
+    if result.ok and result.data is not None:
+        try:
+            launch = LaunchResult.model_validate(result.data)
+        except ValueError:
+            return ActionOutcome(result.tool, ActionStatus.FAILED, None, result.step_id, "BAD_RESULT")
+        return ActionOutcome(result.tool, launch.status, launch.app, result.step_id)
+    code = result.error.code if result.error is not None else None
+    status = ActionStatus.DENIED if code in DENIED_ERROR_CODES else ActionStatus.FAILED
+    return ActionOutcome(result.tool, status, None, result.step_id, code)
 
 
 # --------------------------------------------------------------------- registry
