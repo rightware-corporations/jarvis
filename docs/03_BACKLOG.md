@@ -124,3 +124,6 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **JAR-SLICE-01E** Orb PySide6 mínimo ligado aos sinais `UiEvent`.
 - [ ] **VOICE-WAKE-01** `WAKE_WORD_BLOCKED`: escolher wake word com licença comercial ou treinar modelo próprio; até lá activação manual.
 - [ ] **VOICE-TTS-LIC-01** Kokoro: rever obrigações de espeak-ng (GPL-3.0-or-later) via misaki antes de distribuir.
+- [x] **JAR-SLICE-01B-R01** Correcções P0 (TTS/confirmação fail-closed), P1 (estado `SIMULATED/SUCCEEDED/FAILED/DENIED`), P1 (ordem de eventos, threads, cancelamento, concorrência), workflow CI preparado — `CANDIDATE_PASS` local, 321 PASS; push e CI remoto pendentes de autorização.
+- [ ] **JAR-SLICE-01B-PUB** Publicar os commits 01B + R01 na `develop` e registar o run do CI remoto com `tests_vexel`.
+- [ ] **JAR-SLICE-01D-EVID** Definir a evidência de `SUCCEEDED` real (janela/processo visível) antes de activar o lançador Windows.
