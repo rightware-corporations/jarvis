@@ -89,11 +89,26 @@ class PortugueseWhisperRecognizer(FasterWhisperRecognizer):
 
 
 class WhisperSpeechToText:
-    """Adapts any Wyzer-style recognizer (``listen -> SpeechRecognition``) to the contract."""
+    """Adapts any Wyzer-style recognizer (``listen -> SpeechRecognition``) to the contract.
 
-    def __init__(self, recognizer: Any, *, language: str = "pt") -> None:
+    ``cancel``/``close`` are forwarded to the capture adapter when it supports them, so a
+    cancelled turn never returns audio captured across the cancel.
+    """
+
+    def __init__(self, recognizer: Any, *, language: str = "pt", capture: Any = None) -> None:
         self._recognizer = recognizer
         self._language = language
+        self._capture = capture
+
+    def cancel(self) -> None:
+        cancel = getattr(self._capture, "cancel", None)
+        if callable(cancel):
+            cancel()
+
+    def close(self) -> None:
+        close = getattr(self._capture, "close", None)
+        if callable(close):
+            close()
 
     def listen(self, timeout_seconds: float) -> Transcript | None:
         result = self._recognizer.listen(timeout_seconds)
@@ -122,3 +137,29 @@ def create_portuguese_stt(
         model_factory=model_factory,
     )
     return WhisperSpeechToText(recognizer)
+
+
+def create_voice_input(
+    speech: Any,
+    capture: Any,
+    *,
+    hotwords: str = DEFAULT_PT_HOTWORDS,
+    model_factory: Callable[..., WhisperModelProtocol] | None = None,
+) -> WhisperSpeechToText:
+    """Microphone capture → Portuguese Faster-Whisper, for ``--voice`` mode.
+
+    ``capture`` is any ``AudioCapture`` (normally ``CancellableCapture``). The Whisper
+    model is loaded lazily from the local cache (``local_files_only=True``) on first use.
+    """
+    recognizer = PortugueseWhisperRecognizer(
+        speech.whisper_model,
+        language="pt",
+        hotwords=hotwords,
+        device=speech.whisper_device,
+        compute_type=speech.whisper_compute_type,
+        download_root=speech.whisper_download_root,
+        minimum_confidence=speech.minimum_stt_confidence,
+        capture_utterance=capture.capture,
+        model_factory=model_factory,
+    )
+    return WhisperSpeechToText(recognizer, capture=capture)

@@ -51,3 +51,16 @@ class SpeechSynthesisError(RuntimeError):
 
 class SpeechPlaybackError(RuntimeError):
     """Audio was generated but could not be played (device, driver, stream)."""
+
+
+class CaptureError(RuntimeError):
+    """The microphone could not be opened or read (missing device, driver, permission)."""
+
+
+@runtime_checkable
+class Interruptible(Protocol):
+    """Optional: adapters that can abandon a blocking call and release devices."""
+
+    def cancel(self) -> None: ...
+
+    def close(self) -> None: ...

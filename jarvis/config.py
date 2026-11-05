@@ -50,6 +50,8 @@ class VexelSettings(BaseModel):
     confirmation_listen_timeout_seconds: float = Field(default=8, gt=0, le=60)
     allow_real_windows_actions: bool = False
     log_transcript_text: bool = False
+    voice_cultures: tuple[str, ...] = ("pt-PT", "pt-BR")
+    log_directory: str | None = Field(default=None, max_length=260)
 
     @field_validator("allowed_applications")
     @classmethod

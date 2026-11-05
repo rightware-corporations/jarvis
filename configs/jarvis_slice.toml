@@ -60,3 +60,5 @@ listen_timeout_seconds = 8
 confirmation_listen_timeout_seconds = 8
 allow_real_windows_actions = false
 log_transcript_text = false
+voice_cultures = ["pt-PT", "pt-BR"]   # SAPI voice preference for Portuguese replies
+# log_directory = "..."               # default: .wyzer/vexel/logs (git-ignored)

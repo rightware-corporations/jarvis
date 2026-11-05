@@ -2,10 +2,12 @@
 
     python -m jarvis --check-config [--config configs/jarvis_slice.toml]
     python -m jarvis --text          # type instead of speaking; local provider only
+    python -m jarvis --diagnose [--json]  # read-only readiness report (exit 3 if blocked)
+    python -m jarvis --voice         # manual activation → mic → Whisper PT → Ollama → SAPI PT
 
-Voice mode (microphone, Whisper, Windows voices) is wired in 01C on the QA PC.
-Real Windows application launches stay off unless the config enables them *and* the
-process runs on Windows (JAR-SLICE-01D).
+Voice mode refuses to start unless the preflight is READY. Application launches stay
+simulated in voice mode (JAR-SLICE-01C). Real launches remain off in text mode unless
+the config enables them *and* the process runs on Windows (JAR-SLICE-01D).
 """
 
 from __future__ import annotations
@@ -85,15 +87,43 @@ async def _text_mode(path: Path) -> int:
     return 0
 
 
+async def _diagnose(path: Path, as_json: bool) -> int:
+    from jarvis.runtime.preflight import run_preflight
+    from jarvis.runtime.voice_mode import EXIT_PREFLIGHT_BLOCKED
+
+    config = load_slice_config(path)
+    report = await run_preflight(config)
+    print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2) if as_json else report.render())
+    return 0 if report.ready else EXIT_PREFLIGHT_BLOCKED
+
+
+async def _voice_mode(path: Path) -> int:
+    from jarvis.runtime.voice_mode import run_voice_mode
+
+    result = await run_voice_mode(load_slice_config(path))
+    return result.exit_code
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="jarvis")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check-config", action="store_true")
     mode.add_argument("--text", action="store_true")
+    mode.add_argument("--diagnose", action="store_true")
+    mode.add_argument("--voice", action="store_true")
+    parser.add_argument("--json", action="store_true", help="with --diagnose: JSON output")
     args = parser.parse_args(argv)
     if args.check_config:
         return _check(args.config)
+    try:
+        if args.diagnose:
+            return asyncio.run(_diagnose(args.config, args.json))
+        if args.voice:
+            return asyncio.run(_voice_mode(args.config))
+    except (OSError, SliceConfigError) as error:
+        print(f"CONFIG_INVALID: {error}", file=sys.stderr)
+        return 2
     return asyncio.run(_text_mode(args.config))
 
 

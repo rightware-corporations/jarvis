@@ -61,12 +61,13 @@ from jarvis.language.prompts import (
 from jarvis.language.pt import ControlIntent, classify_control, normalize, strip_vocative
 from jarvis.tools.allowlist import ActionOutcome, action_outcome_from_result
 from jarvis.ui.events import InvalidTransitionError, StateMachine, UiEventSink, VoiceState
-from jarvis.voice.contracts import Activation, SpeechToText, TextToSpeech
+from jarvis.voice.contracts import Activation, CaptureError, SpeechToText, TextToSpeech
 from jarvis.voice.presentation import GuardedSpeech, Presentation, PresentationResult
 
 LOGGER = logging.getLogger(__name__)
 
 SAY_NOTHING_TO_CONFIRM = "Não há nada para confirmar."
+SAY_STT_FAILED = "Não consegui ouvir: houve um problema com o microfone ou o reconhecimento."
 SAY_CONFIRMATION_MISMATCH = "Cancelei, porque essa confirmação não corresponde ao pedido."
 
 # Orchestrator control words. Sent only by VEXEL, never derived from free text.
@@ -89,6 +90,7 @@ class TurnOutcome(StrEnum):
     STOPPED = "stopped"
     NOT_HEARD = "not_heard"
     TTS_FAILED = "tts_failed"
+    STT_FAILED = "stt_failed"
     SPEECH_INTERRUPTED = "speech_interrupted"
     DISCARDED = "discarded"
     ERROR = "error"
@@ -134,6 +136,7 @@ class TurnResult:
     awaiting_confirmation: bool = False
     action_status: str | None = None
     claim_blocked: bool = False
+    detail: str | None = None
     metrics: dict[str, float] = field(default_factory=dict)
 
     def as_record(self, include_text: bool = False) -> dict[str, Any]:
@@ -146,6 +149,7 @@ class TurnResult:
             "awaiting_confirmation": self.awaiting_confirmation,
             "action_status": self.action_status,
             "claim_blocked": self.claim_blocked,
+            "detail": self.detail,
             "reply_translated": self.reply_translated,
             "metrics": dict(self.metrics),
         }
@@ -216,7 +220,20 @@ class VoiceSession:
         self._stopping = True
         self.cancel(reason="shutdown")
         self.activation.close()
+        self._call_adapter(self.stt, "close")
+        self._call_adapter(self.speech.inner, "close")
         self._move(VoiceState.OFFLINE, detail="shutdown")
+
+    @staticmethod
+    def _call_adapter(adapter: object, method: str) -> None:
+        """Best-effort optional hook (``cancel``/``close``); never raises."""
+        hook = getattr(adapter, method, None)
+        if not callable(hook):
+            return
+        try:
+            hook()
+        except Exception as error:
+            LOGGER.warning("%s.%s failed: %s", type(adapter).__name__, method, type(error).__name__)
 
     def on_tool_start(self, tool_name: str) -> None:
         """Called by the allowlisted tools, usually from a worker thread.
@@ -250,6 +267,7 @@ class VoiceSession:
         self._generation += 1
         self._prompted = None
         interrupted = self.orchestrator.interrupt()
+        self._call_adapter(self.stt, "cancel")
         try:
             self.speech.stop()
         except Exception as error:  # stopping must never raise into the caller
@@ -321,13 +339,26 @@ class VoiceSession:
             try:
                 transcript = await asyncio.to_thread(self.stt.listen, timeout_seconds)
             except Exception as error:
-                LOGGER.warning("stt failed: %s", type(error).__name__)
-                transcript = None
+                turn.metrics["stt_ms"] = round((self._timer() - started) * 1000, 1)
+                return await self._stt_failed(error, turn)
             turn.metrics["stt_ms"] = round((self._timer() - started) * 1000, 1)
             if turn.generation != self._generation:
                 return TurnResult(TurnOutcome.DISCARDED, metrics=turn.metrics)
             text = transcript.text if transcript is not None else None
             return await self._handle(text, self._intent(text), turn)
+
+    async def _stt_failed(self, error: Exception, turn: _Turn) -> TurnResult:
+        """Capture/STT failure is not silence: report it, and never keep a confirmation."""
+        stage = "capture" if isinstance(error, CaptureError) else "stt"
+        LOGGER.warning("%s failed: %s", stage, type(error).__name__)
+        self._clear_pending(f"{stage} failure")
+        if turn.generation != self._generation:
+            return TurnResult(TurnOutcome.DISCARDED, metrics=turn.metrics)
+        turn.metrics[f"{stage}_error"] = 1.0
+        self._move(VoiceState.ERROR, detail=f"{stage}_{type(error).__name__}")
+        result = await self._say(TurnOutcome.STT_FAILED, SAY_STT_FAILED, turn)
+        result.detail = stage
+        return result
 
     @staticmethod
     def _intent(text: str | None) -> ControlIntent:
