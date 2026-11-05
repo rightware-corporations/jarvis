@@ -14,7 +14,7 @@ are product names; the endpoint is loopback by configuration.
 from __future__ import annotations
 
 import importlib.util
-import platform
+import os
 import sys
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import asdict, dataclass, field
@@ -132,12 +132,24 @@ async def run_preflight(config: SliceConfig, deps: PreflightDeps | None = None) 
     return report
 
 
+def os_description() -> str:
+    """Host OS summary without spawning a process.
+
+    The ``platform`` module is avoided on purpose: on Windows ``platform.system()`` and
+    ``platform.release()`` run ``cmd /c ver``, and on Linux ``platform.platform()`` runs
+    ``uname -p`` (both found by the test suite's process guard).
+    """
+    if sys.platform == "win32":
+        version = sys.getwindowsversion()  # type: ignore[attr-defined]
+        machine = os.environ.get("PROCESSOR_ARCHITECTURE", "")
+        return f"Windows {version.major}.{version.minor}.{version.build} {machine}".strip()
+    uname = os.uname()
+    return f"{uname.sysname} {uname.release} {uname.machine}"
+
+
 def _check_platform(deps: PreflightDeps) -> Check:
     if deps.platform == "win32":
-        # system/release/machine come from os.uname()/the registry; unlike platform.platform()
-        # they never spawn a helper process (``uname -p``).
-        return Check("platform", CheckStatus.PASS, "WINDOWS",
-                     f"{platform.system()} {platform.release()} {platform.machine()}")
+        return Check("platform", CheckStatus.PASS, "WINDOWS", os_description())
     return Check("platform", CheckStatus.FAIL, "NOT_WINDOWS", f"platform={deps.platform}")
 
 

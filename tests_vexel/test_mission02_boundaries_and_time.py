@@ -137,3 +137,11 @@ def test_tzdata_is_available_where_the_suite_runs() -> None:
     assert datetime(2026, 1, 1, tzinfo=ZoneInfo("Africa/Maputo")).utcoffset() == timedelta(hours=2)
     if sys.platform == "win32":
         import tzdata  # noqa: F401
+
+
+def test_os_description_spawns_no_process() -> None:
+    # The process guard (conftest) fails this test if a helper such as `ver`/`uname` runs.
+    from jarvis.runtime.preflight import os_description
+
+    text = os_description()
+    assert text and (text.startswith("Windows ") if sys.platform == "win32" else True)
