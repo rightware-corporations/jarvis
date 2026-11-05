@@ -29,6 +29,9 @@ EXPECTED_ABSENCES = {
     "MODEL_NOT_INSTALLED": "no LLM model in CI",
 }
 MUST_BE_ABSENT = {"STT_MODEL_MISSING", "OLLAMA_UNREACHABLE"}  # proves nothing was downloaded
+# DEPENDENCY_MISSING is only expected for the model/audio-processing packages that CI
+# deliberately does not install; anything else missing is a real packaging problem.
+EXPECTED_MISSING_PACKAGES = {"faster_whisper", "ctranslate2", "numpy"}
 MUST_PASS = {
     "platform": "WINDOWS",
     "python": "PY311",
@@ -56,6 +59,12 @@ def main(path: str) -> int:
     unexpected = [code for code in report["blocking"] if code not in EXPECTED_ABSENCES]
     if unexpected:
         problems.append(f"unexpected blockers: {unexpected}")
+    dependencies = checks.get("dependencies")
+    if dependencies is not None and dependencies["code"] == "DEPENDENCY_MISSING":
+        missing_packages = {name.strip() for name in dependencies["detail"].split(",") if name.strip()}
+        extra = missing_packages - EXPECTED_MISSING_PACKAGES
+        if extra:
+            problems.append(f"unexpected missing packages: {sorted(extra)}")
     missing = MUST_BE_ABSENT - set(report["blocking"])
     if missing:
         problems.append(f"expected absences not reported: {sorted(missing)}")

@@ -21,6 +21,8 @@ STAGES = ("stt_ms", "think_ms", "tts_ms")
 SAFE_FIELDS = ("outcome", "intended", "action_status", "metrics")
 P50_LIMIT_MS = 4000.0
 P95_LIMIT_MS = 8000.0
+MIN_SAMPLES = 20
+TIMED_OUTCOMES = {"answered", "confirmed", "confirmation_requested"}
 
 
 def percentile(values: list[float], q: float) -> float:
@@ -52,12 +54,16 @@ def summarise(turns: list[dict[str, Any]]) -> dict[str, Any]:
             "p95": percentile(values, 95),
             "max": max(values) if values else math.nan,
         }
+    # Response time = think + tts, only for turns that completed both stages and were
+    # actually spoken; interrupted/failed turns are reported in "outcomes", not timed.
     responses = [
-        float(t["metrics"].get("think_ms", 0.0)) + float(t["metrics"].get("tts_ms", 0.0))
+        float(t["metrics"]["think_ms"]) + float(t["metrics"]["tts_ms"])
         for t in turns
-        if (t.get("metrics") or {}).get("think_ms") is not None
+        if t.get("outcome") in TIMED_OUTCOMES
+        and {"think_ms", "tts_ms"} <= set(t.get("metrics") or {})
     ]
     p50, p95 = percentile(responses, 50), percentile(responses, 95)
+    enough = len(responses) >= MIN_SAMPLES
     return {
         "turns": len(turns),
         "outcomes": dict(Counter(t.get("outcome") for t in turns)),
@@ -67,8 +73,10 @@ def summarise(turns: list[dict[str, Any]]) -> dict[str, Any]:
         "acceptance": {
             "p50_limit_ms": P50_LIMIT_MS,
             "p95_limit_ms": P95_LIMIT_MS,
-            "enough_samples": len(responses) >= 20,
-            "pass": bool(responses) and p50 <= P50_LIMIT_MS and p95 <= P95_LIMIT_MS,
+            "min_samples": MIN_SAMPLES,
+            "enough_samples": enough,
+            # Fewer than MIN_SAMPLES timed turns is never a PASS (G9 needs >= 20).
+            "pass": enough and p50 <= P50_LIMIT_MS and p95 <= P95_LIMIT_MS,
         },
     }
 
@@ -90,8 +98,19 @@ def render(summary: dict[str, Any]) -> str:
         f"  -> {verdict} (p50 <= {acceptance['p50_limit_ms']:.0f} ms, p95 <= {acceptance['p95_limit_ms']:.0f} ms)"
     )
     if not acceptance["enough_samples"]:
-        lines.append("  note: fewer than 20 turns; G9 needs at least 20")
+        lines.append(f"  FAIL reason: only {response['count']} timed turn(s); G9 needs at least {acceptance['min_samples']}")
     return "\n".join(lines)
+
+
+def _json_safe(value: Any) -> Any:
+    """Strict JSON: NaN (no samples) becomes null."""
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_json_safe(v) for v in value]
+    return value
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     summary = summarise(load_turns(args.path))
-    print(json.dumps(summary, indent=2, default=str) if args.json else render(summary))
+    print(json.dumps(_json_safe(summary), indent=2) if args.json else render(summary))
     return 0 if summary["acceptance"]["pass"] else 1
 
 

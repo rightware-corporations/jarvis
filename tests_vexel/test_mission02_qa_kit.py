@@ -105,3 +105,69 @@ def test_corpus_requests_are_never_control_words() -> None:
                 "Cancela essa operação.", "Pára."}
     for phrase in set(_corpus()) - controls:
         assert classify_control(strip_vocative(normalize(phrase))) is ControlIntent.NONE, phrase
+
+
+def test_fewer_than_twenty_timed_turns_never_pass(tmp_path: Path) -> None:
+    # Review finding P1: one fast turn used to print PASS and exit 0.
+    path = _write(tmp_path / "v.jsonl", [{"outcome": "answered", "metrics": {"think_ms": 100.0, "tts_ms": 50.0}}])
+    assert ls.main([str(path)]) == 1
+    summary = ls.summarise(ls.load_turns(path))
+    assert summary["acceptance"]["pass"] is False and summary["acceptance"]["enough_samples"] is False
+
+
+def test_interrupted_or_incomplete_turns_are_not_timed(tmp_path: Path) -> None:
+    records = [{"outcome": "answered", "metrics": {"think_ms": 3000.0, "tts_ms": 1000.0}} for _ in range(20)]
+    records += [
+        {"outcome": "discarded", "metrics": {"think_ms": 10.0, "tts_ms": 1.0}},
+        {"outcome": "answered", "metrics": {"think_ms": 10.0}},
+        {"outcome": "tts_failed", "metrics": {"think_ms": 10.0, "tts_ms": 1.0}},
+    ]
+    summary = ls.summarise(ls.load_turns(_write(tmp_path / "v.jsonl", records)))
+    assert summary["response_ms"]["count"] == 20
+    assert summary["response_ms"]["p50"] == 4000.0
+    assert summary["outcomes"]["discarded"] == 1
+
+
+def test_json_output_is_strict_json(tmp_path: Path, capsys) -> None:
+    path = _write(tmp_path / "v.jsonl", [{"outcome": "not_heard", "metrics": {"stt_ms": 8000.0}}])
+    ls.main([str(path), "--json"])
+    out = capsys.readouterr().out
+    assert "NaN" not in out
+    json.loads(out)  # strict parser
+
+
+# ----------------------------------------------------------- CI diagnose checker
+
+sys.path.insert(0, str(REPO_ROOT / "qa" / "windows"))
+import ci_expect_diagnose as ced  # noqa: E402
+
+
+def _report(*, ready=False, missing="faster_whisper, ctranslate2, numpy", platform_ok=True, extra=()):
+    checks = [
+        {"name": "platform", "status": "PASS" if platform_ok else "FAIL", "code": "WINDOWS" if platform_ok else "NOT_WINDOWS", "detail": ""},
+        {"name": "python", "status": "PASS", "code": "PY311", "detail": ""},
+        {"name": "dependencies", "status": "FAIL", "code": "DEPENDENCY_MISSING", "detail": missing},
+        {"name": "stt_model", "status": "FAIL", "code": "STT_MODEL_MISSING", "detail": ""},
+        {"name": "llm", "status": "FAIL", "code": "OLLAMA_UNREACHABLE", "detail": ""},
+        {"name": "windows_actions", "status": "PASS", "code": "SIMULATED_LAUNCHER", "detail": ""},
+        {"name": "activation", "status": "PASS", "code": "MANUAL", "detail": ""},
+    ]
+    blocking = [c["code"] for c in checks if c["status"] == "FAIL"] + list(extra)
+    return {"ready": ready, "blocking": blocking, "checks": checks}
+
+
+@pytest.mark.parametrize(
+    ("report", "expected"),
+    [
+        (_report(), 0),
+        (_report(missing="faster_whisper, ctranslate2, numpy, pydantic"), 1),  # real packaging gap
+        (_report(platform_ok=False), 1),
+        (_report(ready=True), 1),
+        (_report(extra=("REAL_ACTIONS_NOT_ALLOWED",)), 1),
+    ],
+    ids=["expected_absences", "unexpected_package", "not_windows", "ready_without_models", "unexpected_blocker"],
+)
+def test_ci_diagnose_checker(tmp_path: Path, report: dict, expected: int) -> None:
+    path = tmp_path / "diag.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+    assert ced.main(str(path)) == expected
