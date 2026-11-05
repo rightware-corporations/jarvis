@@ -42,6 +42,10 @@ class OrbEventPump(QObject):
     def stop(self) -> None:
         self._timer.stop()
 
+    @property
+    def active(self) -> bool:
+        return self._timer.isActive()
+
     def drain(self) -> None:
         events = self._queue.drain()
         if not events:

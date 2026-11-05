@@ -74,3 +74,39 @@ def test_demo_script_is_valid_and_visits_every_state() -> None:
         state = target
     assert {target for target, _ in DEMO_SCRIPT} | {VoiceState.OFFLINE} == set(VoiceState)
     assert DEMO_SCRIPT[-1][0] is VoiceState.IDLE  # loops back cleanly
+
+
+def test_new_session_restarts_ordering() -> None:
+    # Review finding P2: a restarted session (sequence back to 1) used to be dropped.
+    from dataclasses import replace
+
+    model = OrbStateModel()
+    model.apply([_event(VoiceState.IDLE, 1), _event(VoiceState.LISTENING, 5)])
+    fresh = [replace(_event(s, n), session_id="t2") for n, s in
+             enumerate((VoiceState.IDLE, VoiceState.LISTENING, VoiceState.THINKING), start=1)]
+    assert model.apply(fresh)
+    assert model.state is VoiceState.THINKING and model.dropped == 0
+
+
+def test_history_is_bounded() -> None:
+    model = OrbStateModel()
+    model.apply(_event(VoiceState.IDLE if n % 2 else VoiceState.LISTENING, n) for n in range(1, 2000))
+    assert len(model.history) == 512
+
+
+@pytest.mark.parametrize("speed", [0.0, -1.0])
+def test_demo_rejects_non_positive_speed(speed: float) -> None:
+    from apps.desktop.orb.demo import DemoDriver
+    from jarvis.ui.events import QueueSink
+
+    with pytest.raises(ValueError):
+        DemoDriver(QueueSink(), speed=speed)
+
+
+@pytest.mark.parametrize("value", ["0", "-2"])
+def test_cli_rejects_non_positive_speed(value: str) -> None:
+    from apps.desktop.__main__ import main
+
+    with pytest.raises(SystemExit) as exit_info:
+        main(["--demo", "--speed", value])
+    assert exit_info.value.code == 2

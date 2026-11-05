@@ -14,7 +14,11 @@ from PySide6.QtWidgets import QWidget
 
 from apps.desktop.orb.model import OrbStateModel
 from apps.desktop.orb.render import paint_orb
-from apps.desktop.orb.visuals import frame, visual_for
+from apps.desktop.orb.visuals import Motion, frame, visual_for
+
+STILL_MOTIONS = {Motion.STILL, Motion.DIMMED}
+FRAME_MS = 16      # ~60 fps while something moves
+STILL_FRAME_MS = 250  # nothing animates in OFFLINE/MUTED: repaint rarely
 
 
 class OrbWidget(QWidget):
@@ -46,7 +50,7 @@ class OrbWidget(QWidget):
         self.setMinimumSize(size, size + (26 if show_label else 0))
         self.resize(size, size + (26 if show_label else 0))
         self._animation = QTimer(self)
-        self._animation.setInterval(16)  # ~60 fps
+        self._animation.setInterval(FRAME_MS)
         self._animation.timeout.connect(self.update)
         self._animation.start()
 
@@ -65,8 +69,14 @@ class OrbWidget(QWidget):
             painter.end()
 
     def state_changed(self) -> None:
-        self.setToolTip(f"Jarvis: {visual_for(self.model.state).label}")
+        visual = visual_for(self.model.state)
+        self.setToolTip(f"Jarvis: {visual.label}")
+        self._animation.setInterval(STILL_FRAME_MS if visual.motion in STILL_MOTIONS else FRAME_MS)
         self.update()
+
+    @property
+    def animation_interval(self) -> int:
+        return self._animation.interval()
 
     # ------------------------------------------------------------------ input
 

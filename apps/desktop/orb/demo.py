@@ -42,6 +42,8 @@ class DemoDriver:
         speed: float = 1.0,
         script: tuple[tuple[VoiceState, float], ...] = DEMO_SCRIPT,
     ) -> None:
+        if not speed > 0:
+            raise ValueError(f"speed must be > 0, got {speed!r}")
         self.machine = StateMachine(sink, session_id="demo")
         self.loop = loop
         self.speed = speed

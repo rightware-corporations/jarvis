@@ -37,12 +37,23 @@ class OrbApp:
     widget: OrbWidget
     demo: DemoDriver | None
 
-    def shutdown(self) -> None:
-        """Stop producers first, then the pump, then the window (idempotent)."""
+    def shutdown(self) -> bool:
+        """Stop producers first, then the pump (idempotent).
+
+        Returns True only if everything really stopped: the demo thread joined and no
+        timer is still active. Safe to call after the widget (and the pump, its Qt
+        child) has been deleted.
+        """
+        stopped = True
         if self.demo is not None:
-            self.demo.stop()
-        self.pump.stop()
-        self.pump.drain()
+            stopped = self.demo.stop() and stopped
+        try:
+            self.pump.stop()
+            self.pump.drain()
+            stopped = not self.pump.active and stopped
+        except RuntimeError:  # C++ object already deleted with its parent widget
+            pass
+        return stopped
 
 
 def build_orb(*, demo: bool, loop: bool = True, speed: float = 1.0, size: int = 220,
@@ -75,10 +86,12 @@ def run(*, demo: bool = True, loop: bool = True, speed: float = 1.0,
     app = ensure_application()
     orb = build_orb(demo=demo, loop=loop, speed=speed)
 
+    clean = {"ok": True}
+
     def close_and_quit() -> None:
         # Qt::Tool windows do not count for quitOnLastWindowClosed: quit explicitly,
         # after the producers and the pump have stopped.
-        orb.shutdown()
+        clean["ok"] = orb.shutdown()
         app.quit()
 
     orb.widget.on_close = close_and_quit
@@ -94,5 +107,8 @@ def run(*, demo: bool = True, loop: bool = True, speed: float = 1.0,
     if orb.demo is not None:
         orb.demo.start()
     code = app.exec()
-    orb.shutdown()
+    clean["ok"] = orb.shutdown() and clean["ok"]
+    if code == 0 and not clean["ok"]:
+        print("orb: shutdown incomplete (demo thread or timer still running)", file=sys.stderr)
+        return 2
     return code

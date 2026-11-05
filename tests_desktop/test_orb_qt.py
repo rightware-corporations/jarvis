@@ -10,8 +10,6 @@ import pytest
 
 from tests_desktop.conftest import process_events_until
 
-pytest.importorskip("PySide6", reason="desktop suite requires PySide6 (run in the desktop CI job)")
-
 from apps.desktop.orb.app import build_orb, save_snapshots  # noqa: E402
 from apps.desktop.orb.render import render_image  # noqa: E402
 from apps.desktop.orb.visuals import VISUALS  # noqa: E402
@@ -36,7 +34,8 @@ def test_each_state_renders_its_colour_at_the_core(qapp, state: VoiceState) -> N
 
 
 def test_states_produce_different_images(qapp) -> None:
-    digests = {_digest(render_image(state, 0.37, size=120, scale=1.0)) for state in VoiceState}
+    # Labels off: the orb graphics alone must differ per state.
+    digests = {_digest(render_image(state, 0.37, size=120, scale=1.0, show_label=False)) for state in VoiceState}
     assert len(digests) == len(VoiceState)
 
 
@@ -75,7 +74,7 @@ def test_events_from_a_worker_thread_are_applied_on_the_gui_thread(qapp) -> None
     orb.pump.start()
     assert process_events_until(qapp, lambda: orb.model.state is VoiceState.AWAITING_CONFIRMATION)
     assert orb.pump.drain_threads == {gui_thread}
-    assert orb.model.history == [VoiceState.IDLE, VoiceState.LISTENING, VoiceState.THINKING,
+    assert list(orb.model.history) == [VoiceState.IDLE, VoiceState.LISTENING, VoiceState.THINKING,
                                  VoiceState.AWAITING_CONFIRMATION]
     orb.shutdown()
     orb.widget.deleteLater()
@@ -95,29 +94,50 @@ def test_demo_runs_and_shuts_down_cleanly(qapp) -> None:
     orb.widget.show()
     orb.pump.start()
     orb.demo.start()
-    assert process_events_until(qapp, lambda: len(set(orb.model.history)) >= 6, timeout=5.0)
+    wanted = {VoiceState.AWAITING_CONFIRMATION, VoiceState.ERROR, VoiceState.MUTED}
+    assert process_events_until(qapp, lambda: wanted <= set(orb.model.history), timeout=8.0)
     assert orb.demo.thread_id != threading.get_ident()
     orb.widget.close()  # closeEvent -> shutdown: stop demo, stop pump
     assert not orb.demo.alive
-    assert not orb.pump._timer.isActive()
+    assert not orb.pump.active
     assert not orb.widget._animation.isActive()
-    states = set(orb.model.history)
-    assert VoiceState.ERROR in states or len(states) >= 6
+    assert orb.shutdown() is True  # idempotent, reports a complete stop
     orb.widget.deleteLater()
 
 
 def test_desktop_package_never_imports_the_assistant_or_tools() -> None:
-    """A fresh interpreter importing the orb must not load the engine, tools or voice."""
+    """Allow-list: a fresh interpreter importing the orb may load only jarvis.ui."""
     import subprocess
     import sys
 
     code = (
         "import sys, apps.desktop.orb.app, apps.desktop.__main__;"
-        "bad=[m for m in sys.modules if m.startswith(('wyzer.app','wyzer.tools','wyzer.speech',"
-        "'wyzer.brain','jarvis.core','jarvis.tools','jarvis.voice','jarvis.brain','jarvis.runtime'))];"
-        "print(','.join(sorted(bad)))"
+        "print(','.join(sorted(m for m in sys.modules if m.split('.')[0] in ('jarvis','wyzer'))))"
     )
     root = Path(__file__).resolve().parents[1]
     out = subprocess.run([sys.executable, "-c", code], cwd=root, capture_output=True, text=True,
                          timeout=60, check=True, env={**__import__("os").environ, "QT_QPA_PLATFORM": "offscreen"})
-    assert out.stdout.strip() == "", out.stdout
+    assert set(out.stdout.strip().split(",")) <= {"jarvis", "jarvis.ui", "jarvis.ui.events"}, out.stdout
+
+
+def test_shutdown_is_safe_after_the_widget_is_deleted(qapp) -> None:
+    orb = build_orb(demo=True, speed=40.0)
+    orb.widget.deleteLater()
+    from tests_desktop.conftest import process_events_until as pump_events
+    import shiboken6
+
+    pump_events(qapp, lambda: not shiboken6.isValid(orb.widget), timeout=2.0)
+    orb.shutdown()  # must not raise
+    assert not orb.demo.alive
+
+
+def test_still_states_repaint_rarely(qapp) -> None:
+    from apps.desktop.orb.widget import FRAME_MS, STILL_FRAME_MS
+
+    orb = build_orb(demo=False, frameless=False)
+    for state, expected in ((VoiceState.MUTED, STILL_FRAME_MS), (VoiceState.SPEAKING, FRAME_MS),
+                            (VoiceState.OFFLINE, STILL_FRAME_MS)):
+        orb.model.state = state
+        orb.widget.state_changed()
+        assert orb.widget.animation_interval == expected
+    orb.widget.deleteLater()

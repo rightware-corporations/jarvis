@@ -14,13 +14,20 @@ import argparse
 from pathlib import Path
 
 
+def _positive(text: str) -> float:
+    value = float(text)
+    if not value > 0:
+        raise argparse.ArgumentTypeError(f"must be > 0, got {text}")
+    return value
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m apps.desktop")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--demo", action="store_true", help="run the orb with simulated states")
     mode.add_argument("--snapshot", type=Path, metavar="DIR", help="write PNG snapshots and exit")
     parser.add_argument("--once", action="store_true", help="demo: play the script once")
-    parser.add_argument("--speed", type=float, default=1.0)
+    parser.add_argument("--speed", type=_positive, default=1.0)
     parser.add_argument("--duration", type=float, default=None, help="demo: close after N s")
     parser.add_argument("--scale", type=float, default=2.0, help="snapshot device pixel ratio")
     args = parser.parse_args(argv)
