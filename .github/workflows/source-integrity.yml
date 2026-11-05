@@ -78,3 +78,74 @@ jobs:
           Write-Host ("Functions: {0}" -f ($functions -join ', '))
           Write-Host ("#Requires -Version: {0}" -f $ast.ScriptRequirements.RequiredPSVersion)
           Write-Host 'PARSE_PASS (script parsed, not executed)'
+
+  windows-python:
+    # Runs the Python suites on Windows and the read-only QA preflight on the runner.
+    # No models, microphone, voice or Ollama exist here: their absence is expected and
+    # checked explicitly (qa/windows/ci_expect_diagnose.py), never masked.
+    needs: windows-preflight-parse
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Keep LF line endings (integrity hashes are byte-exact)
+        run: git config --global core.autocrlf false
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Create isolated venv with minimal dependencies
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python -m pip install --disable-pip-version-check 'pydantic>=2.8,<3' 'pytest>=8,<9' 'psutil>=6,<8' 'fastapi>=0.115,<1' 'httpx>=0.27,<1' 'uvicorn>=0.30,<1' 'tzdata==2025.2' 'sounddevice==0.5.3'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\.venv\Scripts\python -c "import sys, locale; print(sys.version); print('fs', sys.getfilesystemencoding(), 'preferred', locale.getpreferredencoding(False), 'stdout', sys.stdout.encoding)"
+          .\.venv\Scripts\python -m pip freeze
+      - name: Check all imported source hashes
+        run: .\.venv\Scripts\python scripts\verify_import.py
+      - name: Compile Python modules
+        run: .\.venv\Scripts\python -m compileall -q wyzer tests scripts jarvis apps tests_vexel tests_lab
+      - name: Run lab contract tests
+        run: .\.venv\Scripts\python -m pytest -ra tests_lab
+      - name: Run VEXEL slice tests (fakes only)
+        run: .\.venv\Scripts\python -m pytest -ra tests_vexel
+      - name: Validate VEXEL slice configuration
+        run: .\.venv\Scripts\python -m jarvis --check-config
+      - name: Diagnose on a runner without models (expected BLOCKED)
+        run: |
+          # cmd redirection keeps Python's UTF-8 bytes exactly (no PowerShell re-encoding).
+          cmd /c ".venv\Scripts\python -m jarvis --diagnose --json > %RUNNER_TEMP%\diag.json"
+          $code = $LASTEXITCODE
+          Write-Host "--diagnose exit code: $code (3 = BLOCKED, expected here)"
+          if ($code -ne 3) { Write-Host "::error::expected exit code 3, got $code"; exit 1 }
+          .\.venv\Scripts\python qa\windows\ci_expect_diagnose.py "$env:RUNNER_TEMP\diag.json"
+      - name: Run read-only QA preflight on the runner (Windows PowerShell 5.1)
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'jarvis-preflight'
+          powershell -NoProfile -ExecutionPolicy Bypass -File .\qa\windows\Invoke-JarvisPreflight.ps1 -OutputDirectory $out | Out-Null
+          if ($LASTEXITCODE -ne 0) { Write-Host "::error::preflight exit code $LASTEXITCODE"; exit 1 }
+          # Side effects: the repository is untouched and only the three reports were written.
+          $changes = git status --porcelain
+          if ($changes) { Write-Host "::error::preflight changed the repository: $changes"; exit 1 }
+          $files = @(Get-ChildItem -Path $out -Recurse -File)
+          $names = @($files | ForEach-Object { $_.Name } | Sort-Object)
+          Write-Host ("preflight wrote {0} file(s): {1}" -f $files.Count, ($names -join ', '))
+          if (($names -join ',') -ne 'report.json,report.txt,transcript.txt') { Write-Host '::error::unexpected preflight output files'; exit 1 }
+          # Privacy: no machine or user identifiers in any report.
+          foreach ($file in $files) {
+            $text = Get-Content -Raw -Path $file.FullName
+            foreach ($id in @($env:COMPUTERNAME, $env:USERNAME)) {
+              if ($id -and $id.Length -ge 3 -and $text -match ('(?<![\p{L}\p{N}])' + [regex]::Escape($id) + '(?![\p{L}\p{N}])')) {
+                Write-Host "::error::identifier leaked into $($file.Name)"; exit 1
+              }
+            }
+          }
+          $report = Get-Content -Raw -Path (Join-Path ($files | Where-Object Name -eq 'report.json').DirectoryName 'report.json') | ConvertFrom-Json
+          $errors = @($report.PSObject.Properties | Where-Object { $_.Value -is [psobject] -and $_.Value.PSObject.Properties['error'] } | ForEach-Object { $_.Name })
+          Write-Host ("probes with errors: {0}" -f ($(if ($errors.Count) { $errors -join ', ' } else { 'none' })))
+          Get-Content -Path (Join-Path ($files | Where-Object Name -eq 'report.txt').DirectoryName 'report.txt')
+          Write-Host 'PREFLIGHT_RUNTIME_PASS (read-only; repository unchanged; no identifiers)'
