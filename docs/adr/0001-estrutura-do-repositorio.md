@@ -1,6 +1,7 @@
 # ADR-0001 — Estrutura do repositório: backend, frontend, dados e laboratório
 
-- **Estado:** Aceite pelo operador RIGHTWARE em 05/11/2026 (opção «estrutura completa e publicar»); revisão pelo ChatGPT pendente.
+- **Estado:** `ARCH_APPROVED` — aprovado pela RIGHTWARE na ordem JAR-MIGRATION-00 (05/11/2026, decisão D01).
+- **Histórico do estado:** 05/11/2026 — aceite pelo operador RIGHTWARE (opção «estrutura completa e publicar»), com revisão pelo ChatGPT pendente; 05/11/2026 — revisão concluída e arquitectura aprovada (JAR-MIGRATION-00, D01/D07). A árvore não volta a ser reorganizada sem novo ADR.
 - **Data:** 2026-11-05
 - **Substitui / refina:** a árvore-alvo do [11 §5](../11_ARCHITECTURE_REVIEW_AND_EVOLUTION.md), que era uma proposta e não reflectia o código.
 - **Relacionado:** D-002, D-005, D-008 e D-010 no [registo de decisões](../22_DECISION_REGISTER_2026-11-04.md).

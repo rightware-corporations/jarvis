@@ -134,3 +134,5 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [x] **JAR-MISSION-02** CI Windows com testes Python e preflight no runner; Orb Desktop MVP (`apps/desktop`); kit QA de demonstração; revisão independente — `MISSION_PASS` (simulado), CI 6/6 no SHA `fb9f1ef`.
 - [ ] **JAR-SLICE-01E-WIRE** Ligar o Orb ao `VoiceSession` real (mesmo `QueueSink`), depois de G7/G8 da 01C.
 - [ ] **JAR-CI-NODE24** Actualizar `actions/checkout`, `setup-python` e `upload-artifact` para versões sem Node 20.
+- [x] **JAR-MIGRATION-00** Handoff para Claude Code Cloud: `CLAUDE.md`, `.claude/rules/`, `.claude/skills/`, [handoff](plans/JAR-CLAUDE-CODE-HANDOFF.md), ADR-0001 `ARCH_APPROVED`. Só documentação.
+- [ ] **JAR-CLOUD-01** Primeira sessão Claude Code Cloud: verificar permissões reais (push para `develop`, branches `claude/*`, `gh`), reconciliar o estado e apresentar o plano; sem alterações antes da aprovação.

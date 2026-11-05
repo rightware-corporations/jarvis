@@ -148,3 +148,14 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Kit QA:** `qa/windows/DEMO_KIT.md`, `qa/benchmarks/latency_summary.py`; `tzdata` acrescentado ao G2 do plano 25.
 - **Revisão independente:** 0 P0; o P1 e os 5 P2 foram corrigidos.
 - **Testes:** 443 + 16 + 87 PASS em Linux e Windows. Relatório: [docs/reports/2026-11-05_JAR-MISSION-02-CONT.md](reports/2026-11-05_JAR-MISSION-02-CONT.md).
+
+## JAR-MIGRATION-00 — passagem para Claude Code Cloud, 05/11/2026
+
+- O [ADR-0001](adr/0001-estrutura-do-repositorio.md) passa a `ARCH_APPROVED` (D01/D07).
+- Contexto persistente para sessões Claude Code:
+  - [`CLAUDE.md`](../CLAUDE.md);
+  - `.claude/rules/` (architecture, git-policy, security, testing);
+  - `.claude/skills/` (jarvis-repository, jarvis-quality-gates, jarvis-windows-voice);
+  - o handoff [`plans/JAR-CLAUDE-CODE-HANDOFF.md`](plans/JAR-CLAUDE-CODE-HANDOFF.md).
+- Só documentação: sem alterações de runtime, testes ou Wyzer.
+- Próxima missão identificada, não iniciada (handoff §24).

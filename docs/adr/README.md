@@ -4,7 +4,7 @@ Cada decisão de arquitectura importante fica num ficheiro próprio, `NNNN-titul
 
 | ADR | Título | Estado |
 |---|---|---|
-| [0001](0001-estrutura-do-repositorio.md) | Estrutura do repositório: backend, frontend, dados e laboratório | Aceite (revisão pendente) |
+| [0001](0001-estrutura-do-repositorio.md) | Estrutura do repositório: backend, frontend, dados e laboratório | `ARCH_APPROVED` (JAR-MIGRATION-00) |
 
 Decisões de produto e de processo continuam no [registo de decisões](../22_DECISION_REGISTER_2026-11-04.md). Os ADR tratam de *como* o sistema é construído.
 
