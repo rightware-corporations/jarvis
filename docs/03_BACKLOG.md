@@ -144,3 +144,5 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [x] **JAR-TEST-LOOPBACK** Decisão D01: servidores sintéticos só em `127.0.0.1`/`::1`, em portas efémeras, autorizados (`testing.md`).
 - [ ] **JAR-NET-02** (P2, fora do produto) `apps/weblab/api.py`: injectar `LoopbackJsonTransport` e validar `JARVIS_OLLAMA_URL` no arranque.
 - [ ] **JAR-INFER-01** Seguir a matriz do relatório JAR-NET-01, §11: 0.8b → 2b → 4b no PC de QA (Windows 10 22H2 ou posterior), com evidência independente (`ollama ps`/`list`/`--version` e nonce). Confirmar no PC o comportamento com proxy real.
+- [x] **JAR-CONF-01** Repetição da confirmação e invocação duplicada depois do «sim» (observada na JAR-INFER-01/B5 com o `qwen3.5:2b`). Registo de execuções por acção; repetição descartada; `SIMULATED` reportado. CI 12/12 em `a75e3a5`.
+- [ ] **JAR-INFER-01/B5-R** Repetir só o CALCULATOR_APPROVE com o `qwen3.5:2b` real (relatório JAR-CONF-01, §8).

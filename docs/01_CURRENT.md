@@ -192,3 +192,17 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **D01:** servidores HTTP sintéticos em loopback autorizados nos testes (`.claude/rules/testing.md`).
 - **Contagens:** `tests_vexel` 545, `tests_lab` 16, `tests_desktop` 87.
 - Relatório, com a matriz da primeira inferência real: [docs/reports/2026-11-05_JAR-NET-01-FINAL.md](reports/2026-11-05_JAR-NET-01-FINAL.md).
+
+## JAR-CONF-01 — confirmação repetida e invocação duplicada, 06/11/2026 (`CONFIRMATION_REPLAY_FIXED` + `READY_FOR_REAL_LLM_RETEST`)
+
+- **Causa** (confirmada por reprodução): depois do «sim», o Wyzer executa a chamada aprovada (`SIMULATED`) e volta a chamar o LLM. O `qwen3.5:2b` repetiu a mesma `open_allowed_application`, e foi apresentada uma 2.ª confirmação. O estado `SIMULATED` perdia-se, e um 2.º «sim» executaria a acção duas vezes.
+- **Correcção** (`jarvis/core/voice_loop.py`):
+  - um registo, por acção do Orchestrator, dos digests já executados;
+  - uma repetição (mesma acção e mesmo digest) é descartada com o «no» do Wyzer e fala-se o resultado registado;
+  - outra chamada continua a precisar de confirmação própria;
+  - um pedido novo do utilizador nunca herda autorizações.
+  - Sem mudanças de prompt; Wyzer 182/182.
+- **Testes:** 20 novos (providers controlados e o B5 por HTTP em loopback). `tests_vexel` 565, `tests_lab` 16, `tests_desktop` 87. CI 12/12 em `a75e3a5`.
+- **Revisão independente:** 0 P0/P1; os P2 foram corrigidos.
+- **Falta** o reteste real do CALCULATOR_APPROVE com o `qwen3.5:2b` (instruções no relatório, §8).
+- Relatório: [docs/reports/2026-11-06_JAR-CONF-01-FINAL.md](reports/2026-11-06_JAR-CONF-01-FINAL.md).
