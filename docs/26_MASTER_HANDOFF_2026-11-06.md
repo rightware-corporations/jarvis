@@ -1,6 +1,16 @@
 # RIGHTWARE — VEXEL JARVIS / ISSA EDITION
 # MASTER HANDOFF V2 — 06/11/2026
 
+## ADENDA D — Reteste REAL R02: problemas de arranque, identidade e juiz (06/11/2026)
+
+> **Fonte mais recente para qualidade cognitiva real:** [`docs/reports/2026-11-06_JAR-COG-01-R02-REAL-QA.md`](reports/2026-11-06_JAR-COG-01-R02-REAL-QA.md). Ambiente Kaggle recuperado; modelo `qwen3.5:2b` real executado contra a R02, HEAD de execução `f595704393de65e679c33a29e7b57a8f8850ebb6`. Juiz automático: **12/18 PASS**; 4 MODEL, 2 PROVIDER, 0 BACKEND atribuídos pelo juiz. **Estado REAL: REVIEW**, não PASS, e não comparável directamente com o R01 29/32 (cenários/juiz diferentes).
+>
+> **Ganhos comprovados:** três respostas «Maputo» sem abrir aplicações; calculadora confirmada, simulada e depois recordada correctamente; Paint recusado; relógio indevido bloqueado em `sera?`; relatório Orion já não gerou `DENIED` arbitrário, mas a introdução falhou por provider timeout e não se pode considerar a continuidade Orion validada.
+>
+> **Bloqueios novos:** (1) `warm_up()` falha após ~60s e a primeira fala Orion também falha `PROVIDER_TIMEOUT` a ~60s; primeira resposta completa demora ~27s, dos quais ~22.6s foram processamento de prompt. Causa precisa do frio NÃO VERIFICADA. (2) Identidade: três respostas `Sou Wyzer` em vez de `Jarvis`; o prompt `wyzer/brain/prompt.py` contém `You are Wyzer`, enquanto config VEXEL diz `Jarvis`. Corrigir no wrapper, mantendo 182/182. (3) **Falso FAIL do juiz**: `São 19h46 em Maputo` é resposta válida com `get_local_time`, mas o juiz exige `hora/horas/:`. (4) Orion `Qual é o nome do projecto?` devolveu `model_unavailable_template` em ~331ms; investigar código/falha real com `detail` e `llm_failures`, não confundir com timeout de 60s. (5) `sera?` respondeu «sou o Wyzer» — sem ferramenta indevida, mas resposta semanticamente inadequada apesar de PASS.
+>
+> **Próxima recomendação (não aprovada/implementada):** JAR-COG-01-R03 focada em identidade VEXEL, cold start/provider/fallback, revisão do juiz temporal e conversa Orion em sessão válida após warmup. **Não** iniciar memória persistente, Task Engine, voz/Windows real nem refazer a QA inteira por inércia. O ZIP temporário `/kaggle/working/JAR_COG_01_R02_EVIDENCE_20261106_174641.zip` não foi preservado no GitHub.
+
 ## ADENDA C — JAR-COG-01-R02: correcções de backend e QA semântico (06/11/2026)
 
 > **Relatório:** [`docs/reports/2026-11-06_JAR-COG-01-R02-FINAL.md`](reports/2026-11-06_JAR-COG-01-R02-FINAL.md).
