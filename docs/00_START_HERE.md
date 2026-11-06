@@ -1,5 +1,9 @@
 # VEXEL Jarvis — Issa Edition | Handoff
 
+> **HANDOFF ACTUAL / PRIMEIRA LEITURA (06/11/2026):** [MASTER HANDOFF V2 — estado, decisões, Kaggle real, falhas cognitivas, roadmap e recuperação](26_MASTER_HANDOFF_2026-11-06.md).
+> **Estado recente:** Ollama/Qwen3.5 reais testados no Kaggle; JAR-CONF-01 com CI e B6 real PASS; B7 11/12 e falha de intenção; JAR-COG-01 especificada, não comprovadamente implementada. `main` estável; `develop` engenharia; PR #2 Draft. As secções de 04–05/11 abaixo são **histórico**, não o estado mais recente.
+
+
 > **Estrutura do repositório (05/11/2026):** [ADR-0001](adr/0001-estrutura-do-repositorio.md) — onde vivem o backend (`jarvis/`), o futuro frontend de desktop, a futura base de dados, o laboratório web e o que nunca entra no git. Decisões de arquitectura em [`docs/adr/`](adr/README.md); relatórios de fase em [`docs/reports/`](reports/README.md).
 
 
