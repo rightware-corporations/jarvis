@@ -63,7 +63,7 @@ from wyzer.app.orchestrator import Orchestrator
 from wyzer.models import AssistantResponse, PendingConfirmation
 from wyzer.policy import ConfirmationPolicy
 
-from jarvis.brain.pt_provider import MeterSnapshot, ProviderMeter
+from jarvis.brain.pt_provider import EffectGate, MeterSnapshot, ProviderMeter
 from jarvis.config import VexelSettings
 from jarvis.language.prompts import (
     SAY_CANCELLED,
@@ -76,8 +76,10 @@ from jarvis.language.prompts import (
     action_outcome_text,
     claims_action,
     confirmation_prompt,
+    strip_action_claims,
     translate_wyzer_reply,
 )
+from jarvis.language.intent import NO_REQUEST, IntentVerdict, classify_request
 from jarvis.language.pt import ControlIntent, classify_control, normalize, strip_vocative
 from jarvis.tools.allowlist import ActionOutcome, action_outcome_from_result
 from jarvis.ui.events import InvalidTransitionError, StateMachine, UiEventSink, VoiceState
@@ -160,9 +162,17 @@ class TurnResult:
     claim_blocked: bool = False
     detail: str | None = None
     metrics: dict[str, float] = field(default_factory=dict)
+    session_id: str | None = None
+    turn_index: int | None = None
+    request_intent: dict[str, Any] | None = None
+    tools_executed: list[str] = field(default_factory=list)
 
     def as_record(self, include_text: bool = False) -> dict[str, Any]:
         record: dict[str, Any] = {
+            "session_id": self.session_id,
+            "turn_index": self.turn_index,
+            "request_intent": self.request_intent,
+            "tools_executed": list(self.tools_executed),
             "outcome": self.outcome.value,
             "intended": (self.intended or self.outcome).value,
             "intent": self.intent.value,
@@ -193,6 +203,10 @@ class _Turn:
     confirmed: PendingConfirmation | None = None
     meter_before: MeterSnapshot | None = None
     llm_failure: str | None = None
+    index: int = 0
+    gate_before: tuple[int, int] = (0, 0)
+    verdict: IntentVerdict | None = None
+    tools_executed: list[str] = field(default_factory=list)
 
 
 class VoiceSession:
@@ -208,9 +222,17 @@ class VoiceSession:
         session_id: str = "local",
         timer: Callable[[], float] = time.perf_counter,
         provider_meter: ProviderMeter | None = None,
+        effect_gate: EffectGate | None = None,
+        context_stats: Callable[[], dict[str, float]] | None = None,
     ) -> None:
         self.orchestrator = orchestrator
         self.provider_meter = provider_meter
+        self.effect_gate = effect_gate
+        self.context_stats = context_stats
+        self.session_id = session_id
+        self._turn_index = 0
+        # Verdict of the user request a pending confirmation belongs to (JAR-COG-01).
+        self._request_verdict: IntentVerdict = NO_REQUEST
         self.stt = stt
         self.speech = tts if isinstance(tts, GuardedSpeech) else GuardedSpeech(tts)
         self.activation = activation
@@ -355,7 +377,38 @@ class VoiceSession:
         self._turn_generation = self._generation
         seen = {result.step_id for result in self.orchestrator.world.snapshot().recent_tool_calls}
         before = self.provider_meter.snapshot() if self.provider_meter is not None else None
-        return _Turn(self._generation, seen, meter_before=before)
+        self._turn_index += 1
+        gate = self.effect_gate.counts() if self.effect_gate is not None else (0, 0)
+        return _Turn(
+            self._generation, seen, meter_before=before, index=self._turn_index, gate_before=gate
+        )
+
+    def _authorize(self, verdict: IntentVerdict | None) -> None:
+        """Bind the effect gate to the user's own request for this turn (fail closed)."""
+        if self.effect_gate is not None:
+            self.effect_gate.authorize(verdict)
+
+    def _finalize(self, result: TurnResult, turn: _Turn) -> TurnResult:
+        """Stamp sanitised telemetry; close the effect gate until the next request."""
+        result.session_id = self.session_id
+        result.turn_index = turn.index
+        if turn.verdict is not None:
+            result.request_intent = turn.verdict.as_record()
+        result.tools_executed = list(turn.tools_executed)
+        if self.effect_gate is not None:
+            blocked, _allowed = self.effect_gate.counts()
+            if blocked - turn.gate_before[0]:
+                result.metrics["tools_blocked"] = float(blocked - turn.gate_before[0])
+        if self.context_stats is not None:
+            try:
+                for key, value in self.context_stats().items():
+                    result.metrics[key] = float(value)
+            except Exception as error:
+                LOGGER.warning("context stats failed: %s", type(error).__name__)
+        if self._pending() is None:
+            self._request_verdict = NO_REQUEST
+        self._authorize(NO_REQUEST)
+        return result
 
     def _record_llm(self, turn: _Turn) -> None:
         """Add the local model's share of this turn to its metrics (no text). Never raises."""
@@ -385,10 +438,10 @@ class VoiceSession:
                 transcript = await asyncio.to_thread(self.stt.listen, timeout_seconds)
             except Exception as error:
                 turn.metrics["stt_ms"] = round((self._timer() - started) * 1000, 1)
-                return await self._stt_failed(error, turn)
+                return self._finalize(await self._stt_failed(error, turn), turn)
             turn.metrics["stt_ms"] = round((self._timer() - started) * 1000, 1)
             if turn.generation != self._generation:
-                return TurnResult(TurnOutcome.DISCARDED, metrics=turn.metrics)
+                return self._finalize(TurnResult(TurnOutcome.DISCARDED, metrics=turn.metrics), turn)
             text = transcript.text if transcript is not None else None
             return await self._handle(text, self._intent(text), turn)
 
@@ -427,12 +480,24 @@ class VoiceSession:
             if result.step_id in turn.seen_steps:
                 continue
             turn.seen_steps.add(result.step_id)
+            if getattr(result, "ok", False):
+                turn.tools_executed.append(str(result.tool))  # tool names only, no data
             outcome = action_outcome_from_result(result)
             if outcome is not None:
                 outcomes.append(outcome)
         return outcomes
 
     async def _handle(self, text: str | None, intent: ControlIntent, turn: _Turn) -> TurnResult:
+        try:
+            result = await self._handle_inner(text, intent, turn)
+        except BaseException:
+            self._authorize(NO_REQUEST)
+            raise
+        return self._finalize(result, turn)
+
+    async def _handle_inner(
+        self, text: str | None, intent: ControlIntent, turn: _Turn
+    ) -> TurnResult:
         heard = text.strip() if text and text.strip() else None
         pending = self._pending()
         try:
@@ -465,6 +530,12 @@ class VoiceSession:
                 )
                 return await self._respond(response, outcome, turn, heard=heard, intent=intent)
             self._move(VoiceState.THINKING)
+            # A new request: only the user's own words can authorise an effectful call.
+            # Known applications, not only the configured ones: a request for a
+            # non-configured app is still a request, and the tool denies it honestly.
+            turn.verdict = classify_request(heard)
+            self._request_verdict = turn.verdict
+            self._authorize(turn.verdict)
             started = self._timer()
             response = await self.orchestrator.handle(heard)
             turn.metrics["think_ms"] = round((self._timer() - started) * 1000, 1)
@@ -500,6 +571,9 @@ class VoiceSession:
             if prompted is not None and prompted.matches(pending):
                 turn.confirmed_arguments = dict(pending.arguments)
                 turn.confirmed = pending
+                # The continuation keeps the original request's scope, nothing more.
+                turn.verdict = self._request_verdict
+                self._authorize(self._request_verdict)
                 self._move(VoiceState.THINKING, detail="confirmed")
                 started = self._timer()
                 response = await self.orchestrator.handle(_WYZER_YES)
@@ -583,8 +657,10 @@ class VoiceSession:
                 app = turn.confirmed_arguments.get("app")
             reply = action_outcome_text(last.status.value, app)
         elif claims_action(reply):
+            # Remove only the false claim; keep the rest of an unrelated answer.
             claim_blocked = True
-            reply = SAY_NOTHING_OPENED
+            cleaned, _removed = strip_action_claims(reply)
+            reply = cleaned or SAY_NOTHING_OPENED
 
         result = await self._say(outcome, reply, turn, heard=heard, intent=intent)
         result.wyzer_reply = response.text

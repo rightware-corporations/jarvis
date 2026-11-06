@@ -94,7 +94,48 @@ _ACTION_CLAIM = re.compile(
 )
 
 
+def clarification_text(applications: tuple[str, ...] | list[str]) -> str:
+    """A question back to the user: never a confirmation and never an action."""
+    labels = [APPLICATION_LABELS[app] for app in applications if app in APPLICATION_LABELS]
+    if len(labels) == 1:
+        name = labels[0].split(" ", 1)[1]
+        return (
+            f"Não tenho a certeza se queres que eu abra {labels[0]}. "
+            f"Se quiseres, pede-me directamente, por exemplo: abre {name.lower()}."
+        )
+    return "Não percebi o que queres que eu faça. Podes dizer-me de outra forma?"
+
+
+def strip_action_claims(text: str) -> tuple[str, bool]:
+    """Remove only the sentences that claim an action; keep the rest of the reply."""
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
+    kept = [sentence for sentence in sentences if sentence and not claims_action(sentence)]
+    removed = len(kept) != len([s for s in sentences if s])
+    cleaned = " ".join(kept).strip()
+    # A leftover like "Pronto!" or "e o bloco de notas" still implies the claim.
+    if removed and len(cleaned.split()) < 3:
+        cleaned = ""
+    return cleaned, removed
+
+
+# Negation directly before the claimed verb, in the same clause ("não abri", "não a
+# abri", "nunca foi aberta"). A negation in another clause ("Não, abri …") does not count.
+_NEGATED_BEFORE = re.compile(
+    r"\b(?:nao|nunca|jamais)\s+(?:(?:a|o|os|as|lhe|me|te|se|ja|foi|esta)\s+)?$"
+)
+# Any character that is not a letter, digit or plain space ends the clause: punctuation,
+# quotes, dashes (-, –, —), line breaks. Only "não abri" side by side is a negation.
+_CLAUSE_BREAK = re.compile(r"(?:[^\w ]|_)+")
+
+
 def claims_action(text: str) -> bool:
+    """True when the text affirms an action. A statement negated in its own clause
+    ("não abri nenhuma aplicação") is the truth, not a claim (JAR-COG-01)."""
     from jarvis.language.pt import normalize
 
-    return bool(_ACTION_CLAIM.search(normalize(text)))
+    for clause in _CLAUSE_BREAK.split(text):
+        normalised = normalize(clause)
+        for match in _ACTION_CLAIM.finditer(normalised):
+            if not _NEGATED_BEFORE.search(normalised[: match.start()]):
+                return True
+    return False

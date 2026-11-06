@@ -8,6 +8,10 @@ no microphone, no SAPI voice, no Whisper model is needed, only the local Ollama.
   configuration says (real launches are JAR-SLICE-01D and are not wired to text mode).
 * At start it asks the provider for a read-only diagnosis (``GET /api/tags``); the
   result is printed as a fixed code. It does not pull, load or start a model.
+* Each conversation has its own ``session_id`` (``text-sessions.jsonl`` records start and
+  end with a reason: process start, ``nova conversa``, quit, end of input, error); turns
+  carry ``session_id`` and a monotonic ``turn_index``, so logs of several processes in
+  one directory can no longer be confused (JAR-COG-01).
 * Each turn is written to ``text-turns.jsonl`` with the same sanitised record as voice
   mode (outcome, action status, per-stage timings including ``llm_ms``; no text unless
   ``vexel.log_transcript_text = true``), and a one-line timing summary is printed.
@@ -21,6 +25,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from jarvis.config import SliceConfig
 from jarvis.runtime.voice_mode import Console, StdConsole, TurnLog, default_log_directory
@@ -33,6 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 EXIT_OK = 0
 _QUIT = {"sair", "exit", "quit"}
+_RESTART = {"nova conversa", "/nova", "reiniciar conversa", "recomeçar", "recomecar"}
 
 LLM_READY = "LLM_READY"
 LLM_MODEL_MISSING = "LLM_MODEL_MISSING"
@@ -91,6 +97,7 @@ class TextRuntimeResult:
     llm_status: str
     turns: list[dict[str, Any]] = field(default_factory=list)
     launcher: SimulatedLauncher | None = None
+    sessions: list[str] = field(default_factory=list)
 
 
 async def diagnose_provider(provider: Any) -> str:
@@ -152,28 +159,66 @@ async def run_text_mode(
 
     launcher = SimulatedLauncher()  # text mode: never a real launcher
     tts = deps.tts_factory(console) if deps.tts_factory else _ConsoleSpeech(console)
-    session, _parts = build_voice_session(
-        config,
-        provider,
-        stt=_NoStt(),
-        tts=tts,
-        activation=ManualActivation(),
-        sink=FanOutSink(sinks),
-        launcher=launcher,
-    )
+    session_log = TurnLog(log_directory / "text-sessions.jsonl", include_text=False)
     result = TextRuntimeResult(EXIT_OK, llm_status, launcher=launcher)
-    session.start()
-    console.write("Modo texto. Escreve 'sair' para terminar. As aplicações são sempre simuladas.")
+
+    def new_session(current_provider: Any, reason: str) -> Any:
+        # A new conversation: new identity, new Orchestrator, empty in-process context.
+        session, _parts = build_voice_session(
+            config,
+            current_provider,
+            stt=_NoStt(),
+            tts=tts,
+            activation=ManualActivation(),
+            sink=FanOutSink(sinks),
+            launcher=launcher,
+            session_id=uuid4().hex[:16],
+        )
+        session.start()
+        session_log.write(
+            {"event": "session_start", "session_id": session.session_id, "reason": reason}
+        )
+        result.sessions.append(session.session_id)
+        return session
+
+    session = new_session(provider, "process_start")
+    console.write(
+        "Modo texto. Escreve 'sair' para terminar e 'nova conversa' para recomeçar."
+        " As aplicações são sempre simuladas."
+    )
+    end_reason = "end_of_input"
     try:
         while True:
             line = await asyncio.to_thread(console.read_line)
-            if line is None or line.strip().casefold() in _QUIT:
+            if line is None:
                 break
+            command = line.strip().casefold()
+            if command in _QUIT:
+                end_reason = "user_quit"
+                break
+            if command in _RESTART:
+                session.shutdown()
+                session_log.write(
+                    {
+                        "event": "session_end",
+                        "session_id": session.session_id,
+                        "reason": "user_restart",
+                    }
+                )
+                session = new_session(deps.provider_factory(config), "user_restart")
+                console.write("Nova conversa: o contexto anterior foi limpo.")
+                continue
             turn = await session.handle_text(line)
             record = {**turn.as_record(include_text=include_text), "mode": "text"}
             turn_log.write(record)
             result.turns.append(record)
             console.write(summary_line(record))
+    except BaseException:
+        end_reason = "error"
+        raise
     finally:
         session.shutdown()
+        session_log.write(
+            {"event": "session_end", "session_id": session.session_id, "reason": end_reason}
+        )
     return result

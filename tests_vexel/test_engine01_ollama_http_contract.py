@@ -394,7 +394,8 @@ def test_case_f_confirmation_without_pending_makes_no_http_call(ollama: FakeOlla
 def test_11_unauthorised_tool_call_is_denied(ollama: FakeOllama, reply: Reply) -> None:
     ollama.script(reply, chat_text("Abri a linha de comandos."))
     rig = http_rig(ollama.url)
-    result = ask(rig, "Faz o que eu disse")
+    # JAR-COG-01: explicit request, so the malformed call reaches Wyzer's validation.
+    result = ask(rig, "Abre a calculadora")
     assert result.action_status == "DENIED"
     assert result.reply == SAY_DENIED and rig.tts.spoken == [SAY_DENIED]
     assert rig.launcher.requested == [] and rig.pending is None

@@ -9,6 +9,7 @@ memory, tasks and the coding agent are off, and the provider is whatever is inje
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import uuid4
 
 from wyzer.app.orchestrator import Orchestrator
 from wyzer.brain.provider import ChatProvider
@@ -18,6 +19,7 @@ from wyzer.workers.in_process import InProcessExecutor
 
 from jarvis.brain.pt_provider import PortugueseProvider
 from jarvis.config import SliceConfig
+from jarvis.core.conversation import VexelConversation
 from jarvis.core.voice_loop import VoiceSession
 from jarvis.tools.allowlist import (
     ApplicationLauncher,
@@ -44,6 +46,7 @@ class AssistantParts:
     registry: ToolRegistry
     provider: PortugueseProvider
     launcher: ApplicationLauncher
+    conversation: VexelConversation
 
 
 def build_slice_assistant(
@@ -71,6 +74,7 @@ def build_slice_assistant(
         if confirmation_ttl_seconds is not None
         else config.wyzer.confirmation_ttl_seconds
     )
+    conversation = VexelConversation()
     orchestrator = Orchestrator(
         registry,
         InProcessExecutor(registry),
@@ -81,8 +85,9 @@ def build_slice_assistant(
         tasks=None,
         coding_manager=None,
         personality=PERSONALITY,
+        conversation=conversation,
     )
-    return AssistantParts(orchestrator, registry, wrapped, chosen_launcher)
+    return AssistantParts(orchestrator, registry, wrapped, chosen_launcher, conversation)
 
 
 def build_voice_session(
@@ -97,7 +102,7 @@ def build_voice_session(
     probe: SystemProbe | None = None,
     clock: Clock | None = None,
     confirmation_ttl_seconds: float | None = None,
-    session_id: str = "local",
+    session_id: str | None = None,
 ) -> tuple[VoiceSession, AssistantParts]:
     """Wire tools → session so TOOL_RUNNING is published from the allowlisted tools."""
     holder: list[VoiceSession] = []
@@ -122,8 +127,11 @@ def build_voice_session(
         activation=activation,
         sink=sink,
         settings=config.vexel,
-        session_id=session_id,
+        # One identity per conversation: a new session never sees another's context.
+        session_id=session_id or uuid4().hex[:16],
         provider_meter=parts.provider.meter,
+        effect_gate=parts.provider.gate,
+        context_stats=parts.conversation.stats,
     )
     holder.append(session)
     return session, parts

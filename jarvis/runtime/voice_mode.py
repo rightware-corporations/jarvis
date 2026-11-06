@@ -177,6 +177,10 @@ async def run_voice_mode(
         sink=FanOutSink(sinks),
         launcher=launcher,
     )
+    session_log = TurnLog(log_directory / "voice-sessions.jsonl", include_text=False)
+    session_log.write(
+        {"event": "session_start", "session_id": session.session_id, "reason": "process_start"}
+    )
     result = VoiceRuntimeResult(EXIT_OK, report, launcher=launcher)
     commands: asyncio.Queue[str | None] = asyncio.Queue()
     loop = asyncio.get_running_loop()
@@ -221,6 +225,8 @@ async def run_voice_mode(
         result.exit_code = EXIT_RUNTIME_ERROR
     finally:
         session.shutdown()
+        reason = "error" if result.exit_code != EXIT_OK else "user_quit_or_end"
+        session_log.write({"event": "session_end", "session_id": session.session_id, "reason": reason})
     return result
 
 

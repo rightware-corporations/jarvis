@@ -30,6 +30,9 @@ NOTEPAD = {"app": "notepad"}
 SIMULATED_CALC = "Modo de simulação: não abri a Calculadora. Nenhuma aplicação foi iniciada."
 ASK_CALC = "Queres que eu abra a Calculadora? Responde sim ou não."
 ASK_NOTEPAD = "Queres que eu abra o Bloco de Notas? Responde sim ou não."
+# JAR-COG-01: a second application is only in scope if the user asked for it. Tests of
+# "another application needs its own confirmation" therefore request both apps.
+BOTH = "Abre a calculadora e o bloco de notas"
 
 
 def run(rig, text):
@@ -134,7 +137,7 @@ def test_repeat_after_failed_launch_does_not_loop() -> None:
 def test_model_asks_for_another_application_needs_its_own_confirmation() -> None:
     rig = make_rig()
     rig.provider.push(open_app(CALC), open_app(NOTEPAD, "c2"))
-    run(rig, "Abre a calculadora")
+    run(rig, BOTH)  # JAR-COG-01: the user asked for both apps
     second = run(rig, "sim")
 
     assert second.outcome is TurnOutcome.CONFIRMATION_REQUESTED and second.awaiting_confirmation
@@ -152,7 +155,7 @@ def test_model_asks_for_another_application_needs_its_own_confirmation() -> None
 def test_another_application_can_be_refused_without_affecting_the_first() -> None:
     rig = make_rig()
     rig.provider.push(open_app(CALC), open_app(NOTEPAD, "c2"))
-    run(rig, "Abre a calculadora")
+    run(rig, BOTH)  # JAR-COG-01: the user asked for both apps
     run(rig, "sim")
     refused = run(rig, "não")
     assert refused.outcome is TurnOutcome.REJECTED and rig.launcher.requested == ["calculator"]
@@ -176,7 +179,7 @@ def test_model_alters_arguments_after_execution() -> None:
 def test_ping_pong_between_applications_never_runs_one_twice() -> None:
     rig = make_rig()
     rig.provider.push(open_app(CALC), open_app(NOTEPAD, "c2"), open_app(CALC, "c3"))
-    run(rig, "Abre a calculadora")
+    run(rig, BOTH)  # JAR-COG-01: the user asked for both apps
     assert run(rig, "sim").outcome is TurnOutcome.CONFIRMATION_REQUESTED  # notepad asked
     done = run(rig, "sim")
     assert done.outcome is TurnOutcome.CONFIRMED and done.metrics["repeat_call_dropped"] == 1.0
@@ -189,7 +192,7 @@ def test_ping_pong_between_applications_never_runs_one_twice() -> None:
 def test_batched_continuation_repeat_is_dropped() -> None:
     rig = make_rig()
     rig.provider.push(open_app(CALC), calls(NOTEPAD, CALC))
-    run(rig, "Abre a calculadora")
+    run(rig, BOTH)  # JAR-COG-01: the user asked for both apps
     assert run(rig, "sim").outcome is TurnOutcome.CONFIRMATION_REQUESTED  # notepad
     done = run(rig, "sim")  # notepad runs; the calc continuation is a repeat
     assert done.action_status == "SIMULATED" and done.metrics["repeat_call_dropped"] == 1.0
@@ -203,7 +206,7 @@ def test_prefix_reports_the_confirmed_result_not_a_later_refusal() -> None:
         calls({"app": "calculator", "path": "x"}),  # DENIED by validation
         open_app(NOTEPAD, "c3"),
     )
-    run(rig, "Abre a calculadora")
+    run(rig, BOTH)  # JAR-COG-01: the user asked for both apps
     second = run(rig, "sim")
     assert second.outcome is TurnOutcome.CONFIRMATION_REQUESTED
     assert second.action_status == "SIMULATED"

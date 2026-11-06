@@ -117,7 +117,9 @@ def test_application_outside_configured_allowlist_is_denied() -> None:
 def test_arbitrary_arguments_are_denied_before_confirmation(arguments: dict) -> None:
     rig = make_rig()
     rig.provider.push(call("open_allowed_application", arguments), say("Abri."))
-    result = asyncio.run(rig.session.handle_text("abre isto"))
+    # JAR-COG-01: an explicit request, so the call reaches Wyzer's schema validation
+    # (a non-request utterance is blocked even earlier, by the intent gate).
+    result = asyncio.run(rig.session.handle_text("abre a calculadora"))
     assert rig.pending is None
     assert result.action_status == "DENIED"
     assert result.reply == SAY_DENIED

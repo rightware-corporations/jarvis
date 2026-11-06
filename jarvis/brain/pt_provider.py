@@ -32,7 +32,8 @@ from wyzer.models import (
     ProviderChatResponse,
 )
 
-from jarvis.language.prompts import SAY_MODEL_UNAVAILABLE
+from jarvis.language.intent import NO_REQUEST, IntentKind, IntentVerdict
+from jarvis.language.prompts import SAY_MODEL_UNAVAILABLE, clarification_text
 
 LOGGER = logging.getLogger(__name__)
 
@@ -198,6 +199,77 @@ PORTUGUESE_INSTRUCTION = (
 )
 
 
+# Tools whose execution has an effect on the computer (JAR-COG-01). Read-only tools
+# (time, system status) are not gated; they never authorise an effectful call.
+EFFECTFUL_TOOLS: frozenset[str] = frozenset({"open_allowed_application"})
+SAY_NO_ACTION_REPLY = "Não abri nenhuma aplicação, porque não mo pediste. Em que posso ajudar?"
+_TEXT_ONLY_NOTE = (
+    "VEXEL_POLICY: a chamada de ferramenta proposta não foi autorizada pelo pedido do "
+    "utilizador e não foi executada. Não abras aplicações. Responde apenas em texto, em "
+    "português, à última mensagem do utilizador, usando o contexto da conversa."
+)
+
+
+class EffectGate:
+    """Post-model policy boundary for effectful tool calls (JAR-COG-01, Package A).
+
+    ``authorization`` is the ``IntentVerdict`` of the *user's own* request that the
+    current turn serves, set by ``VoiceSession`` (never derived from model text or tool
+    results). Without one, every effectful call is blocked (fail closed).
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._authorization: IntentVerdict = NO_REQUEST
+        self.blocked = 0
+        self.allowed = 0
+
+    @property
+    def authorization(self) -> IntentVerdict:
+        with self._lock:
+            return self._authorization
+
+    def authorize(self, verdict: IntentVerdict | None) -> None:
+        with self._lock:
+            self._authorization = verdict or NO_REQUEST
+
+    def counts(self) -> tuple[int, int]:
+        with self._lock:
+            return self.blocked, self.allowed
+
+    def split(self, calls: list[Any]) -> tuple[list[Any], list[Any]]:
+        """``(kept, blocked)``.
+
+        Without an explicit execution request, every effectful call is blocked, whatever
+        its form. With one, the requested applications pass; a call for another known
+        application is blocked (no switching); a malformed or non-configured call goes
+        on to Wyzer, whose validation or the tool itself refuses it (honest DENIED).
+        """
+        verdict = self.authorization
+        kept: list[Any] = []
+        blocked: list[Any] = []
+        for call in calls:
+            name = call.function.name
+            arguments = call.function.arguments
+            if name not in EFFECTFUL_TOOLS:
+                kept.append(call)
+                continue
+            app = arguments.get("app") if isinstance(arguments, dict) else None
+            shaped = isinstance(arguments, dict) and set(arguments) == {"app"}
+            if verdict.kind is not IntentKind.EXECUTE_REQUEST:
+                blocked.append(call)  # nothing was requested: no confirmation, ever
+            elif shaped and isinstance(app, str) and verdict.authorises(app):
+                kept.append(call)  # if not configured, the tool itself denies it (DENIED)
+            elif shaped and app in ("calculator", "notepad"):
+                blocked.append(call)  # a different application than the one requested
+            else:
+                kept.append(call)  # malformed: Wyzer validation denies it (DENIED)
+        with self._lock:
+            self.blocked += len(blocked)
+            self.allowed += sum(1 for c in kept if c.function.name in EFFECTFUL_TOOLS)
+        return kept, blocked
+
+
 class PortugueseProvider:
     def __init__(
         self,
@@ -209,6 +281,8 @@ class PortugueseProvider:
         self.inner = inner
         self.instruction = instruction
         self.meter = meter or ProviderMeter()
+        self.gate = EffectGate()
+        self.last_message_count = 0
 
     @property
     def available(self) -> bool:
@@ -226,6 +300,61 @@ class PortugueseProvider:
         messages: list[ChatMessage],
         tools: list[NativeToolDefinition],
         settings: ChatRequestSettings | None = None,
+    ) -> ProviderChatResponse:
+        self.last_message_count = len(messages)
+        response = await self._measured_chat(messages, tools, settings)
+        return await self._enforce(response, messages, settings)
+
+    async def _enforce(
+        self,
+        response: ProviderChatResponse,
+        messages: list[ChatMessage],
+        settings: ChatRequestSettings | None,
+    ) -> ProviderChatResponse:
+        """Drop effectful calls the user did not ask for, before Wyzer sees them."""
+        message = response.message
+        if not message.tool_calls:
+            return response
+        try:
+            kept, blocked = self.gate.split(list(message.tool_calls))
+        except Exception as error:  # fail closed: no tool call survives a gate error
+            LOGGER.warning("effect gate failed: %s", type(error).__name__)
+            kept, blocked = [], list(message.tool_calls)
+        if not blocked:
+            return response
+        LOGGER.info("blocked %d unrequested effectful call(s)", len(blocked))
+        metadata = {**dict(response.metadata or {}), "vexel_blocked_calls": len(blocked)}
+        if kept:
+            return ProviderChatResponse(
+                message=message.model_copy(update={"tool_calls": kept}), metadata=metadata
+            )
+        verdict = self.gate.authorization
+        if verdict.kind is IntentKind.AMBIGUOUS:
+            text = clarification_text(verdict.hinted_applications)
+        else:
+            # Text sent together with a blocked call is discarded ("Vou abrir …", a fake
+            # confirmation question): ask again without tools instead.
+            text = await self._text_only_answer(messages, settings)
+        return ProviderChatResponse(
+            message=ChatMessage(role="assistant", content=text), metadata=metadata
+        )
+
+    async def _text_only_answer(
+        self, messages: list[ChatMessage], settings: ChatRequestSettings | None
+    ) -> str:
+        """Ask once more without any tool, so the user still gets an answer."""
+        note = ChatMessage(role="system", content=_TEXT_ONLY_NOTE)
+        retry = await self._measured_chat([*messages, note], [], settings)
+        text = (retry.message.content or "").strip()
+        if retry.message.tool_calls or not text:
+            return SAY_NO_ACTION_REPLY
+        return text
+
+    async def _measured_chat(
+        self,
+        messages: list[ChatMessage],
+        tools: list[NativeToolDefinition],
+        settings: ChatRequestSettings | None,
     ) -> ProviderChatResponse:
         started = self.meter.timer()
 
