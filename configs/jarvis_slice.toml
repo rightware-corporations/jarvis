@@ -1,0 +1,64 @@
+# JAR-SLICE-01 configuration. Separate from the protected upstream wyzer.toml.
+# Load with jarvis.config.load_slice_config (no environment overrides are applied).
+# Everything not listed here keeps the WyzerSettings default.
+
+worker_isolation_enabled = false   # in-process tools so TOOL_RUNNING can be published
+maximum_tool_rounds = 4
+confirmation_ttl_seconds = 30
+tool_result_context_characters = 4000
+
+[llm]
+provider = "ollama"
+model = "qwen3.5:4b"               # Apache-2.0; pulled manually on the QA PC in 01C
+endpoint = "http://127.0.0.1:11434"
+temperature = 0.1
+think = false
+max_output_tokens = 256
+detailed_output_tokens = 512
+context_length = 8192
+request_timeout_seconds = 60
+auto_start = false                 # never launch Ollama from Jarvis
+keep_alive = "30m"
+
+[memory]
+enabled = false
+
+[task_engine]
+enabled = false
+
+[coding_agent]
+enabled = false
+
+[perception]
+enabled = false
+
+[personality]
+assistant_name = "Jarvis"
+tone = "concise and professional"
+response_length = "concise"
+
+[speech]
+enabled = true
+stt_adapter = "faster_whisper"
+tts_adapter = "windows_system"     # Portuguese voice availability is checked in 01C
+wake_word_adapter = "manual"       # WAKE_WORD_BLOCKED: no approved commercial wake model
+whisper_model = "small"            # multilingual (MIT); never a ".en" model
+whisper_device = "cpu"
+whisper_compute_type = "int8"
+whisper_download_root = ".wyzer/models"
+minimum_stt_confidence = 0.35
+listen_timeout_seconds = 8
+rate = 0
+volume = 100
+
+[vexel]
+language = "pt"
+timezone = "Africa/Maputo"
+activation = "manual"
+allowed_applications = ["calculator", "notepad"]
+listen_timeout_seconds = 8
+confirmation_listen_timeout_seconds = 8
+allow_real_windows_actions = false
+log_transcript_text = false
+voice_cultures = ["pt-PT", "pt-BR"]   # SAPI voice preference for Portuguese replies
+# log_directory = "..."               # default: .wyzer/vexel/logs (git-ignored)

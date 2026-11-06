@@ -1,0 +1,1323 @@
+{
+  "upstream_repo": "XtraWyze/Wyzer-Ai",
+  "upstream_tag": "v0.3.1",
+  "upstream_commit": "db83c085feca32d3c091361165cb9ac7ecadafe0",
+  "imported_count": 182,
+  "excluded_count": 44,
+  "imported": [
+    {
+      "source_path": ".env.example",
+      "destination": ".env.example",
+      "blob_sha": "181755c38a618b256b92c9ef0ae9bd0f8d9f03b7",
+      "size": 821
+    },
+    {
+      "source_path": ".github/dependabot.yml",
+      "destination": "upstream-meta/.github/dependabot.yml",
+      "blob_sha": "c56f17475123862a0c5691d1a756782e1abb963b",
+      "size": 231
+    },
+    {
+      "source_path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "destination": "upstream-meta/.github/ISSUE_TEMPLATE/bug_report.yml",
+      "blob_sha": "dd94f36e07ffa80e359b601108dbc54e599cab5c",
+      "size": 1038
+    },
+    {
+      "source_path": ".github/ISSUE_TEMPLATE/config.yml",
+      "destination": "upstream-meta/.github/ISSUE_TEMPLATE/config.yml",
+      "blob_sha": "f5d36d2609237e04a19ddb45d130e3ec0812397a",
+      "size": 211
+    },
+    {
+      "source_path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "destination": "upstream-meta/.github/ISSUE_TEMPLATE/feature_request.yml",
+      "blob_sha": "4c2cf3a2729181ee4d224dd8fa9352290fb8fd91",
+      "size": 465
+    },
+    {
+      "source_path": ".github/pull_request_template.md",
+      "destination": "upstream-meta/.github/pull_request_template.md",
+      "blob_sha": "d726b4bbca4fdce293777bfcaad641a7bf5dff9a",
+      "size": 342
+    },
+    {
+      "source_path": ".github/workflows/ci.yml",
+      "destination": "upstream-meta/.github/workflows/ci.yml",
+      "blob_sha": "fc1224915795602ba2fa303898dac049c9922d7d",
+      "size": 731
+    },
+    {
+      "source_path": ".gitignore",
+      "destination": ".gitignore",
+      "blob_sha": "8f3e54bc295f9861a8c9a092390834a4646808aa",
+      "size": 179
+    },
+    {
+      "source_path": "CHANGELOG.md",
+      "destination": "CHANGELOG.md",
+      "blob_sha": "fb8b7c5ffd4be2583285a19aa4bb5346edbe2d33",
+      "size": 15197
+    },
+    {
+      "source_path": "CODE_OF_CONDUCT.md",
+      "destination": "CODE_OF_CONDUCT.md",
+      "blob_sha": "582c9e72835b712cae49a9e57c53af0eb399a6c9",
+      "size": 747
+    },
+    {
+      "source_path": "CONTRIBUTING.md",
+      "destination": "CONTRIBUTING.md",
+      "blob_sha": "8545ff89eb4827053025257d4dfa0a92dc72d557",
+      "size": 1078
+    },
+    {
+      "source_path": "docs/ARCHITECTURE.md",
+      "destination": "docs/upstream/ARCHITECTURE.md",
+      "blob_sha": "7a6adb3fea30df545600dde41e3a89b79c0eab67",
+      "size": 9701
+    },
+    {
+      "source_path": "docs/CODING_AGENT.md",
+      "destination": "docs/upstream/CODING_AGENT.md",
+      "blob_sha": "7178d82d286ae92cee10cfa500cf4e6dfb8a06b7",
+      "size": 5587
+    },
+    {
+      "source_path": "docs/DESKTOP_UI.md",
+      "destination": "docs/upstream/DESKTOP_UI.md",
+      "blob_sha": "ca092b3d3da02d46e50e1cf81ada95602689319b",
+      "size": 2056
+    },
+    {
+      "source_path": "docs/DEVELOPMENT.md",
+      "destination": "docs/upstream/DEVELOPMENT.md",
+      "blob_sha": "f121a4c5fffe1fb29031bc2f7908d3353cf11f22",
+      "size": 1220
+    },
+    {
+      "source_path": "docs/LOCAL_LLM_SETUP.md",
+      "destination": "docs/upstream/LOCAL_LLM_SETUP.md",
+      "blob_sha": "f7c26f7d4705e2f6f6453ab8d5b51e20cca2475f",
+      "size": 4240
+    },
+    {
+      "source_path": "docs/MEMORY.md",
+      "destination": "docs/upstream/MEMORY.md",
+      "blob_sha": "90f9e54e0e448ca509c1500961b859a6acbf680f",
+      "size": 1290
+    },
+    {
+      "source_path": "docs/MODEL_ACCEPTANCE.md",
+      "destination": "docs/upstream/MODEL_ACCEPTANCE.md",
+      "blob_sha": "15630b2293a472e2580bafff0a696dc87039129b",
+      "size": 2235
+    },
+    {
+      "source_path": "docs/MODEL_CONTEXT_MEASUREMENTS.md",
+      "destination": "docs/upstream/MODEL_CONTEXT_MEASUREMENTS.md",
+      "blob_sha": "6c76608a58db47c26278a59c323b62f199d624ca",
+      "size": 1530
+    },
+    {
+      "source_path": "docs/ROADMAP.md",
+      "destination": "docs/upstream/ROADMAP.md",
+      "blob_sha": "d2661e0fa7809d46bc99110a54bee27dd9618307",
+      "size": 942
+    },
+    {
+      "source_path": "docs/SAFETY.md",
+      "destination": "docs/upstream/SAFETY.md",
+      "blob_sha": "a553bdc96b6ad7e20e965f80dff21ddc3a8f09e6",
+      "size": 3611
+    },
+    {
+      "source_path": "docs/SPEECH.md",
+      "destination": "docs/upstream/SPEECH.md",
+      "blob_sha": "32d858383e370ca7c6fbf3b1206afc0a160ee45a",
+      "size": 3341
+    },
+    {
+      "source_path": "docs/TASK_ENGINE.md",
+      "destination": "docs/upstream/TASK_ENGINE.md",
+      "blob_sha": "54949990c3a14f41f467778cb963ec5e2c3f9e39",
+      "size": 2465
+    },
+    {
+      "source_path": "docs/TOOL_PACKS.md",
+      "destination": "docs/upstream/TOOL_PACKS.md",
+      "blob_sha": "c7e8ea3c5b6cdfed328b768628f71b8623b438e7",
+      "size": 5422
+    },
+    {
+      "source_path": "docs/TOOLS.md",
+      "destination": "docs/upstream/TOOLS.md",
+      "blob_sha": "ff2c99b28b954e89ca5ac999303f557d7f6b314b",
+      "size": 8571
+    },
+    {
+      "source_path": "evals/capability_awareness.json",
+      "destination": "evals/capability_awareness.json",
+      "blob_sha": "fdb1375ce25892a0d79147765c0c6dc19ce47658",
+      "size": 4513
+    },
+    {
+      "source_path": "evals/model_acceptance.json",
+      "destination": "evals/model_acceptance.json",
+      "blob_sha": "fcce4e25e561b64f1aa3f11fb2aa9c11280cd988",
+      "size": 10349
+    },
+    {
+      "source_path": "evals/model_end_to_end_acceptance.json",
+      "destination": "evals/model_end_to_end_acceptance.json",
+      "blob_sha": "a24921d6afbff2a16447c64609d4800a76f67378",
+      "size": 19533
+    },
+    {
+      "source_path": "examples/wyzer_example_pack/pyproject.toml",
+      "destination": "examples/wyzer_example_pack/pyproject.toml",
+      "blob_sha": "2962c6128caeddc2d0ca39296cfc3fa7bb96c452",
+      "size": 494
+    },
+    {
+      "source_path": "examples/wyzer_example_pack/README.md",
+      "destination": "examples/wyzer_example_pack/README.md",
+      "blob_sha": "95690fc91ec9487681809482c824f81a9fd75590",
+      "size": 549
+    },
+    {
+      "source_path": "examples/wyzer_example_pack/src/wyzer_example_pack/__init__.py",
+      "destination": "examples/wyzer_example_pack/src/wyzer_example_pack/__init__.py",
+      "blob_sha": "096c96f6c5005ed900f461c69a654b9657e688d4",
+      "size": 1359
+    },
+    {
+      "source_path": "installer/build-release.ps1",
+      "destination": "installer/build-release.ps1",
+      "blob_sha": "01a2aec71f93875fd11d882a983c79f4a078145b",
+      "size": 6070
+    },
+    {
+      "source_path": "installer/constraints-windows-py311.txt",
+      "destination": "installer/constraints-windows-py311.txt",
+      "blob_sha": "3de98ce5e0d5ae64036553bd8b96478ab2598021",
+      "size": 496
+    },
+    {
+      "source_path": "installer/Install Wyzer.cmd",
+      "destination": "installer/Install Wyzer.cmd",
+      "blob_sha": "6536c6990fdbcb2efbb52d84a3cbbe7e5be02313",
+      "size": 1212
+    },
+    {
+      "source_path": "installer/install.ps1",
+      "destination": "installer/install.ps1",
+      "blob_sha": "5c7dc42207b7ce33c8e6fa2208da013b113f5f60",
+      "size": 25662
+    },
+    {
+      "source_path": "installer/README.md",
+      "destination": "installer/README.md",
+      "blob_sha": "d6d32201db52cd9bf6d0bbd0298c980fa12f3aeb",
+      "size": 2405
+    },
+    {
+      "source_path": "installer/RELEASE_README.txt",
+      "destination": "installer/RELEASE_README.txt",
+      "blob_sha": "4f0a83010ac9cd046d9d2740623723ff553d0829",
+      "size": 2472
+    },
+    {
+      "source_path": "LICENSE",
+      "destination": "LICENSE",
+      "blob_sha": "aa46aa5bdbd3ea30a488e80f7af3fda090758116",
+      "size": 1065
+    },
+    {
+      "source_path": "NOTICE.md",
+      "destination": "NOTICE.md",
+      "blob_sha": "11ea4a65ba4f92600a2a045ee9b3be2635dc7772",
+      "size": 466
+    },
+    {
+      "source_path": "pyproject.toml",
+      "destination": "pyproject.toml",
+      "blob_sha": "86b557aab92a0bbe207d1cfa4876573a42ad09b1",
+      "size": 1798
+    },
+    {
+      "source_path": "README.md",
+      "destination": "UPSTREAM_README.md",
+      "blob_sha": "fe90c4055cec5585412182639a37152171401100",
+      "size": 8995
+    },
+    {
+      "source_path": "scripts/measure_model_context.py",
+      "destination": "scripts/measure_model_context.py",
+      "blob_sha": "7f43ca2eca162fdc664dc995f38d6be79a7d7177",
+      "size": 185
+    },
+    {
+      "source_path": "SECURITY.md",
+      "destination": "SECURITY.md",
+      "blob_sha": "1bc48373da0c86dc0fcd186eaec6cdef106e3df7",
+      "size": 680
+    },
+    {
+      "source_path": "tests/__init__.py",
+      "destination": "tests/__init__.py",
+      "blob_sha": "cdbd3906c271bd0f5e3a88f5ff9dc4357d93264f",
+      "size": 24
+    },
+    {
+      "source_path": "tests/fake_windows.py",
+      "destination": "tests/fake_windows.py",
+      "blob_sha": "f0a82bef398c97c9fe2268656e61a0f7f728d3e0",
+      "size": 19432
+    },
+    {
+      "source_path": "tests/fakes.py",
+      "destination": "tests/fakes.py",
+      "blob_sha": "a5c4c909f1dc79f10ac091270c0353f5103acaa3",
+      "size": 4184
+    },
+    {
+      "source_path": "tests/test_application_index.py",
+      "destination": "tests/test_application_index.py",
+      "blob_sha": "88c2b2d6165e7c96acc216d30f7fce353be191c2",
+      "size": 6615
+    },
+    {
+      "source_path": "tests/test_audio.py",
+      "destination": "tests/test_audio.py",
+      "blob_sha": "83c2af97e55990ac2cdf1a01529d8af0f183afb2",
+      "size": 12062
+    },
+    {
+      "source_path": "tests/test_browser_tools.py",
+      "destination": "tests/test_browser_tools.py",
+      "blob_sha": "6ab73de7f2f1fa12fce81567c4c9adf03eb0eca9",
+      "size": 6585
+    },
+    {
+      "source_path": "tests/test_capability_context.py",
+      "destination": "tests/test_capability_context.py",
+      "blob_sha": "02897163b9b8d8d541a75f7b847d3234abdc4d38",
+      "size": 4664
+    },
+    {
+      "source_path": "tests/test_clipboard.py",
+      "destination": "tests/test_clipboard.py",
+      "blob_sha": "c37e94a85fd240ff42ee3e8eec1e01caf9c539ea",
+      "size": 722
+    },
+    {
+      "source_path": "tests/test_coding_agent.py",
+      "destination": "tests/test_coding_agent.py",
+      "blob_sha": "3ad0be807ab731c60e60a2259f60a0fcfbb90e4f",
+      "size": 18978
+    },
+    {
+      "source_path": "tests/test_config.py",
+      "destination": "tests/test_config.py",
+      "blob_sha": "a5b1163c86f828e51a65b94647ae6437f86f01c9",
+      "size": 3162
+    },
+    {
+      "source_path": "tests/test_confirmation_policy.py",
+      "destination": "tests/test_confirmation_policy.py",
+      "blob_sha": "ad15ca603bc9dba04dffa1cb85fcd8be580fad06",
+      "size": 4776
+    },
+    {
+      "source_path": "tests/test_conversation.py",
+      "destination": "tests/test_conversation.py",
+      "blob_sha": "bf284d074103151d5989300fd9def949b8c31e27",
+      "size": 3605
+    },
+    {
+      "source_path": "tests/test_desktop_interaction.py",
+      "destination": "tests/test_desktop_interaction.py",
+      "blob_sha": "50ddbd9ebae0602d3c7a847c9220d3a654ec844e",
+      "size": 2530
+    },
+    {
+      "source_path": "tests/test_desktop_ui.py",
+      "destination": "tests/test_desktop_ui.py",
+      "blob_sha": "f8d66ebb0f3888ba303b81281b2110732aa26d0e",
+      "size": 4379
+    },
+    {
+      "source_path": "tests/test_end_to_end_acceptance.py",
+      "destination": "tests/test_end_to_end_acceptance.py",
+      "blob_sha": "b810d3d82bf1233f14fa9dbfb0b29115066062ed",
+      "size": 8229
+    },
+    {
+      "source_path": "tests/test_executor.py",
+      "destination": "tests/test_executor.py",
+      "blob_sha": "f3d5587e94e5ad07e6df2bf3a9af53dded7cf18e",
+      "size": 1481
+    },
+    {
+      "source_path": "tests/test_file_catalog.py",
+      "destination": "tests/test_file_catalog.py",
+      "blob_sha": "4f36de0f75d9608aa2f12e6f03d3cea5dc831e2e",
+      "size": 4807
+    },
+    {
+      "source_path": "tests/test_file_content_writes.py",
+      "destination": "tests/test_file_content_writes.py",
+      "blob_sha": "14b0402c230416c0b7710a9267abecf759b949c3",
+      "size": 11811
+    },
+    {
+      "source_path": "tests/test_file_management.py",
+      "destination": "tests/test_file_management.py",
+      "blob_sha": "3ca3878065b5998b3a9920f96e7244e7bdb7bb93",
+      "size": 3042
+    },
+    {
+      "source_path": "tests/test_file_paths.py",
+      "destination": "tests/test_file_paths.py",
+      "blob_sha": "23bcf1e44ffd798307468b8f20a7a37948b1c662",
+      "size": 1285
+    },
+    {
+      "source_path": "tests/test_install_check.py",
+      "destination": "tests/test_install_check.py",
+      "blob_sha": "08fd541408e0473ba4f28d1e306df1d0333b91c8",
+      "size": 2475
+    },
+    {
+      "source_path": "tests/test_installer.py",
+      "destination": "tests/test_installer.py",
+      "blob_sha": "8613ccee83a8373b6ded0a644b63850797411b12",
+      "size": 4892
+    },
+    {
+      "source_path": "tests/test_isolated_executor.py",
+      "destination": "tests/test_isolated_executor.py",
+      "blob_sha": "da391836f7fc25c4000221fb6874dcd5c2be0e95",
+      "size": 2501
+    },
+    {
+      "source_path": "tests/test_ledger.py",
+      "destination": "tests/test_ledger.py",
+      "blob_sha": "d9a7fd09c895c47aaefad12291d6cb30e03fa618",
+      "size": 866
+    },
+    {
+      "source_path": "tests/test_memory.py",
+      "destination": "tests/test_memory.py",
+      "blob_sha": "e4df9532c34b2df5342b20773e75edde916140f0",
+      "size": 1769
+    },
+    {
+      "source_path": "tests/test_model_acceptance.py",
+      "destination": "tests/test_model_acceptance.py",
+      "blob_sha": "2ddb7f933a28ada2dfac59bdedab724b0f6dc316",
+      "size": 6775
+    },
+    {
+      "source_path": "tests/test_model_context_schema.py",
+      "destination": "tests/test_model_context_schema.py",
+      "blob_sha": "13b5ec20ccdfee5560a9085e4aa8511ef789201c",
+      "size": 6123
+    },
+    {
+      "source_path": "tests/test_models.py",
+      "destination": "tests/test_models.py",
+      "blob_sha": "bfce2c38a58ee4d32881d232716e406fdd5dce33",
+      "size": 896
+    },
+    {
+      "source_path": "tests/test_monitor_topology.py",
+      "destination": "tests/test_monitor_topology.py",
+      "blob_sha": "19238bdf8ffe122c80bb631b1579dfca197420a6",
+      "size": 5467
+    },
+    {
+      "source_path": "tests/test_orchestrator.py",
+      "destination": "tests/test_orchestrator.py",
+      "blob_sha": "12257fc6016ac1792829eca769c608070c950477",
+      "size": 33784
+    },
+    {
+      "source_path": "tests/test_perception.py",
+      "destination": "tests/test_perception.py",
+      "blob_sha": "2a4038f9912dc011d8aa8d034ee296dea75eff7f",
+      "size": 7210
+    },
+    {
+      "source_path": "tests/test_prompt.py",
+      "destination": "tests/test_prompt.py",
+      "blob_sha": "6cac2bd23962d781c9545e2ec779657c5607f6fb",
+      "size": 9622
+    },
+    {
+      "source_path": "tests/test_provider_factory.py",
+      "destination": "tests/test_provider_factory.py",
+      "blob_sha": "9df5dc2ea19c2cfb9b1984657e071647acd5c881",
+      "size": 935
+    },
+    {
+      "source_path": "tests/test_providers.py",
+      "destination": "tests/test_providers.py",
+      "blob_sha": "0f47068c4e200a94f201ad5bf719708cfa8a6ec2",
+      "size": 10406
+    },
+    {
+      "source_path": "tests/test_registry.py",
+      "destination": "tests/test_registry.py",
+      "blob_sha": "98e6f8b206c44b4ef5ad8c4cbc5556c3f2591707",
+      "size": 4598
+    },
+    {
+      "source_path": "tests/test_runtime_paths.py",
+      "destination": "tests/test_runtime_paths.py",
+      "blob_sha": "9cd4e7fed28ea3423abe367ac3ae7166fb3cb519",
+      "size": 2242
+    },
+    {
+      "source_path": "tests/test_session_context.py",
+      "destination": "tests/test_session_context.py",
+      "blob_sha": "3907f5876d88caf9b993a5c02a62938644c17344",
+      "size": 8319
+    },
+    {
+      "source_path": "tests/test_speech.py",
+      "destination": "tests/test_speech.py",
+      "blob_sha": "47b757025c5549ba92d77f700d9d00622d5f4187",
+      "size": 9974
+    },
+    {
+      "source_path": "tests/test_state.py",
+      "destination": "tests/test_state.py",
+      "blob_sha": "6ae2e0e525d019966fb4ea55b47a4990ac87c0ac",
+      "size": 5631
+    },
+    {
+      "source_path": "tests/test_task_engine.py",
+      "destination": "tests/test_task_engine.py",
+      "blob_sha": "e273b21bab853cdd4f90b169b98712e2b6cff74f",
+      "size": 4360
+    },
+    {
+      "source_path": "tests/test_tool_context.py",
+      "destination": "tests/test_tool_context.py",
+      "blob_sha": "1e80204ba8d64910a0725fc46887c8d085f931fd",
+      "size": 3727
+    },
+    {
+      "source_path": "tests/test_tool_packs.py",
+      "destination": "tests/test_tool_packs.py",
+      "blob_sha": "aaacdffc9851d783d07d16b2cde6d9fa83c83f7e",
+      "size": 5661
+    },
+    {
+      "source_path": "tests/test_tts_factory.py",
+      "destination": "tests/test_tts_factory.py",
+      "blob_sha": "39b86a73e0a0338bb99d4f7a958f9adf0074acfa",
+      "size": 1909
+    },
+    {
+      "source_path": "tests/test_user_journeys.py",
+      "destination": "tests/test_user_journeys.py",
+      "blob_sha": "9ca44dcaaba1491d68cab33c70f7ddd34fde0c38",
+      "size": 5215
+    },
+    {
+      "source_path": "tests/test_voice_routes.py",
+      "destination": "tests/test_voice_routes.py",
+      "blob_sha": "a0b5bf842965c56e1d6e8ced485f31915dd287ba",
+      "size": 1907
+    },
+    {
+      "source_path": "tests/test_windows_integration.py",
+      "destination": "tests/test_windows_integration.py",
+      "blob_sha": "6f0f8a13e169a4c2247aadc0de20465536688cd9",
+      "size": 1287
+    },
+    {
+      "source_path": "tests/test_windows_orchestration.py",
+      "destination": "tests/test_windows_orchestration.py",
+      "blob_sha": "16817618a6a6061396dc3ff239a2f77ebd66f197",
+      "size": 8831
+    },
+    {
+      "source_path": "tests/test_windows_tools.py",
+      "destination": "tests/test_windows_tools.py",
+      "blob_sha": "a2ef7b92b7d848efc1cfce6b756e3cba7064eaed",
+      "size": 32461
+    },
+    {
+      "source_path": "tests/worker_fixtures.py",
+      "destination": "tests/worker_fixtures.py",
+      "blob_sha": "920f691d4c526a2de153b872cda9d6b2ec74a393",
+      "size": 798
+    },
+    {
+      "source_path": "wyzer.toml",
+      "destination": "wyzer.toml",
+      "blob_sha": "b2a607c5802d082e4e72810287368ab7eab8d2df",
+      "size": 2043
+    },
+    {
+      "source_path": "wyzer/__init__.py",
+      "destination": "wyzer/__init__.py",
+      "blob_sha": "dba77fa9f7a67176bbd01da43a0658bcdb422b51",
+      "size": 82
+    },
+    {
+      "source_path": "wyzer/__main__.py",
+      "destination": "wyzer/__main__.py",
+      "blob_sha": "db878b0b7b7011dc275832aca0d483342ed30c06",
+      "size": 70
+    },
+    {
+      "source_path": "wyzer/app/__init__.py",
+      "destination": "wyzer/app/__init__.py",
+      "blob_sha": "ad21de05aa2a0c24c0e26e04eb890b7196979331",
+      "size": 128
+    },
+    {
+      "source_path": "wyzer/app/cli.py",
+      "destination": "wyzer/app/cli.py",
+      "blob_sha": "37d20ab48755d06d17f9984d22a987dc88b38076",
+      "size": 19329
+    },
+    {
+      "source_path": "wyzer/app/orchestrator.py",
+      "destination": "wyzer/app/orchestrator.py",
+      "blob_sha": "ab380a8cbfc95ad99a47c45bc1b880ad930f5f22",
+      "size": 55048
+    },
+    {
+      "source_path": "wyzer/app/tool_context.py",
+      "destination": "wyzer/app/tool_context.py",
+      "blob_sha": "4450ce89a9cd2778a7e2e73ea6f8cac6dcf97d80",
+      "size": 3797
+    },
+    {
+      "source_path": "wyzer/audio_diagnostic.py",
+      "destination": "wyzer/audio_diagnostic.py",
+      "blob_sha": "c5468267ad8ddcd121edb77bda90d1749bc73fd8",
+      "size": 874
+    },
+    {
+      "source_path": "wyzer/brain/__init__.py",
+      "destination": "wyzer/brain/__init__.py",
+      "blob_sha": "5ea8f4a55b9e39b75a06fc2d93cddbd2dc639081",
+      "size": 798
+    },
+    {
+      "source_path": "wyzer/brain/capability_context.py",
+      "destination": "wyzer/brain/capability_context.py",
+      "blob_sha": "ca73356f4bfcd01380ced8a0dbd06620f135553f",
+      "size": 8729
+    },
+    {
+      "source_path": "wyzer/brain/factory.py",
+      "destination": "wyzer/brain/factory.py",
+      "blob_sha": "87483740236dc51d7b8f54f02d45c7a5a24c0a1b",
+      "size": 2129
+    },
+    {
+      "source_path": "wyzer/brain/http.py",
+      "destination": "wyzer/brain/http.py",
+      "blob_sha": "47982566001afead3d3d173941c1ced956640566",
+      "size": 3311
+    },
+    {
+      "source_path": "wyzer/brain/prompt.py",
+      "destination": "wyzer/brain/prompt.py",
+      "blob_sha": "b037a35ecbed035bd883619998348e3a65e15db3",
+      "size": 15312
+    },
+    {
+      "source_path": "wyzer/brain/provider.py",
+      "destination": "wyzer/brain/provider.py",
+      "blob_sha": "f542e3191d441aa8d4d0dd530564d09a081cb7b8",
+      "size": 1668
+    },
+    {
+      "source_path": "wyzer/brain/providers.py",
+      "destination": "wyzer/brain/providers.py",
+      "blob_sha": "7d726c13a585147df1074db5db0012195252c726",
+      "size": 16999
+    },
+    {
+      "source_path": "wyzer/coding/__init__.py",
+      "destination": "wyzer/coding/__init__.py",
+      "blob_sha": "c9b40fa664b64c2f105f93fae697fe27556931d2",
+      "size": 62
+    },
+    {
+      "source_path": "wyzer/coding/agent.py",
+      "destination": "wyzer/coding/agent.py",
+      "blob_sha": "dd321febc8f2054648e2f2f8e47a76645737e1bd",
+      "size": 8608
+    },
+    {
+      "source_path": "wyzer/coding/manager.py",
+      "destination": "wyzer/coding/manager.py",
+      "blob_sha": "1860fa8aed6c6bcfc2620fb37c27eb1d3640b014",
+      "size": 14517
+    },
+    {
+      "source_path": "wyzer/coding/models.py",
+      "destination": "wyzer/coding/models.py",
+      "blob_sha": "04468f641dde9932167ad1a6a376c5dddc32c3d8",
+      "size": 1895
+    },
+    {
+      "source_path": "wyzer/coding/prompt.py",
+      "destination": "wyzer/coding/prompt.py",
+      "blob_sha": "9308bf009644ae523104da7cc566f42f06d7e9bb",
+      "size": 959
+    },
+    {
+      "source_path": "wyzer/coding/proxy.py",
+      "destination": "wyzer/coding/proxy.py",
+      "blob_sha": "5037ebd281fd5f188c5db84486d3b4a006bf0a13",
+      "size": 3132
+    },
+    {
+      "source_path": "wyzer/coding/tools.py",
+      "destination": "wyzer/coding/tools.py",
+      "blob_sha": "77a07f48053f01348699525822d5c77555be0b5c",
+      "size": 4781
+    },
+    {
+      "source_path": "wyzer/coding/workspace.py",
+      "destination": "wyzer/coding/workspace.py",
+      "blob_sha": "c9693cfbe1173052acd20543a40be9343b5533a8",
+      "size": 16798
+    },
+    {
+      "source_path": "wyzer/config.py",
+      "destination": "wyzer/config.py",
+      "blob_sha": "b588633cf55cf8aef645d7d5d5122d150a2f6480",
+      "size": 9656
+    },
+    {
+      "source_path": "wyzer/conversation/__init__.py",
+      "destination": "wyzer/conversation/__init__.py",
+      "blob_sha": "4ae246953d04eacfb09723e1c5f6d2e0b285c7b5",
+      "size": 423
+    },
+    {
+      "source_path": "wyzer/conversation/manager.py",
+      "destination": "wyzer/conversation/manager.py",
+      "blob_sha": "52584c678c18e7434bbcc3b0c7328576b1718223",
+      "size": 9981
+    },
+    {
+      "source_path": "wyzer/conversation/session_context.py",
+      "destination": "wyzer/conversation/session_context.py",
+      "blob_sha": "4a59a42ca3f5297b5f013ae610b6caa367d736df",
+      "size": 25788
+    },
+    {
+      "source_path": "wyzer/desktop/__init__.py",
+      "destination": "wyzer/desktop/__init__.py",
+      "blob_sha": "f06b92cbf9d62f07fd315c1ba7f21140c2595d32",
+      "size": 121
+    },
+    {
+      "source_path": "wyzer/desktop/application_index.py",
+      "destination": "wyzer/desktop/application_index.py",
+      "blob_sha": "def3ff83d549c880718fc7d283a691b82043b251",
+      "size": 16952
+    },
+    {
+      "source_path": "wyzer/desktop/audio.py",
+      "destination": "wyzer/desktop/audio.py",
+      "blob_sha": "260ba1206e6a00a8d4daa514685c44900fa8d449",
+      "size": 19813
+    },
+    {
+      "source_path": "wyzer/desktop/backend.py",
+      "destination": "wyzer/desktop/backend.py",
+      "blob_sha": "458afb2edcb8c9162784734ae112a002c191c826",
+      "size": 403
+    },
+    {
+      "source_path": "wyzer/desktop/system.py",
+      "destination": "wyzer/desktop/system.py",
+      "blob_sha": "9e167045141cbce0c95810e345f5676d33cbfdab",
+      "size": 2441
+    },
+    {
+      "source_path": "wyzer/desktop/windows_backend.py",
+      "destination": "wyzer/desktop/windows_backend.py",
+      "blob_sha": "6566f094f66a8d513c74ffc4b32d39a83b58967e",
+      "size": 82630
+    },
+    {
+      "source_path": "wyzer/dev/__init__.py",
+      "destination": "wyzer/dev/__init__.py",
+      "blob_sha": "ae96600f81dd71ebd461f602304f89ded0ddb1dd",
+      "size": 64
+    },
+    {
+      "source_path": "wyzer/dev/measure_context.py",
+      "destination": "wyzer/dev/measure_context.py",
+      "blob_sha": "dfb6efee341f5bddd3b11f71f41319693e3efcf2",
+      "size": 4810
+    },
+    {
+      "source_path": "wyzer/end_to_end_acceptance.py",
+      "destination": "wyzer/end_to_end_acceptance.py",
+      "blob_sha": "d0585342f1a6c71a1fc5cc101885b2914291c281",
+      "size": 25045
+    },
+    {
+      "source_path": "wyzer/events/__init__.py",
+      "destination": "wyzer/events/__init__.py",
+      "blob_sha": "129c858b74572ae579407d378354b1aaffe61f90",
+      "size": 106
+    },
+    {
+      "source_path": "wyzer/events/ledger.py",
+      "destination": "wyzer/events/ledger.py",
+      "blob_sha": "70f6c155607dab36a0277a8f8fa9cfb224335a16",
+      "size": 1202
+    },
+    {
+      "source_path": "wyzer/files/__init__.py",
+      "destination": "wyzer/files/__init__.py",
+      "blob_sha": "ea7491d22311dba5ad26d35d4f961fb952d2a16d",
+      "size": 417
+    },
+    {
+      "source_path": "wyzer/files/catalog.py",
+      "destination": "wyzer/files/catalog.py",
+      "blob_sha": "86ad9cd963a0f0a3e7bf0e555177c16cb9ae923f",
+      "size": 19987
+    },
+    {
+      "source_path": "wyzer/files/paths.py",
+      "destination": "wyzer/files/paths.py",
+      "blob_sha": "ac8428309dd3da26ebbc44b65fcb0e2f20fba6fc",
+      "size": 4711
+    },
+    {
+      "source_path": "wyzer/install_check.py",
+      "destination": "wyzer/install_check.py",
+      "blob_sha": "54f0787778789ab5bf83825397f6b3f2811cf475",
+      "size": 7538
+    },
+    {
+      "source_path": "wyzer/memory/__init__.py",
+      "destination": "wyzer/memory/__init__.py",
+      "blob_sha": "80b0b1737a787c3814168c6980f6a1cd1feb4839",
+      "size": 168
+    },
+    {
+      "source_path": "wyzer/memory/store.py",
+      "destination": "wyzer/memory/store.py",
+      "blob_sha": "0d1518f6bf933f8a07936a8bb3e5fffa39df296b",
+      "size": 6050
+    },
+    {
+      "source_path": "wyzer/model_acceptance.py",
+      "destination": "wyzer/model_acceptance.py",
+      "blob_sha": "d5b088b9eeee73f121af3904336171be2cf338c0",
+      "size": 17966
+    },
+    {
+      "source_path": "wyzer/models/__init__.py",
+      "destination": "wyzer/models/__init__.py",
+      "blob_sha": "3dcda0241a488f4057b17dc18d3151dd398806b7",
+      "size": 1752
+    },
+    {
+      "source_path": "wyzer/models/core.py",
+      "destination": "wyzer/models/core.py",
+      "blob_sha": "453001ff1edc63c549f61a615edf2dda417b9f8f",
+      "size": 13951
+    },
+    {
+      "source_path": "wyzer/perception/__init__.py",
+      "destination": "wyzer/perception/__init__.py",
+      "blob_sha": "5bb98781fd53b48acae3492ceb37100980bd1f2b",
+      "size": 335
+    },
+    {
+      "source_path": "wyzer/perception/screen.py",
+      "destination": "wyzer/perception/screen.py",
+      "blob_sha": "abe696dfbbfad0a392eabbf823b282712884a63d",
+      "size": 5219
+    },
+    {
+      "source_path": "wyzer/perception/vision.py",
+      "destination": "wyzer/perception/vision.py",
+      "blob_sha": "21c73356ef2683519ef732b9eadd265ed47c3642",
+      "size": 5940
+    },
+    {
+      "source_path": "wyzer/policy/__init__.py",
+      "destination": "wyzer/policy/__init__.py",
+      "blob_sha": "2e3bc23e01b926c51c573406c8a3d36b804cae5e",
+      "size": 154
+    },
+    {
+      "source_path": "wyzer/policy/confirmations.py",
+      "destination": "wyzer/policy/confirmations.py",
+      "blob_sha": "a8a993aff248e986e334dbe7f6a9b34df6c11c96",
+      "size": 5042
+    },
+    {
+      "source_path": "wyzer/runtime_paths.py",
+      "destination": "wyzer/runtime_paths.py",
+      "blob_sha": "2d63fdc4aa0266a5d035c170f0a398264c659261",
+      "size": 3186
+    },
+    {
+      "source_path": "wyzer/speech/__init__.py",
+      "destination": "wyzer/speech/__init__.py",
+      "blob_sha": "fa1d6d7c0cf39ed8fbfc548cd6a84b008b8c1bec",
+      "size": 857
+    },
+    {
+      "source_path": "wyzer/speech/kokoro.py",
+      "destination": "wyzer/speech/kokoro.py",
+      "blob_sha": "6d7fcb293ed83d18f2b6a4c72e57f1d944f36054",
+      "size": 6382
+    },
+    {
+      "source_path": "wyzer/speech/openwakeword.py",
+      "destination": "wyzer/speech/openwakeword.py",
+      "blob_sha": "e234d7e42dece037db09feec5b811d73a6cdb8ad",
+      "size": 6397
+    },
+    {
+      "source_path": "wyzer/speech/text.py",
+      "destination": "wyzer/speech/text.py",
+      "blob_sha": "dd5171042a48461119f2df19ff35668a2da5675c",
+      "size": 1830
+    },
+    {
+      "source_path": "wyzer/speech/tts.py",
+      "destination": "wyzer/speech/tts.py",
+      "blob_sha": "7cd0f013d2ca184d59e4d3b7a9cdc4ee0aeb1258",
+      "size": 1127
+    },
+    {
+      "source_path": "wyzer/speech/whisper.py",
+      "destination": "wyzer/speech/whisper.py",
+      "blob_sha": "5b4040c39b59671fc89961be3d2b09525d039750",
+      "size": 6971
+    },
+    {
+      "source_path": "wyzer/speech/windows.py",
+      "destination": "wyzer/speech/windows.py",
+      "blob_sha": "a4a259caf317dec272491e0f3dc4dfdb453131cf",
+      "size": 19077
+    },
+    {
+      "source_path": "wyzer/state/__init__.py",
+      "destination": "wyzer/state/__init__.py",
+      "blob_sha": "ff07def541fde426a2dc1e008ee356705da904ca",
+      "size": 128
+    },
+    {
+      "source_path": "wyzer/state/manager.py",
+      "destination": "wyzer/state/manager.py",
+      "blob_sha": "bcc8acc615be1d01d5de9c22882b21826f0befd6",
+      "size": 20067
+    },
+    {
+      "source_path": "wyzer/tasks/__init__.py",
+      "destination": "wyzer/tasks/__init__.py",
+      "blob_sha": "8b573dedd9cf285e4588688713203b5a7d327a77",
+      "size": 328
+    },
+    {
+      "source_path": "wyzer/tasks/models.py",
+      "destination": "wyzer/tasks/models.py",
+      "blob_sha": "2e6e920606834a2368df933da7886357b16e7e4e",
+      "size": 2164
+    },
+    {
+      "source_path": "wyzer/tasks/store.py",
+      "destination": "wyzer/tasks/store.py",
+      "blob_sha": "05261fc08bf96067288cdcaedd3c740f800d4b35",
+      "size": 13029
+    },
+    {
+      "source_path": "wyzer/tasks/tools.py",
+      "destination": "wyzer/tasks/tools.py",
+      "blob_sha": "66567cb625dfb6a48fef14d5bdbfcf701c3c055a",
+      "size": 2854
+    },
+    {
+      "source_path": "wyzer/tools/__init__.py",
+      "destination": "wyzer/tools/__init__.py",
+      "blob_sha": "9c7eea8317c1593887288d842f734e1835ca4a23",
+      "size": 2284
+    },
+    {
+      "source_path": "wyzer/tools/base.py",
+      "destination": "wyzer/tools/base.py",
+      "blob_sha": "fd25fbede176d12472906059fea27c4933396004",
+      "size": 2647
+    },
+    {
+      "source_path": "wyzer/tools/browser.py",
+      "destination": "wyzer/tools/browser.py",
+      "blob_sha": "5fe331294a71de907cdc7a0f648e42466f453ab2",
+      "size": 34923
+    },
+    {
+      "source_path": "wyzer/tools/builtin_packs.py",
+      "destination": "wyzer/tools/builtin_packs.py",
+      "blob_sha": "776127c3281287fb34238730e6f9dc8ae1ee91c5",
+      "size": 4991
+    },
+    {
+      "source_path": "wyzer/tools/capabilities.py",
+      "destination": "wyzer/tools/capabilities.py",
+      "blob_sha": "9ba33021a565b806f4a4acc3857ebfd4c7b23d69",
+      "size": 3679
+    },
+    {
+      "source_path": "wyzer/tools/clipboard.py",
+      "destination": "wyzer/tools/clipboard.py",
+      "blob_sha": "495ef32fdc595e285d89bec0b6062df12a4695ad",
+      "size": 7596
+    },
+    {
+      "source_path": "wyzer/tools/desktop_interaction.py",
+      "destination": "wyzer/tools/desktop_interaction.py",
+      "blob_sha": "c04f4130dbc39a30aeca3759bce104cb93eed623",
+      "size": 18733
+    },
+    {
+      "source_path": "wyzer/tools/diagnostics.py",
+      "destination": "wyzer/tools/diagnostics.py",
+      "blob_sha": "81a8fad39e054315e7537a5a9fe7542332c785ce",
+      "size": 2500
+    },
+    {
+      "source_path": "wyzer/tools/discovery.py",
+      "destination": "wyzer/tools/discovery.py",
+      "blob_sha": "adb6973a2739588c6ef03483b3cdddf5db27fda4",
+      "size": 2840
+    },
+    {
+      "source_path": "wyzer/tools/factory.py",
+      "destination": "wyzer/tools/factory.py",
+      "blob_sha": "3905effecf5a9933bda71b38a3a1563be25a4716",
+      "size": 2374
+    },
+    {
+      "source_path": "wyzer/tools/files.py",
+      "destination": "wyzer/tools/files.py",
+      "blob_sha": "65e385f17f62ed79d5ebfb9bdd22ee4faa71fa9e",
+      "size": 41921
+    },
+    {
+      "source_path": "wyzer/tools/packs.py",
+      "destination": "wyzer/tools/packs.py",
+      "blob_sha": "cdbffaaf7307cb3a1f18f65def65a822c4b98486",
+      "size": 3131
+    },
+    {
+      "source_path": "wyzer/tools/perception.py",
+      "destination": "wyzer/tools/perception.py",
+      "blob_sha": "12600b11be47fb2b6512bfeba5c6e287ce1b7a83",
+      "size": 22592
+    },
+    {
+      "source_path": "wyzer/tools/registry.py",
+      "destination": "wyzer/tools/registry.py",
+      "blob_sha": "a920df8813ac47ccede0c9562fc5c18cd4705ff9",
+      "size": 14246
+    },
+    {
+      "source_path": "wyzer/tools/schema.py",
+      "destination": "wyzer/tools/schema.py",
+      "blob_sha": "2a67f11cf0153ea6970d75a4ee88b1f755e64799",
+      "size": 1103
+    },
+    {
+      "source_path": "wyzer/tools/windows.py",
+      "destination": "wyzer/tools/windows.py",
+      "blob_sha": "20df3dd59bca9dee05e7986dcf8fdfdffb7b542b",
+      "size": 55174
+    },
+    {
+      "source_path": "wyzer/ui/__init__.py",
+      "destination": "wyzer/ui/__init__.py",
+      "blob_sha": "59e7b29dfdb8529529d3cd8409a3d16ebbe8cdad",
+      "size": 804
+    },
+    {
+      "source_path": "wyzer/ui/character.py",
+      "destination": "wyzer/ui/character.py",
+      "blob_sha": "48d29bec27cc4456f1a5fe9afc33c48f12712308",
+      "size": 24943
+    },
+    {
+      "source_path": "wyzer/ui/chat_window.py",
+      "destination": "wyzer/ui/chat_window.py",
+      "blob_sha": "4a8abf0dce8f923562a55e6b0105c58ab12a9cbf",
+      "size": 2171
+    },
+    {
+      "source_path": "wyzer/ui/desktop.py",
+      "destination": "wyzer/ui/desktop.py",
+      "blob_sha": "1f7af1164e8166333e988e9e8b7cb6cf976798f9",
+      "size": 23741
+    },
+    {
+      "source_path": "wyzer/workers/__init__.py",
+      "destination": "wyzer/workers/__init__.py",
+      "blob_sha": "987bd4fe2763ebcf28f7c42961e110d36f6ff25d",
+      "size": 288
+    },
+    {
+      "source_path": "wyzer/workers/in_process.py",
+      "destination": "wyzer/workers/in_process.py",
+      "blob_sha": "f714628f7e06c5809813c9acdc27afbc77592d16",
+      "size": 4315
+    },
+    {
+      "source_path": "wyzer/workers/isolated.py",
+      "destination": "wyzer/workers/isolated.py",
+      "blob_sha": "1f31682f9825e57f1ddeba50b5a90bb1bd82b672",
+      "size": 9226
+    },
+    {
+      "source_path": "wyzer/workers/protocol.py",
+      "destination": "wyzer/workers/protocol.py",
+      "blob_sha": "5f5ede0ca98e77d9ce369da3f2c61356c9e0cc69",
+      "size": 512
+    }
+  ],
+  "excluded": [
+    {
+      "source_path": ".wyzer/avatar/drag1.png",
+      "blob_sha": "fccd44b59b4e06b966c8679f108f7d604b4368b3",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag2.png",
+      "blob_sha": "d6093d605f871873b91b2fe91499bfeaae6af6eb",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag3.png",
+      "blob_sha": "db0c1d2e408122bf90a62ef3d1419dc308451d7f",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag4.png",
+      "blob_sha": "a1c5459313c56b41b71588dc85b527d727a5caee",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag5.png",
+      "blob_sha": "9f768918fc523546d583632505c92a5189f22cef",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag6.png",
+      "blob_sha": "2df282f71c8d6e7bb7ce59a749058a5c1b8f47af",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag7.png",
+      "blob_sha": "e09f9f04d592ce413256efc61fd07a806b6f306a",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/drag8.png",
+      "blob_sha": "25a944bfbc3b85d732f2961bbf3d172356b42eda",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall1.png",
+      "blob_sha": "e0b1a36dca258813adc03715e2b632591df4e684",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall2.png",
+      "blob_sha": "1a71474bbb28e49137e6c72ecc9a4053cf39e24e",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall3.png",
+      "blob_sha": "11c620b2279cf5b5ca48f08fa5b7838001c4b5ff",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall4.png",
+      "blob_sha": "f767fe47588df30bd88767e9d1ad065866c4f02c",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall5.png",
+      "blob_sha": "0b3a222a4dcde2abf82c709a347414266dda19a6",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall6.png",
+      "blob_sha": "e57a4d81833600f966326d7d679dd20039de51d0",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall7.png",
+      "blob_sha": "3467e603ff963d7121aa4bab4579d6e02aa24a40",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/fall8.png",
+      "blob_sha": "2d521e82f865d2550bf5592e3dec285934659f3b",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle1.png",
+      "blob_sha": "4cdbffc972d49c51e97fae3ac16defa4b6070611",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle2.png",
+      "blob_sha": "ecef4553dd56a0272481aed652efe3e72c9da395",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle3.png",
+      "blob_sha": "69ae3c9d34483141d6bbb7c51fa18b872b314219",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle4.png",
+      "blob_sha": "5711022cfac5bf0b61300071cbe61818bf9e9e3d",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle5.png",
+      "blob_sha": "8bef40ee8e9b1039a00c4c37d0ba1833f4165797",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle6.png",
+      "blob_sha": "b2a0490f7626794c76de209fd5388963c5f54e64",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle7.png",
+      "blob_sha": "8a22243f87fe27720442bcfaadab662ff08527f2",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/idle8.png",
+      "blob_sha": "f95549d04127baf3c40607e96ba91cf17168ba97",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit1.png",
+      "blob_sha": "ddb352183de62664ee76c6c41e174ab5c9ee68f7",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit2.png",
+      "blob_sha": "063c53c2e68efbf668c5152fdbae3eaf99d43d5b",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit3.png",
+      "blob_sha": "3557a1db292aeafc85c668fc0eb281191cad8b80",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit4.png",
+      "blob_sha": "ab95693f24c6bb08945f4d31b30728978291d31f",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit5.png",
+      "blob_sha": "76bb6954d465334b5931bd7354281ffd8b1610a4",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit6.png",
+      "blob_sha": "33eef8ef3c9732100c78044d6b24ca7a00e0a9de",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit7.png",
+      "blob_sha": "373a553c85672b5f3b05ba91cf1485e0081a6518",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit8.png",
+      "blob_sha": "21c1acbbe800c53ae4db5f7dbef0cef8d251eebf",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/sit9.png",
+      "blob_sha": "ddb352183de62664ee76c6c41e174ab5c9ee68f7",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk1.png",
+      "blob_sha": "a170846c4134e4478d4a1c1f85c94ea0838a03c4",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk2.png",
+      "blob_sha": "0bd76053fdbb5700edb2be2d047db8be88ff5fff",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk3.png",
+      "blob_sha": "57aa9e72b41748fee07e53d613aa71997b47d483",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk4.png",
+      "blob_sha": "dfe7a41e4f2f00faf8d40e0a4758ab6b7f5b9404",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk5.png",
+      "blob_sha": "a957de868261bb778c3e546e13b13e46f0462636",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk6.png",
+      "blob_sha": "6a72acd49bae797880b900265204ca59ee0ac8b5",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk7.png",
+      "blob_sha": "0d223a0371bb32f8392af2c648aa0f7480cc0a00",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk8.png",
+      "blob_sha": "54ee0e5285cc8f43e961273f4d61b22b9f78c5aa",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": ".wyzer/avatar/walk9.png",
+      "blob_sha": "089b76ba64d8c9772c2feafa30bb04b36dfdf29c",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": "openwakemodels/hey_Wyzer.onnx",
+      "blob_sha": "d24d8b72cc86f5fc8bbe9e07c5ff16c5e61e1b3d",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    },
+    {
+      "source_path": "openwakemodels/hey_wiser.onnx",
+      "blob_sha": "5ac8cfb848a1aad4a2c0675ccfc01d2d7f193e0a",
+      "reason": "binary asset; third-party rights and model licensing review pending"
+    }
+  ]
+}
