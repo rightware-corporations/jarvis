@@ -1,6 +1,21 @@
 # RIGHTWARE — VEXEL JARVIS / ISSA EDITION
 # MASTER HANDOFF V2 — 06/11/2026
 
+## ADENDA C — JAR-COG-01-R02: correcções de backend e QA semântico (06/11/2026)
+
+> **Relatório:** [`docs/reports/2026-11-06_JAR-COG-01-R02-FINAL.md`](reports/2026-11-06_JAR-COG-01-R02-FINAL.md).
+>
+> **Causa demonstrada** dos `DENIED` indevidos (ORION_INTRO/RECALL): o modelo chamou uma ferramenta inexistente → `UNKNOWN_TOOL` → `DENIED` → a resposta pertinente foi substituída por «Não tenho autorização…». O prompt do Wyzer anuncia ao modelo cerca de 20 ferramentas não registadas. O nome exacto da ferramenta no Kaggle é indeterminado: não era registado, e agora é (`tools_rejected`).
+>
+> **Corrigido (simulado; CI 12/12 em `b80cef3`; `tests_vexel` 761 no Windows):**
+> - ferramentas desconhecidas retiradas antes do Wyzer sem pedido explícito;
+> - ferramentas de leitura só com necessidade de informação (hora/sistema);
+> - verdade sobre operações passadas, com todos os estados;
+> - avaliador semântico `qa/kaggle/semantic_judge.py`, com camadas MODEL/BACKEND/PROVIDER/TEST_HARNESS/UNDETERMINED;
+> - latência separada em carregamento, prompt e geração.
+>
+> **Não foi executado com o modelo real.** Próxima acção: `qa/kaggle/JAR-COG-01-R02_focused_retest.py` no Kaggle (warm-up medido à parte; cenários afectados). Os timeouts de 60 s continuam NÃO VERIFICADOS quanto à causa; o timeout não foi alterado. Memória persistente, Task Engine, voz e Windows real continuam fora do âmbito.
+
 ## ADENDA B — JAR-COG-01-R REAL QWEN 2B: REVIEW, não PASS (06/11/2026)
 
 > **A evidência mais recente da qualidade cognitiva é** [`docs/reports/2026-11-06_JAR-COG-01-REAL-QA-R01.md`](reports/2026-11-06_JAR-COG-01-REAL-QA-R01.md). Um reteste real Qwen3.5 2B no Kaggle, depois da implementação da COG-01, realizou 32 turnos sintéticos e obteve **29/32 PASS automático**, com **2 `PROVIDER_TIMEOUT` e 1 falha marcada de compreensão**. **O status honesto é `COG01_REAL_QA_REVIEW`.**

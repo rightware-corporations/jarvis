@@ -151,3 +151,6 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **[PROPOSTA, não aprovado] JAR-MEM-01** Memória persistente com consentimento (D05). Fora da COG-01.
 - [ ] **[PROPOSTA, não aprovado]** Derivar `EFFECTFUL_TOOLS` do registo e pôr o gate por sessão, antes de acrescentar ferramentas.
 - [ ] **[HIPÓTESE]** Medir no reteste real os falsos negativos do classificador (pedidos legítimos que caem em AMBIGUOUS) antes de alargar a gramática.
+- [x] **JAR-COG-01-R02** `DENIED` indevido por ferramenta desconhecida (causa demonstrada), relevância das ferramentas de leitura, verdade sobre operações, avaliador semântico, latência separada. Simulado; reteste real pendente.
+- [ ] **JAR-COG-01-R03** Reteste real focalizado com o `qwen3.5:2b`: `qa/kaggle/JAR-COG-01-R02_focused_retest.py`. Medir os timeouts (load vs inferência) antes de qualquer decisão sobre o timeout.
+- [ ] **[PROPOSTA, não aprovado]** JAR-ARCH-02: retirar do prompt do Wyzer as ~20 ferramentas anunciadas mas não registadas (causa agravante da R02), por política de patches.

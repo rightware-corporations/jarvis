@@ -221,3 +221,16 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Testes:** `tests_vexel` 685, `tests_lab` 16, `tests_desktop` 87; CI 12/12 em `3cd85f7`. Revisão independente: P0/P1 = 0.
 - **NÃO VERIFICADO:** compreensão real do contexto pelo `qwen3.5:2b`. Reteste com `qa/kaggle/JAR-COG-01_retest_cell.py`.
 - Relatório: [docs/reports/2026-11-06_JAR-COG-01-FINAL.md](reports/2026-11-06_JAR-COG-01-FINAL.md).
+
+## JAR-COG-01-R02 — QA semântico e veracidade da conversa, 06/11/2026 (`JAR_COG_01_R02_COMPLETE`, simulado)
+
+- **Causa demonstrada** do «Não tenho autorização…» em perguntas de conversa: ferramenta inexistente pedida pelo modelo → `UNKNOWN_TOOL` → `DENIED` → resposta substituída.
+- **Corrigido** (sem tocar no Wyzer):
+  - ferramentas desconhecidas e de leitura irrelevantes retiradas antes do Wyzer;
+  - auditoria `tools_rejected`;
+  - verdade sobre as operações da sessão;
+  - avaliador semântico em `qa/kaggle/semantic_judge.py`;
+  - latência separada em load, prompt e geração.
+- **Testes:** `tests_vexel` + `tests_lab` 777 (Linux), `tests_vexel` 761 no `windows-latest`; CI 12/12 em `b80cef3`. Revisão independente: P0/P1 = 0.
+- **Próximo passo:** reteste real focalizado com `qa/kaggle/JAR-COG-01-R02_focused_retest.py`.
+- Relatório: [docs/reports/2026-11-06_JAR-COG-01-R02-FINAL.md](reports/2026-11-06_JAR-COG-01-R02-FINAL.md).
