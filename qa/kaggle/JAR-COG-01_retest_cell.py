@@ -7,8 +7,9 @@ Prerequisites (already present from JAR-INFER-01/B7, nothing is installed here):
 
 What it does: verifies the SHA, reuses Ollama and the model, runs the critical B7
 scenarios (each in its own session) and the PT-MZ conversation corpus (one session),
-prints ``INPUT | OUTPUT | EXPECTED | RESULT`` per turn, classifies failures as MODEL,
-BACKEND or INTERFACE, and writes metrics only (no text) to ``/kaggle/working/cog01``.
+prints ``INPUT | OUTPUT | EXPECTED | RESULT`` per turn, classifies failures with the
+semantic judge (MODEL, BACKEND, PROVIDER, TEST_HARNESS, UNDETERMINED, with evidence;
+JAR-COG-01-R02), and writes metrics only (no text) to ``/kaggle/working/cog01``.
 Applications stay simulated: ``allow_real_windows_actions`` is forced to ``false``.
 """
 
@@ -106,28 +107,33 @@ CORPUS = [[(t["input"],
            for t in corpus["turns"]]]
 
 
-def judge(result, launcher_before, launcher, expected, keywords):
-    """Return (RESULT, layer). BACKEND = policy/session defect; MODEL = comprehension;
-    INTERFACE = provider/transport failure."""
-    if result.detail and str(result.detail).startswith("PROVIDER_"):
-        return "FAIL", "INTERFACE"
+# JAR-COG-01-R02: the permissive keyword judge was replaced by qa/kaggle/semantic_judge.py
+# (telemetry-first layers: MODEL, BACKEND, PROVIDER, TEST_HARNESS, UNDETERMINED).
+import importlib.util  # noqa: E402
+
+_spec = importlib.util.spec_from_file_location("semantic_judge", Path("qa/kaggle/semantic_judge.py"))
+semantic_judge = importlib.util.module_from_spec(_spec)
+sys.modules["semantic_judge"] = semantic_judge
+_spec.loader.exec_module(semantic_judge)
+
+
+def judge(result, launcher_before, launcher, expected, keywords, text=""):
+    """Return (RESULT, layer, evidence) from the semantic judge."""
     launched = launcher.requested[launcher_before:]
-    if expected == "answer" or expected == "no_action":
-        if result.awaiting_confirmation or launched:
-            return "FAIL", "BACKEND"  # the policy must make this impossible
-        reply = (result.reply or "").casefold()
-        if any(k not in reply for k in keywords):
-            return "FAIL", "MODEL"
-        return "PASS", "-"
-    kind, app = expected.split(":")
-    if kind == "confirm":
-        if not result.awaiting_confirmation:
-            return "FAIL", "MODEL"  # explicit request but the model did not call the tool
-        return ("PASS", "-") if launched == [] else ("FAIL", "BACKEND")
-    if kind == "simulated":
-        ok = result.action_status == "SIMULATED" and launched == [app]
-        return ("PASS", "-") if ok else ("FAIL", "BACKEND")
-    return "FAIL", "OTHER"
+    if expected.startswith("confirm:"):
+        expectation = semantic_judge.Expectation("confirm", app=expected.split(":")[1])
+    elif expected.startswith("simulated:"):
+        expectation = semantic_judge.Expectation("simulated", app=expected.split(":")[1])
+    elif expected == "no_action":
+        expectation = semantic_judge.Expectation("answer", relevance=False)
+    else:
+        expectation = semantic_judge.EXPECTATIONS.get(text) or semantic_judge.Expectation(
+            "answer", require=tuple((k,) for k in keywords)
+        )
+    verdict = semantic_judge.judge(
+        text, result.reply, result.as_record(include_text=False), expectation, launched=launched
+    )
+    return verdict.result, verdict.layer, verdict.evidence
 
 
 async def run_all():
@@ -140,10 +146,12 @@ async def run_all():
             for text, expected, keywords in scenario:
                 before = len(launcher.requested)
                 result = await session.handle_text(text)
-                verdict, layer = judge(result, before, launcher, expected, keywords)
+                verdict, layer, evidence = judge(result, before, launcher, expected, keywords, text)
                 rows.append((group_name, text, (result.reply or "")[:90], expected, verdict, layer))
                 record = result.as_record(include_text=False)
-                record.update(group=group_name, expected=expected, verdict=verdict, layer=layer)
+                record.update(
+                    group=group_name, expected=expected, verdict=verdict, layer=layer, evidence=evidence
+                )
                 metrics.write(json.dumps(record, ensure_ascii=False) + "\n")
                 if "think_ms" in result.metrics:
                     think.append(result.metrics["think_ms"])
@@ -169,7 +177,7 @@ def pct(values, q):
 
 
 passed = sum(1 for r in rows if r[4] == "PASS")
-by_layer = {layer: sum(1 for r in rows if r[5] == layer) for layer in ("BACKEND", "MODEL", "INTERFACE", "OTHER")}
+by_layer = {layer: sum(1 for r in rows if r[5] == layer) for layer in semantic_judge.LAYERS}
 print(f"\nPASS {passed}/{len(rows)}  failures by layer: {by_layer}")
 print(f"think_ms p50={pct(think, 50):.0f} p95={pct(think, 95):.0f}  llm_ms p50={pct(llm, 50):.0f} p95={pct(llm, 95):.0f}")
 print(f"mean think_ms={statistics.mean(think) if think else float('nan'):.0f}  wall={time.monotonic() - started:.0f}s")
