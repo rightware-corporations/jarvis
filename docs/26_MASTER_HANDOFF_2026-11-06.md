@@ -1,6 +1,16 @@
 # RIGHTWARE — VEXEL JARVIS / ISSA EDITION
 # MASTER HANDOFF V2 — 06/11/2026
 
+## ADENDA B — JAR-COG-01-R REAL QWEN 2B: REVIEW, não PASS (06/11/2026)
+
+> **A evidência mais recente da qualidade cognitiva é** [`docs/reports/2026-11-06_JAR-COG-01-REAL-QA-R01.md`](reports/2026-11-06_JAR-COG-01-REAL-QA-R01.md). Um reteste real Qwen3.5 2B no Kaggle, depois da implementação da COG-01, realizou 32 turnos sintéticos e obteve **29/32 PASS automático**, com **2 `PROVIDER_TIMEOUT` e 1 falha marcada de compreensão**. **O status honesto é `COG01_REAL_QA_REVIEW`.**
+>
+> A regressão crítica `Bloco de Notas recusado → pergunta da capital de Moçambique` **respondeu “Maputo” sem pedir abrir app**, confirmando melhoria real. Porém, várias respostas semanticamente erradas receberam PASS: `Olá Jarvis... projecto Orion` → `Não tenho autorização para fazer isso`; `sera?` → data não solicitada (“15 de novembro de 2026”, inconsistente com 06/11); `Qual é o nome do projecto?` → mesma recusa (FAIL). O juiz `judge` é permissivo e `BACKEND=0` **não prova** ausência de defeitos de backend.
+>
+> **Próxima execução:** inspeccionar `/kaggle/working/cog01/turns.jsonl` sanitizado e correlacionar `action_status`, `tools_executed`, `claim_blocked` e `llm_failures` nesses turnos; depois corrigir juiz/fluxo de respostas com uma missão curta **JAR-COG-01-R02 (PROPOSTA, ainda não executada)**. Não avançar para memória persistente, Task Engine, voz ou Windows real por causa de um 29/32 enganador.
+>
+> A evidência completa incluiu bootstrap recuperado Python 3.11.17, Ollama v0.40.15, Qwen3.5 2B 100% GPU e Wyzer 182/182. O ZIP de evidências existe somente no ambiente efémero Kaggle até ser preservado de forma independente. **A correcção e os testes simulados da COG-01 continuam com CI PASS; a qualidade conversacional real não está aprovada.**
+
 ## ADENDA A — Actualização concorrente após a redacção: JAR-COG-01 PUBLICADA (06/11/2026)
 
 > **ESTA ADENDA É A REFERÊNCIA MAIS RECENTE E PREVALECE SOBRE AS FRASES HISTÓRICAS DAS SECÇÕES 0, 2, 9, 14 E 16 QUE DIZEM “JAR-COG-01 ainda não implementada”.** Durante a publicação deste handoff, o Claude Code publicou a missão `JAR-COG-01` em `develop`. A baseline `333d2a2` continua verdadeira para o relatório B7 e para o início da missão, mas **já não é a HEAD de código actual**.
