@@ -146,3 +146,8 @@ Fonte: [21_MASTER_HANDOFF_2026-11-04.md](21_MASTER_HANDOFF_2026-11-04.md), [22_D
 - [ ] **JAR-INFER-01** Seguir a matriz do relatório JAR-NET-01, §11: 0.8b → 2b → 4b no PC de QA (Windows 10 22H2 ou posterior), com evidência independente (`ollama ps`/`list`/`--version` e nonce). Confirmar no PC o comportamento com proxy real.
 - [x] **JAR-CONF-01** Repetição da confirmação e invocação duplicada depois do «sim» (observada na JAR-INFER-01/B5 com o `qwen3.5:2b`). Registo de execuções por acção; repetição descartada; `SIMULATED` reportado. CI 12/12 em `a75e3a5`.
 - [ ] **JAR-INFER-01/B5-R** Repetir só o CALCULATOR_APPROVE com o `qwen3.5:2b` real (relatório JAR-CONF-01, §8).
+- [x] **JAR-COG-01** Segurança de intenção na fronteira de política (gate pós-modelo; IntentVerdict do pedido do utilizador) e higiene do contexto da sessão (tool calls por responder fechadas, sem órfãos, orçamento, `session_id`/`turn_index`). Simulado; publicado em `3cd85f7`.
+- [ ] **JAR-COG-01-R** Reteste real com o `qwen3.5:2b` no Kaggle: `qa/kaggle/JAR-COG-01_retest_cell.py` (relatório JAR-COG-01, §10).
+- [ ] **[PROPOSTA, não aprovado] JAR-MEM-01** Memória persistente com consentimento (D05). Fora da COG-01.
+- [ ] **[PROPOSTA, não aprovado]** Derivar `EFFECTFUL_TOOLS` do registo e pôr o gate por sessão, antes de acrescentar ferramentas.
+- [ ] **[HIPÓTESE]** Medir no reteste real os falsos negativos do classificador (pedidos legítimos que caem em AMBIGUOUS) antes de alargar a gramática.

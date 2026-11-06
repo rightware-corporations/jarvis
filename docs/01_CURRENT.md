@@ -206,3 +206,18 @@ Passou o primeiro workflow remoto. Próximo: testes de confirmação/cancelament
 - **Revisão independente:** 0 P0/P1; os P2 foram corrigidos.
 - **Falta** o reteste real do CALCULATOR_APPROVE com o `qwen3.5:2b` (instruções no relatório, §8).
 - Relatório: [docs/reports/2026-11-06_JAR-CONF-01-FINAL.md](reports/2026-11-06_JAR-CONF-01-FINAL.md).
+
+## JAR-COG-01 — segurança de intenção e continuidade da conversa, 06/11/2026 (`JAR_COG_01_COMPLETE`, simulado)
+
+- **Causas** (tabela no relatório):
+  - a autorização para abrir dependia só da tool call do modelo;
+  - **demonstrado:** tool calls recusadas ficavam por responder no histórico enviado ao LLM, e o modelo voltava a pedi-las («capital de Moçambique» → Bloco de Notas);
+  - o guard de afirmações substituía a resposta inteira («quem es tu» → «Não abri nenhuma aplicação.»);
+  - os logs não tinham identidade de sessão.
+- **Correcções** (sem tocar no Wyzer, 182/182):
+  - `IntentVerdict` a partir do pedido do utilizador e gate pós-modelo (`EffectGate`): sem pedido explícito não há confirmação nem execução;
+  - `VexelConversation` (chamadas fechadas `NOT_EXECUTED`, sem órfãos, orçamento);
+  - `session_id`/`turn_index`, `nova conversa`, telemetria sem texto.
+- **Testes:** `tests_vexel` 685, `tests_lab` 16, `tests_desktop` 87; CI 12/12 em `3cd85f7`. Revisão independente: P0/P1 = 0.
+- **NÃO VERIFICADO:** compreensão real do contexto pelo `qwen3.5:2b`. Reteste com `qa/kaggle/JAR-COG-01_retest_cell.py`.
+- Relatório: [docs/reports/2026-11-06_JAR-COG-01-FINAL.md](reports/2026-11-06_JAR-COG-01-FINAL.md).
