@@ -69,6 +69,7 @@ def build_slice_assistant(
         on_tool_start=on_tool_start or (lambda _name: None),
     )
     wrapped = provider if isinstance(provider, PortugueseProvider) else PortugueseProvider(provider)
+    wrapped.gate.simulated = isinstance(chosen_launcher, SimulatedLauncher)
     ttl = (
         confirmation_ttl_seconds
         if confirmation_ttl_seconds is not None

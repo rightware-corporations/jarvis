@@ -27,6 +27,7 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import json
+import math
 from typing import Any, cast
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -41,6 +42,28 @@ from urllib.request import (
 from wyzer.brain.http import HttpTransportError, JsonResponse, _safe_http_error
 
 MAX_RESPONSE_BYTES = 4 * 1024 * 1024  # an Ollama /api/chat reply is a few KB
+# Ollama timing fields (nanoseconds, counts). Copied as numbers only, for latency analysis.
+_TIMING_FIELDS = (
+    "load_duration", "prompt_eval_count", "prompt_eval_duration", "eval_count", "eval_duration",
+)
+
+
+def _safe_timings(data: dict[str, Any]) -> dict[str, float]:
+    """Plain, finite, non-negative numbers below one day in ns / 10M tokens; never raises."""
+    timings: dict[str, float] = {}
+    for key in _TIMING_FIELDS:
+        value = data.get(key)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        if not 0 <= value <= 86_400 * 1_000_000_000:  # also rejects NaN and huge ints
+            continue
+        try:
+            number = float(value)
+        except (OverflowError, ValueError):
+            continue
+        if math.isfinite(number):
+            timings[key] = number
+    return timings
 
 
 class LoopbackDestinationError(HttpTransportError):
@@ -109,6 +132,8 @@ class LoopbackJsonTransport:
         self.origin = origin
         self.max_response_bytes = max_response_bytes
         self._opener = build_direct_opener()
+        # Numeric Ollama timing fields of the last response (JAR-COG-01-R02). Never text.
+        self.last_timings: dict[str, float] = {}
 
     def allows(self, url: str) -> bool:
         return _origin(url) == self.origin
@@ -166,4 +191,5 @@ class LoopbackJsonTransport:
             raise HttpTransportError("Local model endpoint returned invalid JSON.") from error
         if not isinstance(decoded, dict):
             raise HttpTransportError("Local model endpoint returned a non-object JSON response.")
+        self.last_timings = _safe_timings(decoded)
         return JsonResponse(status=status, data=cast(dict[str, Any], decoded))

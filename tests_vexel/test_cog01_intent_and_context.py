@@ -131,20 +131,32 @@ def test_unrequested_effectful_call_is_blocked_and_answered_in_text(text, model_
 
 
 def test_b7_replay_time_tool_then_unrequested_notepad() -> None:
-    """B7: get_local_time, then open_allowed_application(notepad) for a factual question."""
+    """B7: get_local_time, then open_allowed_application(notepad). When the clock is
+    relevant it runs, but it never chains into an action the user did not ask for."""
     rig = make_rig()
     rig.provider.push(
         call("get_local_time", call_id="t1"),
         open_app(NOTEPAD, "c2"),
-        say("A capital de Moçambique é Maputo."),
+        say("São catorze e trinta, e a capital é Maputo."),
     )
-    result = run(rig, "Qual é a capital de Moçambique?")
+    result = run(rig, "Que horas são, e qual é a capital de Moçambique?")
     assert result.outcome is TurnOutcome.ANSWERED
-    assert result.reply == "A capital de Moçambique é Maputo."
+    assert result.reply == "São catorze e trinta, e a capital é Maputo."
     assert rig.pending is None and rig.launcher.requested == [] and awaiting(rig) == 0
-    assert result.tools_executed == ["get_local_time"]  # a read-only tool never chains into an action
+    assert result.tools_executed == ["get_local_time"]  # read-only never chains into an action
+    assert result.metrics["tools_blocked"] == 1.0
     assert result.request_intent["kind"] == "question"
 
+
+def test_b7_irrelevant_clock_is_not_consulted() -> None:
+    """JAR-COG-01-R02: for a question that needs no time, the clock is not even consulted."""
+    rig = make_rig()
+    rig.provider.push(call("get_local_time", call_id="t1"), say("A capital de Moçambique é Maputo."))
+    result = run(rig, "Qual é a capital de Moçambique?")
+    assert result.reply == "A capital de Moçambique é Maputo."
+    assert result.tools_executed == [] and result.metrics["tools_irrelevant_blocked"] == 1.0
+    assert result.tools_rejected == ["get_local_time:DROPPED_BY_GATE"]
+    assert rig.probe.reads == 0
 
 def test_model_switching_application_is_blocked() -> None:
     rig = make_rig()

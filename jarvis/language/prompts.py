@@ -39,6 +39,8 @@ _EXACT: dict[str, str] = {
 _PREFIXES: tuple[tuple[str, str], ...] = (
     ("I couldn't confirm it because", "Não consegui confirmar, porque o pedido mudou."),
     ("A tool-capable local model is not configured", SAY_MODEL_UNAVAILABLE),
+    # Wyzer's loop guard (maximum tool rounds) must not reach the user in English.
+    ("I stopped after", "Não consegui concluir a resposta. Podes repetir a pergunta de outra forma?"),
     # Orchestrator text when a provider call raises past the PT wrapper (defence in depth).
     ("The local model could not respond", SAY_MODEL_UNAVAILABLE),
 )
@@ -72,6 +74,38 @@ SAY_DENIED = "Não tenho autorização para fazer isso."
 SAY_TTS_UNAVAILABLE_CONFIRMATION = "Cancelei, porque não consegui apresentar a confirmação."
 
 
+def operation_history_text(app: str | None, status: str) -> str:
+    """The truth about the session's last effectful operation (JAR-COG-01-R02)."""
+    label = APPLICATION_LABELS.get(app or "", "uma aplicação")
+    if status == "SIMULATED":
+        return (
+            f"A última operação foi o pedido para abrir {label}: pediste e confirmaste, "
+            "mas foi apenas simulada, por isso nenhuma aplicação foi aberta."
+        )
+    if status == "SUCCEEDED":
+        return f"A última operação foi abrir {label}, e foi aberta."
+    if status == "FAILED":
+        return f"A última operação foi tentar abrir {label}, mas falhou."
+    if status == "DENIED":
+        return f"O último pedido para abrir {label} foi recusado."
+    return (
+        f"O último pedido foi abrir {label}, mas não foi executado: "
+        "não foi confirmado ou foi interrompido."
+    )
+
+
+_OPERATION_WORDS = re.compile(
+    r"\b(?:operacao|operacoes|fizeste|abriste|executaste|fizemos|acao|accao|acoes|accoes|"
+    r"iniciaste|lancaste|o que aconteceu|correu bem|ja esta aberta|ja esta aberto)\b"
+)
+
+
+def asks_about_operations(text: str | None) -> bool:
+    from jarvis.language.pt import normalize
+
+    return bool(text) and bool(_OPERATION_WORDS.search(normalize(text or "")))
+
+
 def action_outcome_text(status: str, app: str | None) -> str:
     """Spoken result for an effectful action. ``status`` is an ``ActionStatus`` value."""
     label = APPLICATION_LABELS.get(app or "")
@@ -94,16 +128,22 @@ _ACTION_CLAIM = re.compile(
 )
 
 
-def clarification_text(applications: tuple[str, ...] | list[str]) -> str:
-    """A question back to the user: never a confirmation and never an action."""
+def clarification_text(
+    applications: tuple[str, ...] | list[str], *, simulated: bool = True
+) -> str:
+    """A question back to the user: never a confirmation and never an action. It names
+    the exact phrase to say, so the next turn is an explicit request (no loop)."""
     labels = [APPLICATION_LABELS[app] for app in applications if app in APPLICATION_LABELS]
     if len(labels) == 1:
-        name = labels[0].split(" ", 1)[1]
         return (
             f"Não tenho a certeza se queres que eu abra {labels[0]}. "
-            f"Se quiseres, pede-me directamente, por exemplo: abre {name.lower()}."
+            f"Se quiseres, diz: «abre {labels[0].lower()}»."
         )
-    return "Não percebi o que queres que eu faça. Podes dizer-me de outra forma?"
+    mode = " (em modo de simulação)" if simulated else ""
+    return (
+        f"Só consigo abrir a Calculadora ou o Bloco de Notas{mode}. "
+        "Diz, por exemplo: «abre a calculadora» ou «abre o bloco de notas»."
+    )
 
 
 def strip_action_claims(text: str) -> tuple[str, bool]:

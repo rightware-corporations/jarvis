@@ -45,7 +45,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 from enum import StrEnum
 
@@ -71,6 +71,9 @@ class IntentVerdict:
     hinted_applications: tuple[str, ...] = ()  # AMBIGUOUS: what to ask about
     reasons: tuple[str, ...] = field(default_factory=tuple)
     mentioned: tuple[str, ...] = ()  # named in the utterance; never authorises
+    # Information the user asked for (JAR-COG-01-R02): "time", "system". A read-only tool
+    # is only relevant when its information was asked for.
+    needs: tuple[str, ...] = ()
 
     def authorises(self, application: str) -> bool:
         return self.kind is IntentKind.EXECUTE_REQUEST and application in self.applications
@@ -80,6 +83,7 @@ class IntentVerdict:
             "kind": self.kind.value,
             "applications": list(self.applications),
             "mentioned": list(self.mentioned),
+            "needs": list(self.needs),
             "reasons": list(self.reasons),
         }
 
@@ -247,12 +251,50 @@ def _analyse(clauses: list[str], allowed: tuple[str, ...]) -> list[_Clause]:
     return analysed
 
 
+# Information needs that make a read-only tool relevant (JAR-COG-01-R02). Question-shaped
+# phrases, not lone words: "bom dia", "hoje estou cansado", "a data de entrega é sexta",
+# "o sistema de gestão" or "carga de trabalho" do not ask for the clock or the computer.
+_TIME_PATTERN = re.compile(
+    r"\b(?:que horas?|horas? (?:sao|e|e que)|que dia|dia (?:e|de) hoje|em que dia|que data|"
+    r"data de hoje|em que (?:mes|ano)|(?:diz|dizer|diz me|sabes) as horas|que (?:mes|ano) (?:e|estamos)|meia noite|meio dia|"
+    r"de manha ou de tarde|quanto tempo falta|fuso horario|horario|relogio|que hora)\b"
+)
+_SYSTEM_PATTERN = re.compile(
+    r"\b(?:cpu|processador|bateria|ram|uptime|"
+    r"(?:como esta|estado d[oa]|desempenho d[oa]|como vai) (?:o |a )?(?:meu |minha )?"
+    r"(?:computador|pc|portatil|laptop|maquina|sistema)|"
+    r"(?:memoria|disco) d[oa] (?:computador|pc|portatil|laptop|maquina|sistema)|"
+    r"uso de (?:memoria|cpu|disco))\b"
+)
+_SHORT_FOLLOW_UP = re.compile(r"^(?:e em|e no|e na|e nos|e nas|e la|e agora|quantas|quantos)\b")
+
+
+def information_needs(utterance: str | None) -> tuple[str, ...]:
+    """Which read-only information the user asked about ("time", "system")."""
+    if not utterance:
+        return ()
+    text = normalize(strip_vocative(utterance))
+    needs = []
+    if _TIME_PATTERN.search(text):
+        needs.append("time")
+    if _SYSTEM_PATTERN.search(text):
+        needs.append("system")
+    return tuple(needs)
+
+
+def is_short_follow_up(utterance: str | None) -> bool:
+    """"E em Lisboa?", "Quantas são?": a short follow-up that may inherit the last need."""
+    text = normalize(strip_vocative(utterance or ""))
+    return bool(text) and len(text.split()) <= 4 and bool(_SHORT_FOLLOW_UP.search(text))
+
+
 def classify_request(
     utterance: str | None, allowed_applications: Iterable[str] = ("calculator", "notepad")
 ) -> IntentVerdict:
     """Classify the user's own utterance. Never raises: any error means ``NONE``."""
     try:
-        return _classify(utterance, tuple(allowed_applications))
+        verdict = _classify(utterance, tuple(allowed_applications))
+        return replace(verdict, needs=information_needs(utterance))
     except Exception:  # fail closed: an internal error never authorises anything
         return IntentVerdict(IntentKind.NONE, reasons=("classifier_error",))
 

@@ -54,7 +54,7 @@ import logging
 import time
 from collections import OrderedDict
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import Any
 from uuid import UUID
@@ -63,7 +63,7 @@ from wyzer.app.orchestrator import Orchestrator
 from wyzer.models import AssistantResponse, PendingConfirmation
 from wyzer.policy import ConfirmationPolicy
 
-from jarvis.brain.pt_provider import EffectGate, MeterSnapshot, ProviderMeter
+from jarvis.brain.pt_provider import EffectGate, MeterSnapshot, ProviderMeter, safe_tool_name
 from jarvis.config import VexelSettings
 from jarvis.language.prompts import (
     SAY_CANCELLED,
@@ -76,10 +76,17 @@ from jarvis.language.prompts import (
     action_outcome_text,
     claims_action,
     confirmation_prompt,
+    asks_about_operations,
+    operation_history_text,
     strip_action_claims,
     translate_wyzer_reply,
 )
-from jarvis.language.intent import NO_REQUEST, IntentVerdict, classify_request
+from jarvis.language.intent import (
+    NO_REQUEST,
+    IntentVerdict,
+    classify_request,
+    is_short_follow_up,
+)
 from jarvis.language.pt import ControlIntent, classify_control, normalize, strip_vocative
 from jarvis.tools.allowlist import ActionOutcome, action_outcome_from_result
 from jarvis.ui.events import InvalidTransitionError, StateMachine, UiEventSink, VoiceState
@@ -118,6 +125,33 @@ class TurnOutcome(StrEnum):
     SPEECH_INTERRUPTED = "speech_interrupted"
     DISCARDED = "discarded"
     ERROR = "error"
+
+
+_STATUS_WORDS: dict[str, tuple[str, ...]] = {
+    "SIMULATED": ("simul",),
+    "SUCCEEDED": ("foi aberta", "foi aberto", "abri a", "abri o"),
+    "FAILED": ("falh", "nao consegui"),
+    "DENIED": ("recus", "autoriza"),
+    "NOT_EXECUTED": ("nao foi execut", "nao foi confirm", "cancel", "nao abri"),
+}
+
+
+def _states_status(reply: str, status: str) -> bool:
+    """Whether the reply already states the recorded status of the last operation."""
+    from jarvis.language.pt import normalize
+
+    text = normalize(reply)
+    if status == "SUCCEEDED" and not claims_action(reply):
+        return False  # "não abri" does not state a success
+    return any(word in text for word in _STATUS_WORDS.get(status, ()))
+
+
+def _denies_any_operation(reply: str) -> bool:
+    from jarvis.language.pt import normalize
+
+    text = normalize(reply)
+    denials = ("nao fiz nenhuma", "nao fiz nada", "nenhuma operacao", "nao fiz operac")
+    return any(phrase in text for phrase in denials)
 
 
 @dataclass(frozen=True)
@@ -166,6 +200,7 @@ class TurnResult:
     turn_index: int | None = None
     request_intent: dict[str, Any] | None = None
     tools_executed: list[str] = field(default_factory=list)
+    tools_rejected: list[str] = field(default_factory=list)  # audit: "name:CODE", no args
 
     def as_record(self, include_text: bool = False) -> dict[str, Any]:
         record: dict[str, Any] = {
@@ -173,6 +208,7 @@ class TurnResult:
             "turn_index": self.turn_index,
             "request_intent": self.request_intent,
             "tools_executed": list(self.tools_executed),
+            "tools_rejected": list(self.tools_rejected),
             "outcome": self.outcome.value,
             "intended": (self.intended or self.outcome).value,
             "intent": self.intent.value,
@@ -204,7 +240,8 @@ class _Turn:
     meter_before: MeterSnapshot | None = None
     llm_failure: str | None = None
     index: int = 0
-    gate_before: tuple[int, int] = (0, 0)
+    gate_before: tuple[int, int, int, list[str]] = (0, 0, 0, [])
+    rejected: list[str] = field(default_factory=list)
     verdict: IntentVerdict | None = None
     tools_executed: list[str] = field(default_factory=list)
 
@@ -246,6 +283,10 @@ class VoiceSession:
         self._prompted: PromptedConfirmation | None = None
         self._stopping = False
         self.stale_callbacks = 0
+        # In-process record of effectful operations of this session (never persisted):
+        # (app, status) — used to answer "que operação fizeste?" truthfully.
+        self._operations: list[tuple[str | None, str]] = []
+        self._last_needs: tuple[str, ...] = ()
         # action_id -> digests of confirmed calls that really ran (JAR-CONF-01).
         self._executed: OrderedDict[UUID, set[str]] = OrderedDict()
 
@@ -317,6 +358,7 @@ class VoiceSession:
         """
         self._generation += 1
         self._prompted = None
+        self._note_not_executed(self._pending())  # a cancelled confirmation never ran
         interrupted = self.orchestrator.interrupt()
         self._call_adapter(self.stt, "cancel")
         try:
@@ -378,7 +420,7 @@ class VoiceSession:
         seen = {result.step_id for result in self.orchestrator.world.snapshot().recent_tool_calls}
         before = self.provider_meter.snapshot() if self.provider_meter is not None else None
         self._turn_index += 1
-        gate = self.effect_gate.counts() if self.effect_gate is not None else (0, 0)
+        gate = self.effect_gate.audit() if self.effect_gate is not None else (0, 0, 0, [])
         return _Turn(
             self._generation, seen, meter_before=before, index=self._turn_index, gate_before=gate
         )
@@ -396,9 +438,17 @@ class VoiceSession:
             result.request_intent = turn.verdict.as_record()
         result.tools_executed = list(turn.tools_executed)
         if self.effect_gate is not None:
-            blocked, _allowed = self.effect_gate.counts()
-            if blocked - turn.gate_before[0]:
-                result.metrics["tools_blocked"] = float(blocked - turn.gate_before[0])
+            blocked, unknown, irrelevant, names = self.effect_gate.audit()
+            before = turn.gate_before
+            deltas = (blocked - before[0], unknown - before[1], irrelevant - before[2])
+            for key, value in zip(
+                ("tools_blocked", "tools_unknown_blocked", "tools_irrelevant_blocked"), deltas
+            ):
+                if value:
+                    result.metrics[key] = float(value)
+            total = sum(deltas)
+            dropped = [f"{name}:DROPPED_BY_GATE" for name in (names[-total:] if total else [])]
+            result.tools_rejected = [*dropped, *turn.rejected]
         if self.context_stats is not None:
             try:
                 for key, value in self.context_stats().items():
@@ -467,11 +517,19 @@ class VoiceSession:
     def _pending(self) -> PendingConfirmation | None:
         return self.orchestrator.world.snapshot().pending_confirmation
 
+    def _note_not_executed(self, pending: PendingConfirmation | None) -> None:
+        """Remember that a requested opening was not executed (refused, cancelled, …)."""
+        if pending is not None and pending.tool_name == "open_allowed_application":
+            self._operations.append((str(pending.arguments.get("app") or ""), "NOT_EXECUTED"))
+            del self._operations[:-32]
+
     def _clear_pending(self, reason: str) -> None:
         """Fail-closed: drop any pending confirmation and VEXEL's binding to it."""
         self._prompted = None
-        if self._pending() is not None:
+        pending = self._pending()
+        if pending is not None:
             LOGGER.info("clearing pending confirmation: %s", reason)
+            self._note_not_executed(pending)
             self.orchestrator.interrupt()
 
     def _new_outcomes(self, turn: _Turn) -> list[ActionOutcome]:
@@ -534,6 +592,10 @@ class VoiceSession:
             # Known applications, not only the configured ones: a request for a
             # non-configured app is still a request, and the tool denies it honestly.
             turn.verdict = classify_request(heard)
+            if not turn.verdict.needs and self._last_needs and is_short_follow_up(heard):
+                # "Que horas são em Maputo?" → "E em Lisboa?": same information need.
+                turn.verdict = replace(turn.verdict, needs=self._last_needs)
+            self._last_needs = turn.verdict.needs
             self._request_verdict = turn.verdict
             self._authorize(turn.verdict)
             started = self._timer()
@@ -591,6 +653,7 @@ class VoiceSession:
             # Ambiguous: cancel, and do not treat the phrase as a new request.
             outcome, say = TurnOutcome.CANCELLED_UNCLEAR, SAY_CANCELLED_UNCLEAR
         self._move(VoiceState.THINKING, detail=outcome.value)
+        self._note_not_executed(pending)
         await self.orchestrator.handle(_WYZER_NO)
         self._clear_pending("rejected")
         return await self._say(outcome, say, turn, heard=heard, intent=intent)
@@ -641,11 +704,20 @@ class VoiceSession:
         wyzer_text = response.text.strip()
         if wyzer_text.startswith("That confirmation expired"):
             outcome = TurnOutcome.CANCELLED_NO_RESPONSE
+            self._note_not_executed(turn.confirmed)
         elif wyzer_text.startswith("I couldn't confirm it because"):
             outcome = TurnOutcome.CANCELLED_MISMATCH
 
         action_status: str | None = None
         claim_blocked = False
+        verdict = turn.verdict
+        requested = verdict is not None and verdict.kind.value == "execute_request"
+        if not requested and turn.confirmed is None:
+            # A model call to a tool that does not exist is a technical event, not the
+            # user's action: audit it, never let it replace the conversational answer.
+            unknown = [o for o in outcomes if o.error_code == "UNKNOWN_TOOL"]
+            turn.rejected.extend(f"{safe_tool_name(o.tool)}:{o.error_code}" for o in unknown)
+            outcomes = [o for o in outcomes if o.error_code != "UNKNOWN_TOOL"]
         if outcomes:
             # A confirmed turn reports the confirmed call's recorded result, not a later
             # model call that was refused (e.g. DENIED extra arguments).
@@ -656,11 +728,25 @@ class VoiceSession:
                 # A failed launch carries no data; name the app the user confirmed.
                 app = turn.confirmed_arguments.get("app")
             reply = action_outcome_text(last.status.value, app)
+            if last.tool == "open_allowed_application":
+                status = last.status.value
+                if last.error_code and last.error_code.startswith("SEQUENCE_STOPPED"):
+                    status = "NOT_EXECUTED"  # never attempted: an earlier call failed
+                self._operations.append((app, status))
+                del self._operations[:-32]
         elif claims_action(reply):
-            # Remove only the false claim; keep the rest of an unrelated answer.
+            # Remove only the false claim; keep the rest of an unrelated answer, and say
+            # what really happened in this session when there is something to say.
             claim_blocked = True
             cleaned, _removed = strip_action_claims(reply)
-            reply = cleaned or SAY_NOTHING_OPENED
+            truth = operation_history_text(*self._operations[-1]) if self._operations else ""
+            reply = " ".join(part for part in (cleaned, truth) if part) or SAY_NOTHING_OPENED
+        elif self._operations and asks_about_operations(heard):
+            app, status = self._operations[-1]
+            if _denies_any_operation(reply):
+                reply = operation_history_text(app, status)  # the model contradicts the record
+            elif not _states_status(reply, status):
+                reply = f"{reply.rstrip()} {operation_history_text(app, status)}".strip()
 
         result = await self._say(outcome, reply, turn, heard=heard, intent=intent)
         result.wyzer_reply = response.text
