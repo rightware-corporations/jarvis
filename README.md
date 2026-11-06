@@ -1,6 +1,6 @@
 # VEXEL Jarvis — Issa Edition
 
-> **CONTINUIDADE / ESTADO MAIS RECENTE (06/11/2026):** [Master Handoff V2 — 26_MASTER_HANDOFF_2026-11-06.md](docs/26_MASTER_HANDOFF_2026-11-06.md). Esta é a leitura prioritária para novos agentes. **Ollama/Qwen3.5 2B foram testados realmente no Kaggle**; confirmação real B6 PASS; benchmark B7 **11/12** devido a selecção indevida de ferramenta. **Memória persistente, agente executivo, microfone/voz Windows e release ainda pendentes.** Os parágrafos de 04–05/11 abaixo são preservados como histórico, incluindo afirmações então válidas de que ainda não havia inferência real.
+> **CONTINUIDADE / ESTADO MAIS RECENTE (06/11/2026):** [Master Handoff V2 — 26_MASTER_HANDOFF_2026-11-06.md](docs/26_MASTER_HANDOFF_2026-11-06.md). Esta é a leitura prioritária para novos agentes. **Ollama/Qwen3.5 2B foram testados realmente no Kaggle**; confirmação real B6 PASS; benchmark B7 **11/12** devido a selecção indevida de ferramenta. **JAR-COG-01 já publicada em `develop` com testes simulados; reteste com Qwen2B real ainda pendente. Memória persistente, agente executivo, microfone/voz Windows e release continuam pendentes.** Os parágrafos de 04–05/11 abaixo são preservados como histórico, incluindo afirmações então válidas de que ainda não havia inferência real.
 
 
 
