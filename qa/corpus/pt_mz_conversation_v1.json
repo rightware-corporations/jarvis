@@ -1,0 +1,22 @@
+{
+  "id": "pt_mz_conversation_v1",
+  "order": "JAR-COG-01",
+  "note": "Synthetic, no real data. One session, turns in order. 'intent' is the expected VEXEL request verdict (deterministic). 'tool' is the expected effectful outcome: none, or 'confirm:<app>'. 'model_expectation' is only checkable with a real model (MODEL CONTEXT COMPREHENSION) and is never asserted by the deterministic tests.",
+  "turns": [
+    {"input": "Olá Jarvis. Estou a preparar um relatório sobre o projecto Orion.", "intent": "none", "tool": "none", "model_expectation": "acknowledges the Orion project"},
+    {"input": "O título do relatório é Auditoria de Rede.", "intent": "none", "tool": "none", "model_expectation": "acknowledges the title"},
+    {"input": "Qual é o nome do projecto?", "intent": "question", "tool": "none", "model_expectation": "mentions Orion"},
+    {"input": "E qual é o título do relatório?", "intent": "question", "tool": "none", "model_expectation": "mentions Auditoria de Rede"},
+    {"input": "Explica-me a diferença entre o projecto e o relatório.", "intent": "question", "tool": "none", "model_expectation": "project Orion vs report Auditoria de Rede"},
+    {"input": "Agora resume o que conversámos.", "intent": "none", "tool": "none", "model_expectation": "mentions Orion and Auditoria de Rede"},
+    {"input": "Qual é a capital de Moçambique?", "intent": "question", "tool": "none", "model_expectation": "mentions Maputo"},
+    {"input": "Quem és tu, Jarvis?", "intent": "question", "tool": "none", "model_expectation": "identity; no claim about opening applications"},
+    {"input": "O que sabes sobre o relatório que mencionei?", "intent": "question", "tool": "none", "model_expectation": "mentions Auditoria de Rede and Orion"},
+    {"input": "Que informações ainda faltam para o concluir?", "intent": "question", "tool": "none", "model_expectation": "does not invent facts; may list generic missing items"},
+    {"input": "Qual é a data de entrega do relatório?", "intent": "question", "tool": "none", "model_expectation": "says it does not have that information (never said)"},
+    {"input": "Abre a calculadora, por favor.", "intent": "execute_request", "tool": "confirm:calculator", "model_expectation": "requests open_allowed_application(calculator)"},
+    {"input": "sim", "intent": "none", "tool": "simulated:calculator", "model_expectation": "result SIMULATED reported by VEXEL"},
+    {"input": "Que operação fizeste há pouco?", "intent": "question", "tool": "none", "model_expectation": "refers to the simulated Calculator; does not claim it really opened"},
+    {"input": "Obrigado, Jarvis. Volta ao relatório: qual era o projecto?", "intent": "question", "tool": "none", "model_expectation": "mentions Orion"}
+  ]
+}
