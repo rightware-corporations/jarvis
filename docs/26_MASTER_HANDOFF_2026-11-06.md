@@ -1,13 +1,42 @@
 # RIGHTWARE — VEXEL JARVIS / ISSA EDITION
 # MASTER HANDOFF V2 — 06/11/2026
 
+## ADENDA A — Actualização concorrente após a redacção: JAR-COG-01 PUBLICADA (06/11/2026)
+
+> **ESTA ADENDA É A REFERÊNCIA MAIS RECENTE E PREVALECE SOBRE AS FRASES HISTÓRICAS DAS SECÇÕES 0, 2, 9, 14 E 16 QUE DIZEM “JAR-COG-01 ainda não implementada”.** Durante a publicação deste handoff, o Claude Code publicou a missão `JAR-COG-01` em `develop`. A baseline `333d2a2` continua verdadeira para o relatório B7 e para o início da missão, mas **já não é a HEAD de código actual**.
+>
+> **HEAD verificada depois das publicações documentais:** `develop@57c89b87fddae617d2c4523140ddba5da6e878ba`; PR #2 aberto/Draft/não merged. **CI dessa HEAD documental em execução/queued na última consulta:** [push 42220034910](https://github.com/rightware-corporations/jarvis/actions/runs/42220034910) e [PR 42220044344](https://github.com/rightware-corporations/jarvis/actions/runs/42220044344); **não declarar success até concluir**. O relatório de Claude declara **CI 12/12 PASS no SHA de código `3cd85f7`**, antes dos commits documentais. Reconfirmar tudo na retoma.
+>
+> **Estado actualizado:** `JAR_COG_01_CODE_PUBLISHED | INTENT_POLICY_SIMULATED_PASS | SESSION_CONTEXT_DELIVERY_SIMULATED_PASS | COGNITIVE_REAL_LLM_QA_PENDING | PERSISTENT_MEMORY_DISABLED | WINDOWS_VOICE_PENDING | NOT_RELEASE_READY`.
+
+### O que o Claude publicou (código e testes)
+
+- **Política de intenção** em `jarvis/language/intent.py`: `IntentVerdict` conservador distingue `EXECUTE_REQUEST`, perguntas, negações, referências ao passado, citações e ambiguidades; só autoriza app explicitamente indicada pelo utilizador, numa allowlist ainda fechada.
+- **Gate pós-modelo** `EffectGate` em `jarvis/brain/pt_provider.py`: ferramenta com efeito não solicitada **não chega à confirmação Wyzer**; chamadas bloqueadas geram resposta só textual ou esclarecimento; falhas são fail-closed. Aplicação diferente da pedida não herda autorização.
+- **Higiene de conversa** `jarvis/core/conversation.py`: `VexelConversation` encerra tool calls não executadas com resultado sintético `NOT_EXECUTED`, remove órfãos e aplica orçamento de ~12 000 caracteres sem truncar trocas de modo arbitrário. Isto corrige uma causa de backend demonstrada para o encadeamento anómalo.
+- **Identidade de sessão**: `session_id` e `turn_index`, telemetria sanitizada, `nova conversa` explícita no modo texto, registos de início/fim em `text-sessions.jsonl` / `voice-sessions.jsonl`; sem guardar texto de conversa por defeito.
+- **Guard de veracidade**: análise de afirmações sobre acções por oração, em vez de substituir integralmente qualquer resposta potencialmente normal; revisões anti-bypass sobre separadores Unicode/ASCII.
+- **Corpus e QA real preparados:** `qa/corpus/pt_mz_conversation_v1.json` (15 turnos) e `qa/kaggle/JAR-COG-01_retest_cell.py` (cenários e saída `INPUT | OUTPUT | EXPECTED | RESULT | LAYER`). **O modelo real ainda não foi retestado após a COG-01**.
+- **Testes declarados no relatório:** `tests_vexel + tests_lab = 701 passed`, `tests_desktop = 87 passed`, matriz dirigida de segurança `301 passed`; 182/182 preservados; revisão independente fechou P0/P1. Fonte primária: [RELATÓRIO JAR-COG-01](reports/2026-11-06_JAR-COG-01-FINAL.md), [código de QA Kaggle](../qa/kaggle/JAR-COG-01_retest_cell.py).
+- **Código COG-01 identificado no relatório:** commits `234ceae` (gate/contexto) e `3cd85f7` (corpus/reteste). A documentação posterior e este handoff avançaram a HEAD; não usar o SHA parcial para substituir `origin/develop`.
+
+### Próxima acção correcta (substitui o antigo “começar a implementar COG-01”)
+
+**JAR-COG-01-R — RETESTE REAL, não reimplementação.** Antes: confirmar HEAD do GitHub, PR e CI mais recentes. No Kaggle, actualizar `develop` sem sobrescrever alterações locais; verificar que o venv Python 3.11, Ollama `127.0.0.1:11434` e `qwen3.5:2b` continuam disponíveis (recuperar ambiente se temporário tiver sido reiniciado). Ler `qa/kaggle/JAR-COG-01_retest_cell.py` e configurar `EXPECTED_SHA` com o **SHA efectivamente testado**, após checkout validado. Executar as perguntas factuais/negativas e o corpus de 15 turnos **no mesmo processo**. Guardar evidência sanitizada; distinguir falhas de **MODEL vs BACKEND vs INTERFACE** e `SYSTEM_CONTEXT_DELIVERY` de `MODEL_CONTEXT_COMPREHENSION`.
+
+**Gates do reteste:** pergunta da capital nunca solicita Bloco de Notas; “quem és tu” responde identidade sem alegação de execução; “será?” não abre apps; ordens explícitas continuam sob confirmação; 15 turnos preservam contexto de processo; `SIMULATED` e deduplicação JAR-CONF-01 não regrediram; sem P0/P1; QA e CI identificados por SHA. Só depois discutir memória durável, agentes executivos ou Orb/voz.
+
+**Importante:** alguns testes adaptados à nova política de intenção mudaram enunciados para pedir **ambas** as aplicações quando se pretende validar duas confirmações; o relatório documenta a reconciliação. Isso não autoriza aplicações não mencionadas. Revalidar `DENIED` vs bloqueio pré-Wyzer nos contratos.
+
+
+
 > **DOCUMENTO PRINCIPAL DE CONTINUIDADE** — para RIGHTWARE, Claude Code, ChatGPT, Manus e qualquer agente sucessor. Este handoff reconcilia os documentos de 04–05/11/2026 com o código, CI e testes reais comunicados até **06/11/2026**, fuso `Africa/Maputo`. **Não é prova de entrega nem autorização genérica para executar operações.**
 >
 > **Instrução para novo agente:** começar por este ficheiro; verificar **HEAD, PR e CI actuais** no GitHub antes de agir; consultar os links de evidência; preservar todas as restrições. Não começar de zero nem trocar o motor Wyzer. Nunca tratar um teste simulado como uma validação em produção.
 >
 > **Snapshot verificado antes da redacção:** `develop@333d2a2fe2713a893a01968899e226a7dbf12936`; `main` separado; PR [#2](https://github.com/rightware-corporations/jarvis/pull/2) **aberto, Draft, não merged**; workflows desta HEAD [push 42200288658](https://github.com/rightware-corporations/jarvis/actions/runs/42200288658) e [PR 42200297075](https://github.com/rightware-corporations/jarvis/actions/runs/42200297075) **success**. O commit que acrescenta este handoff será posterior: o SHA acima é a **baseline de código**, não a HEAD futura.
 >
-> **Estado em uma linha:** `BACKEND_REAL_INFERENCE_PASS | REAL_TOOL_CALLING_PASS | CONFIRMATION_REAL_QA_PASS | COGNITIVE_INTENT_FAIL/REVIEW | SESSION_CONTEXT_UNVERIFIED | MEMORY_DISABLED | WINDOWS_VOICE_PENDING | NOT_RELEASE_READY`.
+> **Estado em uma linha (snapshot B7, antes da ADENDA A):** `BACKEND_REAL_INFERENCE_PASS | REAL_TOOL_CALLING_PASS | CONFIRMATION_REAL_QA_PASS | COGNITIVE_INTENT_FAIL/REVIEW | SESSION_CONTEXT_UNVERIFIED | MEMORY_DISABLED | WINDOWS_VOICE_PENDING | NOT_RELEASE_READY`. Ver **ADENDA A** para a engenharia posterior.
 
 ## 0. Autoridade das informações e classes de estado
 
@@ -276,7 +305,7 @@ A classificação P1/P2/P3 acima é prioridade **recomendada**, não um relatór
 
 ## 9. Próxima missão exacta: JAR-COG-01 (ESPECIFICADA; NÃO CONFIRMADA EXECUTADA)
 
-**Título:** `JAR-COG-01 — Cognitive Foundation: Intent Safety & Conversational Continuity`.
+**Título original do brief:** `JAR-COG-01 — Cognitive Foundation: Intent Safety & Conversational Continuity`. **Esta secção é o brief histórico anterior à publicação, superado quanto ao estado pela ADENDA A.**
 
 O prompt integral de execução foi entregue ao utilizador para Claude Code em 06/11/2026. **Não existe aqui output comprovando que Claude já correu esta missão ou publicou commits.** Não marcar `PASS` antes de inspeccionar GitHub.
 
