@@ -29,6 +29,17 @@ and suppresses the reply, but it does not undo the effect. For
 The Orchestrator still validates TTL and the argument digest on ``yes``; VEXEL's binding
 check is an additional, earlier gate.
 
+Repeated call after a confirmed execution (JAR-CONF-01): after ``yes`` the Orchestrator
+runs the approved call and asks the model again. A model that re-requests a call that
+already ran in the same logical action (same Orchestrator ``action_id`` and same
+argument digest, also later in the action, e.g. calculator → notepad → calculator)
+would raise another confirmation and, on another ``sim``, a second execution. VEXEL
+keeps a small ledger of the digests executed per action and drops such a pending call
+with the Orchestrator's own ``no`` (never approves it), then speaks the recorded status
+of the confirmed call. A *different* call is not a repeat: it keeps its own policy and
+needs its own confirmation, and the question then starts with the confirmed call's
+real result. A new user request is a new action and never inherits anything.
+
 Metrics (JAR-ENGINE-01): with a ``ProviderMeter`` each turn also records the local
 model's share of ``think_ms`` (``llm_calls``, ``llm_ms``, ``llm_eval_count``,
 ``llm_model_ms``, ``llm_failures``, ``llm_cancelled``, ``llm_truncated``). A provider
@@ -41,6 +52,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections import OrderedDict
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -49,6 +61,7 @@ from uuid import UUID
 
 from wyzer.app.orchestrator import Orchestrator
 from wyzer.models import AssistantResponse, PendingConfirmation
+from wyzer.policy import ConfirmationPolicy
 
 from jarvis.brain.pt_provider import MeterSnapshot, ProviderMeter
 from jarvis.config import VexelSettings
@@ -72,6 +85,8 @@ from jarvis.voice.contracts import Activation, CaptureError, SpeechToText, TextT
 from jarvis.voice.presentation import GuardedSpeech, Presentation, PresentationResult
 
 LOGGER = logging.getLogger(__name__)
+
+_EXECUTED_LEDGER_ACTIONS = 16  # recent Orchestrator actions remembered for repeat checks
 
 SAY_NOTHING_TO_CONFIRM = "Não há nada para confirmar."
 SAY_STT_FAILED = "Não consegui ouvir: houve um problema com o microfone ou o reconhecimento."
@@ -175,6 +190,7 @@ class _Turn:
     seen_steps: set[Any]
     metrics: dict[str, float] = field(default_factory=dict)
     confirmed_arguments: dict[str, Any] = field(default_factory=dict)
+    confirmed: PendingConfirmation | None = None
     meter_before: MeterSnapshot | None = None
     llm_failure: str | None = None
 
@@ -208,6 +224,8 @@ class VoiceSession:
         self._prompted: PromptedConfirmation | None = None
         self._stopping = False
         self.stale_callbacks = 0
+        # action_id -> digests of confirmed calls that really ran (JAR-CONF-01).
+        self._executed: OrderedDict[UUID, set[str]] = OrderedDict()
 
     # ------------------------------------------------------------------ lifecycle
 
@@ -481,6 +499,7 @@ class VoiceSession:
         if intent is ControlIntent.CONFIRM:
             if prompted is not None and prompted.matches(pending):
                 turn.confirmed_arguments = dict(pending.arguments)
+                turn.confirmed = pending
                 self._move(VoiceState.THINKING, detail="confirmed")
                 started = self._timer()
                 response = await self.orchestrator.handle(_WYZER_YES)
@@ -523,9 +542,26 @@ class VoiceSession:
                 metrics=turn.metrics,
             )
         outcomes = self._new_outcomes(turn)
+        confirmed_outcome = self._record_executed(turn, outcomes)
         pending = self._pending()
+        if pending is not None and self._already_executed(pending):
+            # The same call already ran in this action: never ask (or run) it again.
+            # Wyzer's own "no" clears it and closes the action; it never reaches the model.
+            self._prompted = None
+            await self.orchestrator.handle(_WYZER_NO)
+            if self._pending() is not None:  # fail closed if Wyzer kept anything pending
+                self._clear_pending("repeat drop left a pending call")
+            turn.metrics["repeat_call_dropped"] = 1.0
+            pending = None
+            if turn.generation != self._generation:
+                return TurnResult(
+                    TurnOutcome.DISCARDED, heard=heard, intent=intent, metrics=turn.metrics
+                )
         if pending is not None:
-            return await self._present_confirmation(pending, response, turn, heard, intent)
+            prior = confirmed_outcome or (outcomes[-1] if outcomes else None)
+            return await self._present_confirmation(
+                pending, response, turn, heard, intent, prior=prior
+            )
 
         reply, translated = translate_wyzer_reply(response.text)
         wyzer_text = response.text.strip()
@@ -537,10 +573,12 @@ class VoiceSession:
         action_status: str | None = None
         claim_blocked = False
         if outcomes:
-            last = outcomes[-1]
+            # A confirmed turn reports the confirmed call's recorded result, not a later
+            # model call that was refused (e.g. DENIED extra arguments).
+            last = confirmed_outcome or outcomes[-1]
             action_status = last.status.value
             app = last.app
-            if app is None and last.tool == "open_allowed_application":
+            if app is None and last is confirmed_outcome:
                 # A failed launch carries no data; name the app the user confirmed.
                 app = turn.confirmed_arguments.get("app")
             reply = action_outcome_text(last.status.value, app)
@@ -557,6 +595,27 @@ class VoiceSession:
             result.detail = turn.llm_failure
         return result
 
+    def _record_executed(
+        self, turn: _Turn, outcomes: list[ActionOutcome]
+    ) -> ActionOutcome | None:
+        """Ledger the confirmed call if it really ran in this turn; return its outcome."""
+        confirmed = turn.confirmed
+        if confirmed is None:
+            return None
+        outcome = next((o for o in outcomes if o.step_id == confirmed.step_id), None)
+        if outcome is None:
+            return None  # nothing ran (e.g. expired): not executed, nothing to ledger
+        digest = ConfirmationPolicy.digest(confirmed.tool_name, dict(confirmed.arguments))
+        self._executed.setdefault(confirmed.action_id, set()).add(digest)
+        self._executed.move_to_end(confirmed.action_id)
+        while len(self._executed) > _EXECUTED_LEDGER_ACTIONS:
+            self._executed.popitem(last=False)
+        return outcome
+
+    def _already_executed(self, pending: PendingConfirmation) -> bool:
+        """True when this exact call (digest) already ran in the same Orchestrator action."""
+        return pending.call_digest in self._executed.get(pending.action_id, set())
+
     async def _present_confirmation(
         self,
         pending: PendingConfirmation,
@@ -564,8 +623,17 @@ class VoiceSession:
         turn: _Turn,
         heard: str | None,
         intent: ControlIntent,
+        *,
+        prior: ActionOutcome | None = None,
     ) -> TurnResult:
         prompt = confirmation_prompt(pending)
+        if prior is not None:
+            # A different call after an executed one: say what really happened first.
+            app = prior.app
+            confirmed = turn.confirmed
+            if app is None and confirmed is not None and prior.step_id == confirmed.step_id:
+                app = turn.confirmed_arguments.get("app")
+            prompt = f"{action_outcome_text(prior.status.value, app)} {prompt}"
         self._move(VoiceState.AWAITING_CONFIRMATION, detail=pending.tool_name)
         presentation = await self._present(prompt, turn)
         current = self._pending()
@@ -583,11 +651,15 @@ class VoiceSession:
             presentation=presentation.outcome,
             wyzer_reply=response.text,
             metrics=turn.metrics,
+            action_status=prior.status.value if prior is not None else None,
         )
         if armed:
             self._prompted = PromptedConfirmation.of(pending)
             return TurnResult(
-                TurnOutcome.CONFIRMATION_REQUESTED, spoken=True, awaiting_confirmation=True, **base
+                TurnOutcome.CONFIRMATION_REQUESTED,
+                spoken=True,
+                awaiting_confirmation=True,
+                **base,
             )
         # Fail closed: a confirmation that was not presented cannot be approved later.
         self._clear_pending(f"confirmation not presented: {presentation.outcome.value}")
